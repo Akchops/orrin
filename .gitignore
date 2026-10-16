@@ -4,3 +4,4 @@ artifact/
 qa-run/
 .DS_Store
 *.log
+kessel/.build/
