@@ -1,0 +1,466 @@
+/* Layout: one watch under a bench lamp in a dark room; captions sit in a
+   narrow technical rail on the left, the object owns the rest of the frame. */
+:root {
+  --ink: #0b0c0e;          /* lamp-black, a hair cool */
+  --ink-2: #121317;        /* raised surface */
+  --ink-3: #1b1c21;        /* hairlines on dark */
+  --bone: #ece6da;         /* primary text, the cream of an aged dial */
+  --steel: #a2a7ad;        /* secondary text */
+  --steel-dim: #73787e;    /* tertiary text, tick marks */
+  --gilt: #c9a66b;         /* movement gilt: leader lines, numerals, focus */
+  --salmon: #e2a088;       /* No. 01's dial: used once per view at most */
+
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+  --step-4: clamp(2.4rem, 1.4rem + 4vw, 4.5rem);
+
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --rail: min(30rem, 34vw);
+  --vh: 100svh;
+  color-scheme: dark;
+}
+
+@supports not (height: 100svh) { :root { --vh: 100vh; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--ink); -webkit-text-size-adjust: 100%; overflow-x: clip; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  background-image: radial-gradient(120% 70% at 72% 0%, #191a1f 0%, rgba(11, 12, 14, 0) 62%);
+  background-attachment: fixed;
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: var(--step-1);
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+a:hover { color: var(--salmon); }
+:focus-visible { outline: 2px solid var(--gilt); outline-offset: 3px; border-radius: 2px; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-stretch: 118%;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+h2 { font-size: var(--step-4); font-weight: 400; }
+h3 { font-size: var(--step-3); font-weight: 400; }
+p { margin: 0; max-width: 62ch; }
+
+.eyebrow, .masthead__nav, .beat__num, .parts, .facts dt, .contact__list dt,
+.model__no, .models__note, .footer, .hero__cue, .tag, .copy, .tilt {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.eyebrow { color: var(--gilt); margin-bottom: 1.1rem; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: fixed; left: var(--gutter-l); top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 50;
+  background: var(--bone); color: var(--ink); padding: 0.5rem 0.9rem;
+  font-family: var(--mono); font-size: var(--step--1); transform: translateY(-200%);
+}
+.skip:focus { transform: none; }
+
+/* ------------------------------------------------------------------ masthead */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--ink);
+}
+.masthead {
+  position: fixed; z-index: 20; left: 0; right: 0; top: env(safe-area-inset-top, 0px);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.1rem var(--gutter-r) 1.1rem var(--gutter-l);
+  background: linear-gradient(var(--ink) 0%, rgba(11, 12, 14, 0.75) 55%, rgba(11, 12, 14, 0) 100%);
+  pointer-events: none;
+}
+.masthead > * { pointer-events: auto; }
+.masthead__mark {
+  font-family: var(--display); font-stretch: 125%; font-weight: 600;
+  font-size: 1rem; letter-spacing: 0.32em; text-decoration: none;
+}
+.masthead__nav { display: flex; gap: clamp(0.9rem, 2.4vw, 2.2rem); }
+.masthead__nav a { text-decoration: none; color: var(--steel); padding-block: 0.4rem; }
+.masthead__nav a:hover, .masthead__nav a[aria-current="true"] { color: var(--bone); }
+
+/* --------------------------------------------------------------------- stage */
+/* Hidden until the live scene has booted. */
+.stage { display: none; }
+
+/* ---------------------------------------------------------------------- hero */
+.hero {
+  position: relative;
+  min-height: var(--vh);
+  display: grid;
+  align-content: end;
+  padding-block: 6rem 2.5rem;
+}
+.hero__mark {
+  position: absolute; z-index: 0; top: 50%;
+  left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1);
+  transform: translateY(-58%);
+  text-align: center; pointer-events: none;
+  /* The letters spread past the edges on scroll; on phones anything that
+     overflows would widen the layout viewport, so clip it here. */
+  overflow: hidden; padding-block: 0.1em;
+}
+.hero__word {
+  display: flex; justify-content: center;
+  font-family: var(--display); font-stretch: 125%; font-weight: 300;
+  font-size: min(25vw, 30vh, 24rem);
+  line-height: 0.8; letter-spacing: -0.02em;
+}
+/* Polished steel lettering: a cool vertical gradient with one bright band,
+   like an engraved name catching the lamp. Applied per letter, because each
+   letter is its own compositing layer once it moves. */
+.hero__word > span {
+  display: inline-block; will-change: transform;
+  background: linear-gradient(180deg, #2c2e33 0%, #7d8288 36%, #d9d4ca 48%, #63676d 57%, #222429 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  padding-inline: 0.01em;
+}
+/* The still sits where the live camera frames the watch at scroll zero, so
+   the hand-off from image to WebGL is a dissolve, not a jump. Desktop: a
+   square of viewport height, centred 15% right of centre. */
+.hero__still {
+  position: absolute; z-index: 1; margin: 0;
+  width: var(--vh); height: var(--vh);
+  left: calc(50% + 15vw - var(--vh) / 2); top: 0;
+}
+.hero__still img { width: 100%; height: 100%; object-fit: contain; }
+.hero__copy { position: relative; z-index: 2; display: grid; gap: 0.9rem; max-width: 30rem; }
+.hero__lede { font-family: var(--display); font-stretch: 112%; font-size: var(--step-3); line-height: 1.1; font-weight: 400; text-wrap: balance; }
+.hero__sub { color: var(--steel); }
+.hero__time { color: var(--steel); font-style: italic; font-size: var(--step-0); }
+.hero__cue {
+  position: absolute; z-index: 2; right: 0; bottom: 2.5rem;
+  text-decoration: none; color: var(--steel);
+  display: inline-flex; align-items: center; gap: 0.75rem;
+}
+.hero__cue::after {
+  content: ""; width: 1px; height: 2.4rem; background: linear-gradient(var(--gilt), transparent);
+}
+
+/* ------------------------------------------------------------------ chapters */
+.chapter { position: relative; padding-block: clamp(4rem, 10vw, 8rem); }
+.chapter__head { display: grid; gap: 0; margin-bottom: clamp(2rem, 5vw, 4rem); max-width: 48rem; }
+
+/* Disassembly, as stills: one figure and caption per stage. */
+.beats { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(3rem, 8vw, 6rem); }
+.beat { display: grid; gap: 1.5rem 3rem; grid-template-columns: minmax(0, 1fr); align-items: center; }
+.beat__still { margin: 0; border-top: 1px solid var(--ink-3); }
+.beat__cap { display: grid; gap: 0.85rem; min-width: 0; }
+.beat__num { color: var(--gilt); }
+.beat__kicker { font-style: italic; color: var(--bone); font-size: var(--step-2); line-height: 1.25; }
+.beat__cap > p:not(.beat__num):not(.beat__kicker) { color: var(--steel); }
+.parts { list-style: none; margin: 0.4rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; color: var(--steel-dim); }
+.parts li::before { content: "\2014\00a0"; color: var(--gilt); }
+
+@media (min-width: 768px) {
+  .beat { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .beat:nth-child(even) .beat__still { order: 2; }
+}
+
+/* Models, as stills. */
+.model-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--ink-3); border-block: 1px solid var(--ink-3); }
+.model { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 1rem 1.5rem; align-items: center; background: var(--ink); padding-block: 1rem; }
+.model__still { margin: 0; }
+.model__body { display: grid; gap: 0.35rem; min-width: 0; }
+.model__body h3 { font-size: var(--step-2); }
+.model__no { font-family: var(--display); font-size: inherit; letter-spacing: 0.06em; text-transform: none; font-stretch: 125%; }
+.model__body p { color: var(--steel); font-size: var(--step-0); }
+.model__ask { font-family: var(--mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gilt); }
+.models__note { color: var(--steel-dim); margin-top: 1.25rem; }
+@media (min-width: 1100px) {
+  .model-list { grid-template-columns: repeat(5, minmax(0, 1fr)); border: 0; background: none; gap: 1.5rem; }
+  .model { grid-template-columns: minmax(0, 1fr); align-items: start; padding: 0; }
+}
+
+/* Workshop. */
+.workshop { display: grid; gap: 2rem 4rem; align-items: center; }
+.workshop__still { margin: 0; }
+.workshop__copy { display: grid; gap: 1.1rem; min-width: 0; }
+.workshop__copy h2 { margin-bottom: 0.6rem; }
+.workshop__lede { font-size: var(--step-2); line-height: 1.35; }
+.workshop__copy > p:not(.eyebrow):not(.workshop__lede) { color: var(--steel); }
+.facts { margin: 1.4rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--ink-3); border-block: 1px solid var(--ink-3); max-width: 34rem; }
+.facts > div { background: var(--ink); padding: 0.9rem 0.25rem; display: grid; gap: 0.2rem; }
+.facts dt { color: var(--steel-dim); }
+.facts dd { margin: 0; font-family: var(--display); font-stretch: 112%; font-size: var(--step-1); }
+@media (min-width: 900px) {
+  .workshop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* Contact. */
+.contact { min-height: 70vh; display: grid; align-content: center; }
+.contact__copy { display: grid; gap: 1rem; max-width: 34rem; }
+.contact__list { margin: 1.25rem 0 0; display: grid; gap: 1.1rem; }
+.contact__list > div { display: grid; gap: 0.15rem; }
+.contact__list dt { color: var(--steel-dim); }
+.contact__list dd { margin: 0; font-family: var(--display); font-stretch: 112%; font-size: var(--step-2); display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem; overflow-wrap: anywhere; }
+.contact__list a { text-decoration: none; user-select: all; }
+.contact__time { color: var(--steel); font-style: italic; }
+.copy {
+  appearance: none; border: 1px solid var(--ink-3); background: var(--ink-2); color: var(--steel);
+  padding: 0.35rem 0.7rem; border-radius: 2px; cursor: pointer;
+}
+.copy:hover { color: var(--bone); border-color: var(--steel-dim); }
+
+.footer {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+  padding-block: 2rem calc(2rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--ink-3); color: var(--steel-dim);
+}
+.footer p { max-width: none; }
+
+.subdial, .tilt { display: none; }
+
+/* -------------------------------------------------------- narrow, stills */
+@media (max-width: 767px) {
+  .masthead__mark { letter-spacing: 0.24em; }
+  .hero { align-content: end; padding-bottom: 5.5rem; }
+  .hero__mark { top: 34%; }
+  .hero__word { font-size: min(27vw, 24vh); }
+  /* Portrait: the camera fits the width, centred 17% above middle. */
+  .hero__still { width: 100vw; height: 100vw; left: calc(var(--gutter-l) * -1); top: calc(33% - 50vw); }
+  .hero__lede { font-size: 1.5rem; }
+  .hero__sub, .hero__time { font-size: var(--step-0); line-height: 1.45; }
+  /* Short phones: the copy may overlap the strap, so it gets a floor of shade. */
+  .live .hero::after {
+    content: ""; position: absolute; z-index: 1; pointer-events: none;
+    left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 58%;
+    background: linear-gradient(rgba(11, 12, 14, 0), rgba(11, 12, 14, 0.85) 45%, var(--ink));
+  }
+  .live .models .chapter__head h2 { font-size: var(--step-2); }
+  .hero__cue { left: 0; right: auto; bottom: 2rem; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+}
+/* Portrait tablets frame the watch like a phone: full width, above centre. */
+@media (orientation: portrait) and (min-width: 768px) and (max-width: 1100px) {
+  .hero__still { width: 100vw; height: 100vw; left: calc(var(--gutter-l) * -1); top: calc(33% - 50vw); }
+  .hero__mark { top: 34%; }
+}
+@media (max-width: 380px) {
+  .masthead__mark { font-size: 0.875rem; letter-spacing: 0.18em; }
+  .masthead__nav { gap: 0.6rem; font-size: 0.6875rem; letter-spacing: 0.03em; }
+  .hero__lede { font-size: 1.3rem; }
+}
+
+/* ===================================================================== LIVE
+   Applied only once the scene has booted and motion is allowed. Everything
+   above stays as the fallback for no-JS, reduced motion and failed boots. */
+
+.live .stage {
+  display: block; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  overflow: hidden;   /* labels near the edge must never widen the layout */
+}
+.live .stage__gl, .live .stage__2d {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  opacity: 0; transition: opacity 0.7s ease;
+}
+.live.scene-ready .stage__gl, .live.scene-ready .stage__2d { opacity: 1; }
+.live .still { display: none; }
+.live .hero__still { display: block; transition: opacity 0.7s ease; }
+.live.scene-ready .hero__still { opacity: 0; }
+
+/* Content above the canvas; the hero wordmark below it, so the watch stands
+   in front of its own name. */
+.live main > * { position: relative; }
+.live .hero__mark { z-index: 0; }
+.live .hero__copy, .live .hero__cue { z-index: 2; }
+.live .chapter > * { z-index: 2; }
+.live .masthead { z-index: 20; }
+
+/* Sections paint above the fixed stage (z 1). An explicit z-index matters
+   because a pinned section becomes position: fixed, which would otherwise
+   form a stacking context at level 0, underneath the canvas. */
+.live .chapter { padding-block: 0; z-index: 2; }
+
+/* Disassembly: one pinned viewport; the four captions share the rail. */
+.live .dis { height: var(--vh); }
+.live .dis .chapter__head { position: absolute; left: 0; top: 5.5rem; margin: 0; }
+.live .dis .chapter__head h2 { font-size: var(--step-2); font-stretch: 125%; font-weight: 500; letter-spacing: 0.02em; }
+.live .beats { position: absolute; inset: 0; display: block; }
+.live .beat {
+  position: absolute; left: 0; top: max(10.5rem, 31vh);
+  width: var(--rail); display: block;
+}
+.live .beat__cap { gap: 0.8rem; }
+.live .beat__cap > * { will-change: clip-path, transform; }
+.live .parts { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* In the live layout the stage numerals move into one shared window that
+   rolls like a date disc; the per-caption numerals stay for screen readers. */
+.live .beat__num { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.reel { display: none; }
+.live .reel {
+  display: block; position: absolute; left: 0; top: calc(max(10.5rem, 31vh) - 3.1rem);
+  width: 3.6rem; height: 2rem; overflow: hidden;
+  border: 1px solid rgba(201, 166, 107, 0.6); border-radius: 2px;
+  font-family: var(--mono); font-size: var(--step--1); letter-spacing: 0.08em; color: var(--gilt);
+}
+.reel__strip { display: grid; will-change: transform; }
+.reel__strip span { height: 2rem; display: grid; place-items: center; }
+.live .beat__cap h3 { font-size: var(--step-4); font-stretch: 125%; font-weight: 300; }
+
+/* Desktop: a soft shade behind the caption rail, so copy stays legible when
+   the camera brings bright metal underneath it. */
+@media (min-width: 768px) and (orientation: landscape), (min-width: 1101px) {
+  .live .dis::before, .live .models::before, .live .contact::before {
+    content: ""; position: absolute; z-index: 1; pointer-events: none;
+    top: 0; bottom: 0; left: calc(var(--gutter-l) * -1); width: calc(var(--rail) + 18vw);
+    background: linear-gradient(90deg, rgba(11, 12, 14, 0.88) 0%, rgba(11, 12, 14, 0.62) 55%, rgba(11, 12, 14, 0) 100%);
+  }
+  .live .workshop::before {
+    content: ""; position: absolute; z-index: 1; pointer-events: none;
+    top: 0; bottom: 0; right: calc(var(--gutter-r) * -1); width: calc(min(32rem, 44vw) + 16vw);
+    background: linear-gradient(270deg, rgba(11, 12, 14, 0.85) 0%, rgba(11, 12, 14, 0.55) 60%, rgba(11, 12, 14, 0) 100%);
+  }
+}
+
+/* Projected part labels with gilt leader lines. */
+.stage__tags { position: absolute; inset: 0; }
+.tag {
+  position: absolute; left: 0; top: 0; color: var(--bone);
+  transform: translate3d(var(--x, -999px), var(--y, -999px), 0);
+  opacity: 0; transition: opacity 0.35s ease;
+  white-space: nowrap; font-size: 0.72rem;
+}
+.tag.is-on { opacity: 1; }
+.tag__dot {
+  position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gilt); box-shadow: 0 0 0 3px rgba(201, 166, 107, 0.18);
+}
+.tag__line {
+  position: absolute; left: 0; top: 0; height: 1px; width: var(--len, 40px);
+  background: linear-gradient(90deg, var(--gilt), rgba(201, 166, 107, 0.35));
+  transform-origin: 0 0; transform: rotate(var(--ang, 0rad));
+}
+.tag__text {
+  position: absolute; left: var(--dx, 40px); top: var(--dy, -20px);
+  transform: translate(var(--tx, 0), -50%);
+  padding: 0.2rem 0.45rem; background: rgba(11, 12, 14, 0.62); border-radius: 2px;
+}
+
+/* Models: pinned; the list is the rail and the active row is lit. */
+.live .models { height: var(--vh); }
+.live .models .chapter__head { position: absolute; left: 0; top: 5.5rem; margin: 0; max-width: var(--rail); }
+.live .models .chapter__head h2 { font-size: var(--step-3); }
+.live .model-list {
+  position: absolute; left: 0; top: 50%; transform: translateY(-38%);
+  width: var(--rail); grid-template-columns: minmax(0, 1fr); gap: 0; background: none; border: 0;
+}
+.live .model {
+  grid-template-columns: 1.6rem minmax(0, 1fr); gap: 1rem; padding-block: 0.85rem;
+  background: none; border-top: 1px solid var(--ink-3);
+  opacity: 0.38; transition: opacity 0.4s ease;
+}
+.live .model.is-active { opacity: 1; }
+.live .model::before {
+  content: ""; width: 1.25rem; height: 1.25rem; border-radius: 50%; align-self: start; margin-top: 0.3rem;
+  background: conic-gradient(from 210deg, var(--swatch), color-mix(in srgb, var(--swatch) 55%, white) 25%, var(--swatch) 50%, color-mix(in srgb, var(--swatch) 70%, black) 75%, var(--swatch));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.live .model__body h3 { font-size: var(--step-1); }
+.live .model__body p { font-size: var(--step--1); line-height: 1.45; }
+.live .models__note { position: absolute; left: 0; bottom: 2rem; margin: 0; }
+
+/* Workshop and contact: the watch takes one side, copy the other. */
+.live .workshop { min-height: calc(var(--vh) * 1.7); grid-template-columns: minmax(0, 1fr); align-content: center; }
+.live .workshop__copy { margin-left: auto; width: min(32rem, 44vw); padding-block: 30vh; }
+.live .contact { min-height: var(--vh); }
+.live .contact__copy { width: var(--rail); }
+
+/* Sub-dial progress indicator. */
+.live .subdial {
+  display: block; position: fixed; z-index: 15;
+  right: calc(var(--gutter-r) + 0.5rem); bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.live .subdial.is-on { opacity: 1; }
+.subdial__ring { fill: rgba(11, 12, 14, 0.6); stroke: var(--steel-dim); stroke-width: 0.8; }
+.subdial__ticks line { stroke: var(--steel-dim); stroke-width: 0.8; }
+.subdial__label { fill: var(--steel); font: 500 6px var(--mono); text-anchor: middle; dominant-baseline: middle; }
+.subdial__label.is-on { fill: var(--gilt); }
+.subdial__hand { stroke: var(--gilt); stroke-width: 1.4; stroke-linecap: round; transform-origin: 32px 32px; }
+.subdial__hub { fill: var(--gilt); }
+
+.live .tilt {
+  display: none; position: fixed; z-index: 16; left: 50%; transform: translateX(-50%);
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  appearance: none; border: 1px solid var(--ink-3); background: rgba(18, 19, 23, 0.86); color: var(--bone);
+  padding: 0.6rem 0.9rem; border-radius: 999px; cursor: pointer;
+}
+.live .tilt:not([hidden]) { display: block; }
+
+/* Legibility over the scene: a soft shadow on captions rather than boxes. */
+.live .beat__cap, .live .model-list, .live .workshop__copy, .live .contact__copy, .live .hero__copy {
+  text-shadow: 0 1px 18px rgba(11, 12, 14, 0.85), 0 0 2px rgba(11, 12, 14, 0.6);
+}
+
+@media (max-width: 767px), (orientation: portrait) and (max-width: 1100px) {
+  :root { --rail: 100%; }
+  .live .dis .chapter__head, .live .models .chapter__head { top: 4.5rem; }
+  .live .beat { top: auto; bottom: 1.25rem; width: auto; right: 0; }
+  .live .reel { top: 4.25rem; left: auto; right: 0; }
+  .live .beat__cap { gap: 0.55rem; }
+  .live .beat__cap h3 { font-size: 2.1rem; }
+  .live .beat__kicker { font-size: var(--step-1); }
+  .live .beat__cap > p:not(.beat__num):not(.beat__kicker) { font-size: var(--step-0); line-height: 1.45; }
+  /* A scrim under the caption band, so text never sits on bright metal. */
+  .live .dis::after, .live .models::after {
+    content: ""; position: absolute; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 52%;
+    background: linear-gradient(rgba(11, 12, 14, 0), rgba(11, 12, 14, 0.88) 48%, var(--ink));
+    z-index: 1; pointer-events: none;
+  }
+  .live .model-list { top: auto; bottom: 3.6rem; transform: none; height: 9.5rem; }
+  .live .model { position: absolute; left: 0; right: 0; top: 0; opacity: 0; border: 0; }
+  .live .model.is-active { opacity: 1; }
+  .live .models__note { bottom: 1.25rem; }
+  .live .workshop__copy { width: auto; margin: 0; padding-block: 62vh 20vh; }
+  .live .workshop::after {
+    content: ""; position: absolute; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); top: 45vh; bottom: 0;
+    background: linear-gradient(rgba(11, 12, 14, 0), rgba(11, 12, 14, 0.9) 18vh);
+    z-index: 1; pointer-events: none;
+  }
+  .live .contact { align-content: end; padding-bottom: 3rem; }
+  .live .contact::after {
+    content: ""; position: absolute; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 60%;
+    background: linear-gradient(rgba(11, 12, 14, 0), rgba(11, 12, 14, 0.9) 40%);
+    z-index: 1; pointer-events: none;
+  }
+  /* The date-window reel already shows the stage on narrow screens. */
+  .live .subdial { display: none; }
+  .tag { font-size: 0.66rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
