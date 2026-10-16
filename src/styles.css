@@ -441,7 +441,9 @@ body::before {
   }
   .live .model-list { top: auto; bottom: 3.6rem; transform: none; height: 9.5rem; }
   .live .model { position: absolute; left: 0; right: 0; top: 0; opacity: 0; border: 0; }
-  .live .model.is-active { opacity: 1; }
+  /* A keyboard user tabbing to another model's link must be able to see it. */
+  .live .model.is-active, .live .model:focus-within { opacity: 1; }
+  .live .model-list:focus-within .model:not(:focus-within) { opacity: 0; }
   .live .models__note { bottom: 1.25rem; }
   .live .workshop__copy { width: auto; margin: 0; padding-block: 62vh 20vh; }
   .live .workshop::after {
