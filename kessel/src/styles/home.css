@@ -41,6 +41,16 @@
 @media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
   .live #home .after { padding-top: 0; background: var(--void); }
 }
+/* Once the film has ended (film-done) its last chapter scrolls up under the
+   header, which over the film is only a shade. From that moment a band in
+   the solid header's colour and rule sits under it, so the copy slides
+   under the header instead of through the mark, badge and menu. */
+.live #home .after::after {
+  content: ""; position: fixed; z-index: 30; left: 0; right: 0; top: 0; height: calc(var(--safe-t) + var(--head));
+  background: rgba(6, 7, 10, 0.94); border-bottom: 1px solid var(--line); pointer-events: none;
+  opacity: 0; transition: opacity 0.35s ease;
+}
+.live.film-done #home .after::after { opacity: 1; }
 @keyframes home-hero-fade { from { opacity: 0; } 12% { opacity: 0; } 72% { opacity: 1; } to { opacity: 1; } }
 @keyframes home-hero-push {
   from { opacity: 0; scale: var(--fs); translate: calc(var(--fx) - var(--lx) - var(--lw) * 0.375) calc(var(--fy) - var(--vh) - var(--lt) - var(--lw) * 0.54); }
@@ -94,7 +104,7 @@
 #home .after .hhero__copy { z-index: 2; display: grid; gap: 1.5rem; justify-items: start; min-width: 0; }
 #home .after .hhero__copy .eyebrow { margin-bottom: -0.25rem; }
 #home .after .hhero__title {
-  display: grid; font-weight: 200; font-stretch: 122%; line-height: 0.9; letter-spacing: -0.012em;
+  display: grid; font-weight: 200; font-stretch: 122%; line-height: 1; letter-spacing: -0.012em;
   font-size: clamp(2.75rem, 0.6rem + 7vw, 9.4rem);
   text-shadow: 0 2px 28px rgba(6, 7, 10, 0.55);
 }
@@ -185,7 +195,7 @@
   #home .after .hhero::after { display: none; }
   #home .after .hhero::before { width: auto; right: 0; top: auto; height: 62%; background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.6) 30%, rgba(6, 7, 10, 0.6)); }
   #home .after .hhero__copy { gap: 1.2rem; }
-  #home .after .hhero__title { font-size: clamp(2.4rem, 0.3rem + 10.4vw, 4.6rem); font-stretch: 116%; line-height: 0.94; }
+  #home .after .hhero__title { font-size: clamp(2.4rem, 0.3rem + 10.4vw, 4.6rem); font-stretch: 116%; line-height: 1.02; }
   #home .after .hhero__foot { margin-top: 0.2rem; gap: 1.4rem; }
   #home .after .hhero__replay { position: relative; left: auto; top: auto; }
 }

@@ -61,6 +61,8 @@
   #lenses .lx-hero__label a:hover::before { width: 100%; }
   #lenses .lx-hero__label a:hover .lx-hero__name span { transform: translateX(5px); }
 }
+/* Ring drawn inside the link: the hero clips, and the links touch its edges. */
+#lenses .lx-hero__label a:focus-visible { outline-offset: -5px; }
 #lenses .lx-hero__label a:focus-visible::before { width: 100%; }
 #lenses .lx-hero__label a:focus-visible .lx-hero__name span { transform: translateX(5px); }
 

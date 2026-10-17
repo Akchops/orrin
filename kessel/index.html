@@ -482,6 +482,16 @@ html.live:not([data-route="home"]) .stage { display: none; }
 @media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
   .live #home .after { padding-top: 0; background: var(--void); }
 }
+/* Once the film has ended (film-done) its last chapter scrolls up under the
+   header, which over the film is only a shade. From that moment a band in
+   the solid header's colour and rule sits under it, so the copy slides
+   under the header instead of through the mark, badge and menu. */
+.live #home .after::after {
+  content: ""; position: fixed; z-index: 30; left: 0; right: 0; top: 0; height: calc(var(--safe-t) + var(--head));
+  background: rgba(6, 7, 10, 0.94); border-bottom: 1px solid var(--line); pointer-events: none;
+  opacity: 0; transition: opacity 0.35s ease;
+}
+.live.film-done #home .after::after { opacity: 1; }
 @keyframes home-hero-fade { from { opacity: 0; } 12% { opacity: 0; } 72% { opacity: 1; } to { opacity: 1; } }
 @keyframes home-hero-push {
   from { opacity: 0; scale: var(--fs); translate: calc(var(--fx) - var(--lx) - var(--lw) * 0.375) calc(var(--fy) - var(--vh) - var(--lt) - var(--lw) * 0.54); }
@@ -535,7 +545,7 @@ html.live:not([data-route="home"]) .stage { display: none; }
 #home .after .hhero__copy { z-index: 2; display: grid; gap: 1.5rem; justify-items: start; min-width: 0; }
 #home .after .hhero__copy .eyebrow { margin-bottom: -0.25rem; }
 #home .after .hhero__title {
-  display: grid; font-weight: 200; font-stretch: 122%; line-height: 0.9; letter-spacing: -0.012em;
+  display: grid; font-weight: 200; font-stretch: 122%; line-height: 1; letter-spacing: -0.012em;
   font-size: clamp(2.75rem, 0.6rem + 7vw, 9.4rem);
   text-shadow: 0 2px 28px rgba(6, 7, 10, 0.55);
 }
@@ -626,7 +636,7 @@ html.live:not([data-route="home"]) .stage { display: none; }
   #home .after .hhero::after { display: none; }
   #home .after .hhero::before { width: auto; right: 0; top: auto; height: 62%; background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.6) 30%, rgba(6, 7, 10, 0.6)); }
   #home .after .hhero__copy { gap: 1.2rem; }
-  #home .after .hhero__title { font-size: clamp(2.4rem, 0.3rem + 10.4vw, 4.6rem); font-stretch: 116%; line-height: 0.94; }
+  #home .after .hhero__title { font-size: clamp(2.4rem, 0.3rem + 10.4vw, 4.6rem); font-stretch: 116%; line-height: 1.02; }
   #home .after .hhero__foot { margin-top: 0.2rem; gap: 1.4rem; }
   #home .after .hhero__replay { position: relative; left: auto; top: auto; }
 }
@@ -742,6 +752,8 @@ html.live:not([data-route="home"]) .stage { display: none; }
   #lenses .lx-hero__label a:hover::before { width: 100%; }
   #lenses .lx-hero__label a:hover .lx-hero__name span { transform: translateX(5px); }
 }
+/* Ring drawn inside the link: the hero clips, and the links touch its edges. */
+#lenses .lx-hero__label a:focus-visible { outline-offset: -5px; }
 #lenses .lx-hero__label a:focus-visible::before { width: 100%; }
 #lenses .lx-hero__label a:focus-visible .lx-hero__name span { transform: translateX(5px); }
 
@@ -1572,9 +1584,10 @@ html.live:not([data-route="home"]) .stage { display: none; }
   -webkit-mask-image: linear-gradient(#000 48%, rgba(0, 0, 0, 0.42) 76%, transparent 99%);
   mask-image: linear-gradient(#000 48%, rgba(0, 0, 0, 0.42) 76%, transparent 99%);
 }
-/* Phones and tablets: the engraving over the signature, the signature
-   filling the width, the headline under it. */
-#workshop .ws-hero__fig img { width: 100%; height: 100%; object-fit: cover; object-position: 51.3% 0%; }
+/* Phones and tablets: the signature alone, filling the width, the headline
+   under it. The zoom from the bottom pushes the engraving off the top edge;
+   the engraving appears once on the page, in section 03. */
+#workshop .ws-hero__fig img { width: 100%; height: 100%; object-fit: cover; object-position: 51.3% 100%; transform-origin: 51% 100%; transform: scale(1.3); }
 /* Shade the left side so the headline reads over the knurled grip. */
 #workshop .ws-hero__fig::after {
   content: ""; position: absolute; inset: 0;
@@ -1700,26 +1713,43 @@ html.live:not([data-route="home"]) .stage { display: none; }
 }
 
 /* -------------------------------------- 03 · signed on the barrel (sign) */
-/* A second crop of the rear barrel: the engraving, large, as a band across
-   the page; the closing line set beside the heading under it. */
+/* The maker's mark alone: the engraving, cropped inside the amber bands and
+   faded on every side so it floats on the page, with the type centred under
+   it like the engraved lettering. The only symmetric section on the page,
+   so it reads as a new frame, not a second hero. */
+#workshop .ws-sec--signed { text-align: center; }
 #workshop .ws-sec--signed .ws-sec__fig {
   margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); height: clamp(14rem, 62vw, 22rem);
-  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 60%, transparent);
-  mask-image: linear-gradient(transparent, #000 30%, #000 60%, transparent);
+  -webkit-mask-image: linear-gradient(transparent, #000 16%, #000 60%, transparent);
+  mask-image: linear-gradient(transparent, #000 16%, #000 60%, transparent);
 }
-#workshop .ws-sec--signed .ws-sec__fig img { object-position: 51% 0%; transform-origin: 51% 0%; scale: 2.6; }
-/* A side vignette keeps the eye on the engraving, not the studio light. */
+#workshop .ws-sec--signed .ws-sec__fig img { object-position: 51% 0%; transform-origin: 51% 0%; scale: 2.7; }
+/* An even side vignette keeps the eye on the engraving, not the amber band
+   or the studio light at the edges. */
 #workshop .ws-sec--signed .ws-sec__fig::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(6, 7, 10, 0.75), rgba(6, 7, 10, 0) 26%, rgba(6, 7, 10, 0) 72%, rgba(6, 7, 10, 0.85));
+  background: linear-gradient(90deg, rgba(6, 7, 10, 0.8), rgba(6, 7, 10, 0) 12%, rgba(6, 7, 10, 0) 88%, rgba(6, 7, 10, 0.8));
 }
-#workshop .ws-sec--signed .ws-sec__in { margin-top: -4.5rem; }
+#workshop .ws-sec--signed .ws-sec__in { margin-top: -4.5rem; justify-items: center; }
+#workshop .ws-sec--signed .ws-sec__head { justify-items: center; }
+#workshop .ws-sec--signed .ws-body { justify-items: center; }
+#workshop .ws-sec--signed .ws-body p { text-wrap: pretty; }
+#workshop .ws-sec--signed .ws-line { max-width: 18ch; }
 @media (min-width: 900px) {
-  #workshop .ws-sec--signed .ws-sec__fig { height: clamp(22rem, 34vw, 32rem); }
-  #workshop .ws-sec--signed .ws-sec__fig img { object-position: 52% 0%; transform-origin: 52% 0%; scale: 1.25; }
-  #workshop .ws-sec--signed .ws-sec__in { margin-top: -9rem; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(2rem, 5vw, 5rem); align-items: end; }
-  #workshop .ws-sec--signed .ws-sec__head, #workshop .ws-sec--signed .ws-body { grid-column: 1; }
-  #workshop .ws-sec--signed .ws-line { grid-column: 2; grid-row: 1 / 3; align-self: end; font-size: clamp(2.6rem, 0.8rem + 4.2vw, 6rem); max-width: 14ch; }
+  /* A plate in the middle of the page, not a band across it: the window sits
+     between the two amber bands, so no knurl and no bands echo the hero. */
+  #workshop .ws-sec--signed .ws-sec__fig {
+    width: min(46rem, 58vw); height: auto; aspect-ratio: 1.6; margin-inline: auto;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(transparent, #000 6%, #000 52%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(transparent, #000 6%, #000 52%, transparent);
+    mask-composite: intersect;
+  }
+  #workshop .ws-sec--signed .ws-sec__fig img { object-position: 51% 0%; transform-origin: 51% 0%; scale: 2.7; }
+  /* Put out the studio light that glows just right of the "L". */
+  #workshop .ws-sec--signed .ws-sec__fig::after { background: radial-gradient(ellipse 14% 34% at 97% 8%, rgba(6, 7, 10, 0.94), rgba(6, 7, 10, 0)); }
+  #workshop .ws-sec--signed .ws-sec__in { margin-top: clamp(-9rem, -8vw, -5rem); }
+  #workshop .ws-sec--signed .ws-line { font-size: clamp(2.6rem, 0.8rem + 4.2vw, 6rem); max-width: 22ch; margin-top: 1rem; }
 }
 
 /* ---------------------------------------------------------- where next */
@@ -1936,7 +1966,6 @@ html.live:not([data-route="home"]) .stage { display: none; }
   }
   #contact .ct-studio__in { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--ct-gap); align-content: space-between; padding-block: clamp(3rem, 7vh, 5rem) clamp(2rem, 5vh, 3.5rem); }
   #contact .ct-phone, #contact .ct-city { grid-column: 2; margin-left: -6vw; }
-  #contact .ct-city dt, #contact .ct-phone dt { padding-left: 6vw; }
 }
 
 /* ----------------------------------------------------------------- help */

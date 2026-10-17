@@ -183,7 +183,6 @@
   }
   #contact .ct-studio__in { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--ct-gap); align-content: space-between; padding-block: clamp(3rem, 7vh, 5rem) clamp(2rem, 5vh, 3.5rem); }
   #contact .ct-phone, #contact .ct-city { grid-column: 2; margin-left: -6vw; }
-  #contact .ct-city dt, #contact .ct-phone dt { padding-left: 6vw; }
 }
 
 /* ----------------------------------------------------------------- help */

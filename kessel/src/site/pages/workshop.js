@@ -2,8 +2,10 @@
 // on the rear barrel at full bleed with the headline across it (the page's
 // moment), the facts read out in giant thin numerals, then three short
 // sections, each with its own layout: the distance scale bleeding off the
-// right edge, the back of the lens bleeding off the left, and the closing
-// line over a second crop of the barrel. Links to Contact and Craft end it.
+// right edge, the back of the lens bleeding off the left, and the engraved
+// maker's mark centred with the closing line under it (the hero shows only
+// the signature, so the engraving appears once). Links to Contact and Craft
+// end it.
 import { site, esc, paras, img, footer, route } from '../parts.js';
 import { workshop } from '../../content/workshop.js';
 
@@ -39,7 +41,8 @@ const hands = (s, i) => `<section class="ws-sec ws-sec--hands" aria-labelledby="
   </div>
 </section>`;
 
-// 03 · Signed on the barrel: the closing line, large, over the engraving.
+// 03 · Signed on the barrel: the engraving alone, centred, the type centred
+// under it and the closing line set large.
 const signed = (s, i) => `<section class="ws-sec ws-sec--signed" aria-labelledby="workshop-s${i + 1}">
   <figure class="ws-sec__fig">${img('d-sign')}</figure>
   <div class="ws-sec__in wrap">
