@@ -23,6 +23,26 @@ const POSES = {
   beauty: { s: 16.5, sx: 0, sy: 0 },
   exploded: { s: 16.5, noLeaks: true, spread: 1, az: 64, el: 12, frame: 82, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
   iris34: { s: 16.5, iris: 0.42, az: 16, el: 9, frame: 30, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
+  // Site imagery, rendered with a transparent background so it sits on the
+  // page with no box. Close crops on details the scene already has.
+  'hero-lens': { s: 16.5, az: 26, el: 9, frame: 64, tx: 0, ty: 0, tz: -44, iris: 0.5, sx: 0, sy: 0 },
+  'lens-1': { s: 16.5, model: 0, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -44, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lens-2': { s: 16.5, model: 1, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -50, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lens-3': { s: 16.5, model: 2, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -60, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-1': { s: 16.5, model: 0, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-2': { s: 16.5, model: 1, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-3': { s: 16.5, model: 2, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  // The iris as the film catches it, blades opening one at a time with
+  // light behind them, framed inside the front ring.
+  'd-iris': { s: 1.9, az: 0, el: 0, frame: 25, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
+  // The coated front element as the film opens: near the axis, so the
+  // violet and green coatings and the pinhole of light read.
+  'd-glass': { s: 0, az: 6, el: 5, frame: 29, tx: 0, ty: 0, tz: -6, iris: 0.06, sx: 0, sy: 0 },
+  'd-knurl': { s: 16.5, az: 90, el: 5, frame: 15, tx: 40, ty: 0, tz: -24, focus: 0.5, light: 0, sx: 0, sy: 0 },
+  'd-scale': { s: 16.5, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -19, focus: 0.62, light: 0, sx: 0, sy: 0 },
+  'd-sign': { s: 16.5, model: 1, az: 90, el: 2, frame: 15, tx: 39, ty: 0, tz: -68, light: 0, sx: 0, sy: 0 },
+  'd-mount': { s: 16.5, az: 162, el: 14, frame: 40, tx: 0, ty: 0, tz: -86, light: 0, sx: 0, sy: 0 },
+  'exploded-wide': { s: 16.5, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
 };
 
 export async function renderStill(name, font) {

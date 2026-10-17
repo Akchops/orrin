@@ -1,0 +1,11 @@
+/* ================================================================== CONTACT */
+.ct { display: grid; gap: 3rem; align-items: start; }
+.ct__main { display: grid; gap: clamp(3rem, 6vw, 4.5rem); }
+.ct__help { display: grid; gap: 1rem; }
+.ct__help ul { margin: 0; padding: 0; list-style: none; display: grid; border-top: 1px solid var(--line); }
+.ct__help li { padding: 0.85rem 0 0.85rem 1.6rem; border-bottom: 1px solid var(--line); color: var(--dim); position: relative; }
+.ct__help li::before { content: ""; position: absolute; left: 0; top: 1.45rem; width: 0.7rem; height: 1px; background: var(--coat); }
+@media (min-width: 800px) {
+  .ct { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
+}
+

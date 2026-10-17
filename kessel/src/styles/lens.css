@@ -1,0 +1,36 @@
+/* ============================================================ LENS DETAIL */
+.lens { display: grid; gap: clamp(3rem, 7vw, 6rem); padding-top: calc(var(--safe-t) + var(--head) + 1.5rem); }
+.crumbs { display: flex; gap: 0.7rem; color: var(--dim); align-items: center; }
+.crumbs a { text-decoration: none; color: var(--engrave); min-height: 44px; display: inline-flex; align-items: center; }
+.crumbs a:hover { color: var(--coat); }
+.lens__top { display: grid; gap: 2.5rem; align-items: center; }
+.lens__img { border-color: var(--line); }
+.lens__img::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--band); }
+.lens__copy { display: grid; gap: 1.4rem; justify-items: start; align-content: center; }
+.lens__copy .eyebrow { display: flex; align-items: center; gap: 0.7rem; }
+.lens__copy h1 { font-size: clamp(3.4rem, 1.6rem + 7vw, 8rem); font-weight: 300; font-stretch: 125%; letter-spacing: 0; }
+.lens__line { font-style: italic; font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem); line-height: 1.35; max-width: 24ch; }
+.enquire { width: 100%; max-width: 30rem; }
+.enquire > summary { list-style: none; width: max-content; max-width: 100%; }
+.enquire > summary::-webkit-details-marker { display: none; }
+.enquire > summary::after { content: "+"; font-weight: 400; font-size: 1.1rem; line-height: 1; }
+.enquire[open] > summary { background: transparent; color: var(--engrave); border-color: var(--coat); }
+.enquire[open] > summary::after { content: "\2212"; }
+.enquire__body { display: grid; gap: 1rem; margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); background: var(--anodise); }
+.enquire__body > p { color: var(--dim); font-size: 1rem; }
+.lens__specs { display: grid; gap: 1.5rem; }
+.pager { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
+.pager__link { display: grid; gap: 0.35rem; padding: 1.6rem 1rem 1.6rem 0; background: var(--void); text-decoration: none; color: var(--engrave); position: relative; }
+.pager__link--next { text-align: right; padding: 1.6rem 0 1.6rem 1rem; }
+.pager__dir { color: var(--dim); }
+.pager__name { font-family: var(--display); font-stretch: 118%; font-weight: 300; font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.8rem); line-height: 1.05; }
+.pager__role { color: var(--dim); font-size: 0.95rem; }
+.pager__link:hover { color: var(--engrave); }
+.pager__link:hover .pager__name { color: var(--band); }
+.pager__link--prev:hover .pager__dir span { transform: translateX(-4px); }
+.pager__link--next:hover .pager__dir span { transform: translateX(4px); }
+@media (min-width: 800px) {
+  .lens__top { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
+  .lens__specs { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+}
+

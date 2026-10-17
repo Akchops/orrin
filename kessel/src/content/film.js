@@ -18,5 +18,26 @@ export const film = {
     { id: 'focus', num: '04 · Focus', title: 'Focus by hand', still: 'focus', caption: 'Still frame · focus ring and distance scale',
       body: 'The knurled ring turns and the engraved distance scale rolls past the index mark, from infinity down to the closest mark.' },
   ],
+  // The film's last three stages, as in the single-page demo.
+  models: {
+    num: '05 · Lenses', title: 'Three lenses', note: 'The names and roles below are proposals for this concept.',
+    list: [
+      { name: 'Shaniwar', still: 'model-1', alt: 'The wide lens: short barrel, large front.',
+        body: 'The wide one. For rooms, streets and landscapes, where everything in front of you belongs in the frame.' },
+      { name: 'Parvati', still: 'model-2', alt: 'The standard lens: medium barrel.',
+        body: 'The standard one. Frames a scene close to the way your eye does.' },
+      { name: 'Sinhagad', still: 'model-3', alt: 'The portrait lens: the longest barrel.',
+        body: 'The long one. For faces and details at a distance, with the background let go.' },
+    ],
+  },
+  workshop: {
+    num: '06 · The workshop', title: 'One optician, one lens', still: 'signed', caption: 'Still frame · the signed barrel',
+    body: [
+      'Kessel Optics was founded in Pune in 2017 as an independent lens maker.',
+      'Every lens is assembled by hand by one optician from start to finish, and that optician signs the barrel.',
+    ],
+    facts: [['Founded', '2017, Pune'], ['Makes', 'Cinema and photography lenses'], ['Models', 'Three'], ['Each lens', 'One optician, signed']],
+  },
+  contact: { num: '07 · Contact', title: 'Write to the studio' },
   skip: 'Skip film',
 };

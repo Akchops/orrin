@@ -1,0 +1,29 @@
+/* ===================================================================== HOME */
+.after { position: relative; z-index: 3; background: var(--void); margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding-inline: var(--gutter-l) var(--gutter-r); }
+/* The cut: after Focus the site rises over the stage, fading in from clear. */
+.live .after { background: linear-gradient(rgba(6, 7, 10, 0), var(--void) 28vh); padding-top: 20vh; }
+.hhero { min-height: var(--vh); display: grid; align-items: center; padding-block: calc(var(--safe-t) + var(--head) + 2.5rem) clamp(3rem, 7vw, 6rem); }
+.hhero__grid { display: grid; gap: 2.5rem; align-items: center; }
+.hhero__copy { display: grid; gap: 1.4rem; justify-items: start; }
+.hhero__copy .lead { color: var(--dim); }
+.hhero__copy .display { max-width: 15ch; font-size: clamp(2.4rem, 1.2rem + 3.3vw, 4.6rem); }
+.featured { display: grid; gap: clamp(2rem, 4vw, 3.5rem); padding-block: clamp(3rem, 8vw, 7rem); }
+.band { margin-block: clamp(3rem, 8vw, 7rem); margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding: clamp(3.5rem, 8vw, 7rem) var(--gutter-r) clamp(3.5rem, 8vw, 7rem) var(--gutter-l); background: var(--anodise); border-block: 1px solid var(--line); }
+.band__grid { display: grid; gap: 2.5rem; }
+.band__steps { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line-2); }
+.band__steps li { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: baseline; padding: 1.1rem 0; border-bottom: 1px solid var(--line-2); }
+.band__no { color: var(--coat); }
+.band__t { font-family: var(--display); font-stretch: 118%; font-weight: 300; font-size: clamp(1.4rem, 1rem + 1.4vw, 2.2rem); line-height: 1.15; }
+.split { display: grid; gap: 2.5rem; align-items: center; padding-block: clamp(3rem, 8vw, 7rem); }
+.split__copy { display: grid; gap: 1.1rem; }
+.split__copy p:not(.eyebrow) { color: var(--dim); }
+.cstrip { display: grid; gap: 2rem; padding-block: clamp(3rem, 8vw, 7rem) 0; }
+.cstrip > div { display: grid; gap: 1rem; align-content: start; }
+@media (min-width: 800px) {
+  .hhero__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: clamp(2.5rem, 5vw, 5rem); }
+  .lgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .band__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+  .split { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
+  .cstrip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+}
+

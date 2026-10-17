@@ -16,4 +16,17 @@ export const media = {
   'model-1-lg': { w: 1000, h: 1000, alt: 'Shaniwar, the wide lens, at three-quarters: the shortest barrel and the largest front, with a violet band.' },
   'model-2-lg': { w: 1000, h: 1000, alt: 'Parvati, the standard lens, at three-quarters: a medium barrel with an amber band.' },
   'model-3-lg': { w: 1000, h: 1000, alt: 'Sinhagad, the long lens, at three-quarters: the longest barrel, with a green band.' },
+  // Site imagery: transparent backgrounds, close crops on the scene's details.
+  'hero-lens': { w: 1800, h: 1800, alt: 'A Kessel lens close up at three-quarters, the coated front element catching violet and green light, the iris half open behind it.' },
+  'lens-1': { w: 1800, h: 1350, alt: 'Shaniwar, the wide lens, at three-quarters: the shortest barrel and the largest front, with a violet band.' },
+  'lens-2': { w: 1800, h: 1350, alt: 'Parvati, the standard lens, at three-quarters: a medium barrel with an amber band.' },
+  'lens-3': { w: 1800, h: 1350, alt: 'Sinhagad, the long lens, at three-quarters: the longest barrel, with a green band.' },
+  lineup: { w: 1800, h: 943, alt: 'The three lenses standing side by side on their mounts: Shaniwar the shortest with a violet band, Parvati in the middle with an amber band, Sinhagad the longest with a green band.' },
+  'd-iris': { w: 1600, h: 1600, alt: 'The iris blades close up, overlapping into an eleven-sided opening with light behind it.' },
+  'd-glass': { w: 1600, h: 1600, alt: 'The coated front element close up, its reflections tinted violet and green.' },
+  'd-knurl': { w: 2000, h: 1000, alt: 'The knurled grip of the focus ring in close up.' },
+  'd-scale': { w: 1600, h: 1000, alt: 'The engraved distance scale on the focus ring, metres in white and feet in amber, against the index mark.' },
+  'd-sign': { w: 1600, h: 1000, alt: "The optician's signature on the rear barrel, under the engraved maker's mark." },
+  'd-mount': { w: 1400, h: 1400, alt: 'The back of the lens: the stainless mount and the rear element.' },
+  'exploded-wide': { w: 2400, h: 1100, alt: 'The lens taken apart along its axis: front ring, focus section, iris, rear section and mount spaced out in a line, each with its glass.' },
 };

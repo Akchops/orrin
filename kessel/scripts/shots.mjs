@@ -8,6 +8,7 @@ const args = process.argv.slice(2);
 const [out, size, list] = args;
 const flag = (n) => args.includes('--' + n);
 const opt = (n, d) => (args.find((a) => a.startsWith(`--${n}=`)) || `--${n}=${d}`).split('=').slice(1).join('=');
+const FILE = opt('file', 'kessel/index.html');
 const [w, h] = size.split('x').map(Number);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: flag('gl') ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : [] });
@@ -22,7 +23,7 @@ page.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
 page.on('request', (r) => { if (!r.url().startsWith('file:') && !r.url().startsWith('data:')) logs.push('REQUEST: ' + r.url()); });
 const q = new URLSearchParams(opt('query', ''));
 if (flag('gl')) q.set('gl', 'force');
-const url = pathToFileURL(resolve('kessel/index.html')).href + (q.toString() ? '?' + q : '');
+const url = pathToFileURL(resolve(FILE)).href + (q.toString() ? '?' + q : '');
 await page.goto(url);
 await page.waitForTimeout(flag('nojs') ? 500 : 4000);
 if (!flag('nojs')) {

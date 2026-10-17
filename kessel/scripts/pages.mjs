@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 const [out, size, list, ...rest] = process.argv.slice(2);
 const flag = (n) => rest.includes('--' + n);
+const FILE = (rest.find((a) => a.startsWith('--file=')) || '--file=kessel/index.html').slice(7);
 const [w, h] = size.split('x').map(Number);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch();
@@ -16,7 +17,7 @@ const logs = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(m.type() + ': ' + m.text().slice(0, 200)); });
 page.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
 for (const r of list.split(',')) {
-  await page.goto(pathToFileURL(resolve('kessel/index.html')).href + (flag('q') ? '?static' : '') + '#' + r);
+  await page.goto(pathToFileURL(resolve(FILE)).href + (flag('q') ? '?static' : '') + '#' + r);
   await page.waitForTimeout(900);
   if (flag('full')) {
     // Walk down the page so lazy images load, then back to the top.

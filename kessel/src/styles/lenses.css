@@ -1,0 +1,6 @@
+/* =================================================================== LENSES */
+.lgrid--index .lcard__name { font-size: clamp(2.2rem, 1.6rem + 1.8vw, 3.2rem); }
+.compare { display: grid; gap: 1.2rem; margin-top: clamp(4rem, 9vw, 7rem); }
+.compare h2, .lens__specs h2, .ct__help h2 { color: var(--coat); font-weight: 400; font-size: 0.78rem; }
+@media (max-width: 799px) { .spec--compare { min-width: 36rem; } }
+

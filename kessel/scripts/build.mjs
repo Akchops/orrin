@@ -27,13 +27,16 @@ for (const f of readdirSync(join(k, 'src/app'))) {
 }
 mkdirSync(join(k, '.build'), { recursive: true });
 const names = [...used].sort();
-writeFileSync(join(k, '.build/libs.gen.js'), [
+const libsEntry = [
   `import { ${names.join(', ')} } from 'three';`,
   `import { mergeGeometries, toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';`,
   `import gsap from 'gsap';`, `import { ScrollTrigger } from 'gsap/ScrollTrigger';`, `import Lenis from 'lenis';`,
   `export const THREE = { ${names.join(', ')} };`,
   `export { mergeGeometries, toCreasedNormals, gsap, ScrollTrigger, Lenis };`,
-].join('\n'));
+].join('\n');
+// Written only when it changes, so several builds can run side by side.
+const libsPath = join(k, '.build/libs.gen.js');
+if (!existsSync(libsPath) || readFileSync(libsPath, 'utf8') !== libsEntry) writeFileSync(libsPath, libsEntry);
 const libs = await bundle('.build/libs.gen.js', { globalName: 'KL' });
 // Wrapped in a function: the browser only pre-parses it on load and
 // compiles it when the live lens calls window.__kesselLibs().
@@ -52,7 +55,9 @@ const routeCss = `html[data-route] .route{display:none}html[data-route="home"] #
 
 const b64 = (p) => readFileSync(p).toString('base64');
 const font = (f) => `data:font/woff2;base64,${b64(join(repo, 'node_modules/@fontsource-variable', f))}`;
-let css = readFileSync(join(k, 'src/styles.css'), 'utf8')
+// Styles: the shared base, the film, then one file per page.
+const STYLES = ['base', 'film', 'home', 'lenses', 'lens', 'craft', 'workshop', 'contact'];
+let css = STYLES.map((n) => readFileSync(join(k, `src/styles/${n}.css`), 'utf8')).join('\n')
   .replaceAll('%%FONT:saira%%', font('saira/files/saira-latin-wdth-normal.woff2'))
   .replaceAll('%%FONT:serif%%', font('source-serif-4/files/source-serif-4-latin-wght-normal.woff2'))
   .replaceAll('%%FONT:serif-italic%%', font('source-serif-4/files/source-serif-4-latin-wght-italic.woff2'))
@@ -77,7 +82,9 @@ html = html.replace('/*%%CSS%%*/', () => css)
   .replace(/%%STILL:([a-z0-9-]+)%%/g, (m, n) => still(n))
   .replace('/*%%LIBS%%*/', () => safe(libsWrapped))
   .replace('/*%%APP%%*/', () => safe(app));
-writeFileSync(join(k, 'index.html'), html);
+const outArg = process.argv.find((a) => a.startsWith('--out='));
+const out = outArg ? outArg.slice(6) : join(k, 'index.html');
+writeFileSync(out, html);
 const kb = (n) => (n / 1024).toFixed(0) + ' kB';
 if (missing.size) console.log('stills not rendered yet (grey frames):', [...missing].join(', '));
-console.log('kessel/index.html', kb(Buffer.byteLength(html)), '| libs', kb(libs.length), '| app', kb(app.length), '| site', kb(siteJs.length), '| css+fonts', kb(css.length), '| routes', site.ids.length);
+console.log(out.replace(repo + '/', ''), kb(Buffer.byteLength(html)), '| libs', kb(libs.length), '| app', kb(app.length), '| site', kb(siteJs.length), '| css+fonts', kb(css.length), '| routes', site.ids.length);

@@ -1,0 +1,141 @@
+/* ================================================================== FILM
+   The scroll film on the home page, exactly as the single-page demo had it:
+   hero, iris, glass, back together, focus, the three lenses, the signed
+   barrel and contact. Scoped under .film so the site's pages never collide
+   with it. */
+
+/* ------------------------------------------------- stills layout (default) */
+.stage { display: none; }
+.film { display: grid; gap: clamp(4rem, 10vw, 8rem); padding-block: calc(var(--head) + 1rem) 4rem; }
+.notice:not([hidden]) + .film { padding-top: 2.5rem; }
+.film .still { margin: 0; display: grid; gap: 0.5rem; }
+.film .still img { border: 1px solid var(--line); background: var(--anodise); }
+.film figcaption { color: var(--amber); font-size: 0.68rem; }
+.film .hero { display: grid; gap: 2rem; align-items: center; }
+.film .hero h1 { display: grid; gap: 0.6rem; }
+.film .hero__name { font-size: clamp(2.6rem, 1.4rem + 6vw, 6.4rem); font-stretch: 125%; font-weight: 300; letter-spacing: 0.02em; }
+.film .hero__line { font-family: var(--body); font-stretch: normal; font-size: clamp(1.3rem, 1rem + 1.2vw, 1.9rem); font-weight: 400; font-style: italic; }
+.film .hero__copy { display: grid; gap: 1rem; }
+.film .hero__sub { color: var(--dim); }
+.film .hero__cue { color: var(--dim); text-decoration: none; justify-self: start; }
+.film .stagecopy, .film .workshop { display: grid; gap: 1.5rem 3rem; align-items: center; }
+.film .cap { display: grid; gap: 0.9rem; min-width: 0; }
+.film .cap > p:not(.cap__num) { color: var(--dim); }
+.film .models { display: grid; gap: 2rem; }
+.film .models__head { display: grid; gap: 0.8rem; }
+.film .models__note { color: var(--amber); }
+.film .model-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2rem; }
+.film .model { display: grid; gap: 0.6rem; align-content: start; }
+.film .model h3 { font-size: 1.8rem; display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+.film .model h3 span { color: var(--amber); font-size: 0.64rem; }
+.film .model p { color: var(--dim); font-size: 1rem; }
+.film .facts, .film .contact__list { margin: 0.8rem 0 0; display: grid; gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
+.film .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.film .facts > div, .film .contact__list > div { background: var(--void); padding: 0.8rem 0.2rem; display: grid; gap: 0.2rem; }
+.film .facts dt, .film .contact__list dt { color: var(--dim); }
+.film .facts dd, .film .contact__list dd { margin: 0; font-family: var(--display); font-stretch: 110%; font-size: 1.15rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: baseline; overflow-wrap: anywhere; }
+.film .contact__list dd { font-size: 1.45rem; }
+.film .model h3 span, .film .models__note, .film .facts dt, .film .contact__list dt {
+  font-family: var(--display); font-stretch: 100%; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.film .models__note, .film .facts dt, .film .contact__list dt { font-size: 0.78rem; }
+@media (min-width: 800px) {
+  .film .hero, .film .stagecopy, .film .workshop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .film .stagecopy:nth-of-type(even) .still { order: 2; }
+  .film .model-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.skipfilm {
+  position: fixed; z-index: 45; right: var(--gutter-r); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 1rem;
+  border: 1px solid var(--line-2); border-radius: 2px; background: rgba(10, 11, 14, 0.9); color: var(--engrave); text-decoration: none;
+  transition: opacity 0.3s ease, visibility 0.3s, border-color 0.25s ease;
+}
+.skipfilm:hover { border-color: var(--coat); color: var(--engrave); }
+html[data-route]:not([data-route="home"]) .skipfilm, .film-done .skipfilm { opacity: 0; visibility: hidden; pointer-events: none; }
+html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .skipfilm { display: none; }
+
+/* ================================================================== LIVE
+   Applied only once a live tier (3D or 2D) is drawing frames. */
+.live .stage { display: block; position: fixed; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+  background: radial-gradient(60% 50% at 50% 46%, rgba(255, 236, 214, calc(var(--bloom) * 0.16)), rgba(171, 155, 255, calc(var(--bloom) * 0.05)) 45%, rgba(6, 7, 10, 0) 75%);
+}
+html.live:not([data-route="home"]) .stage { display: none; }
+.film-covered .stage { visibility: hidden; }
+.live .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.live .film .still { display: none; }
+.live .film { display: block; padding: 0; gap: 0; }
+.live .film section { position: relative; z-index: 2; }
+.live .film .hero { min-height: var(--vh); display: grid; align-content: end; padding-block: 6rem 4.5rem; grid-template-columns: minmax(0, 1fr); }
+.live .film .hero__copy { max-width: 30rem; }
+.live .film .hero__name { font-size: clamp(2.2rem, 1.2rem + 3.6vw, 4.2rem); }
+
+/* Pinned stages: one viewport each, copy low on the left. */
+.live .film .stagecopy, .live .film .workshop { min-height: var(--vh); display: block; }
+.live .film .stagecopy .cap, .live .film .models__head { position: absolute; left: 0; bottom: 4.8rem; width: min(27rem, 36vw); }
+.live .film .workshop { min-height: calc(var(--vh) * 1.4); }
+.live .film .workshop .cap { position: sticky; top: 30vh; width: min(30rem, 40vw); margin-left: auto; padding-block: 10vh 30vh; }
+.live .film .models { min-height: var(--vh); display: block; }
+.live .film .model-list { position: absolute; right: 0; bottom: 4.8rem; width: min(22rem, 30vw); gap: 0; grid-template-columns: minmax(0, 1fr); }
+.live .film .model { border-top: 1px solid var(--line); padding-block: 0.8rem; opacity: 0.35; transition: opacity 0.35s ease; }
+.live .film .model.is-on, .live .film .model:focus-within { opacity: 1; }
+.live .film .model h3 { font-size: 1.35rem; }
+.live .film .model p { font-size: 0.92rem; }
+.live .film .contact { min-height: var(--vh); display: grid; align-content: end; padding-bottom: 5rem; }
+.live .film .contact .cap { width: min(30rem, 40vw); }
+.live .film .cap, .live .film .hero__copy, .live .film .models__head, .live .film .model-list {
+  text-shadow: 0 1px 16px rgba(6, 7, 10, 0.9), 0 0 2px rgba(6, 7, 10, 0.7);
+}
+/* Desktop: a soft shade under the caption band so copy never sits on bright glass. */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .live .film .stagecopy::before, .live .film .models::before, .live .film .hero::before, .live .film .contact::before {
+    content: ""; position: absolute; z-index: 1; pointer-events: none; top: 0; bottom: 0;
+    left: calc(var(--gutter-l) * -1); width: calc(min(27rem, 36vw) + 14vw);
+    background: linear-gradient(90deg, rgba(6, 7, 10, 0.86), rgba(6, 7, 10, 0.55) 60%, rgba(6, 7, 10, 0));
+  }
+  .live .film .models::before { left: auto; right: calc(var(--gutter-r) * -1); background: linear-gradient(270deg, rgba(6, 7, 10, 0.86), rgba(6, 7, 10, 0.55) 60%, rgba(6, 7, 10, 0)); width: calc(min(22rem, 30vw) + 14vw); }
+  .live .film .stagecopy .cap, .live .film .hero__copy, .live .film .models__head, .live .film .model-list, .live .film .contact .cap { z-index: 2; position: absolute; }
+  .live .film .hero__copy { position: relative; }
+  .live .film .contact .cap { position: relative; }
+}
+
+/* Engraved ring of text around the front of the lens. The layer is masked
+   under the header band, so the ring never runs into the navigation. */
+.ring-layer { position: absolute; inset: 0;
+  -webkit-mask-image: linear-gradient(transparent calc(var(--safe-t) + var(--head) + 0.25rem), #000 calc(var(--safe-t) + var(--head) + 3.5rem));
+  mask-image: linear-gradient(transparent calc(var(--safe-t) + var(--head) + 0.25rem), #000 calc(var(--safe-t) + var(--head) + 3.5rem)); }
+.ring-text { position: absolute; left: 50%; top: 50%; width: var(--ring, 60vmin); height: var(--ring, 60vmin);
+  transform: translate(-50%, -50%) rotate(var(--ring-rot, 0deg)); opacity: var(--ring-o, 1); overflow: visible; }
+.ring-text text { fill: var(--engrave); font-family: var(--display); font-stretch: 125%; font-size: 26px; letter-spacing: 9px; opacity: 0.8; }
+.stage__readout {
+  position: absolute; left: var(--gutter-l); top: 7.5rem;
+  font-family: var(--display); font-stretch: 125%; font-size: clamp(2rem, 1rem + 3vw, 3.4rem); font-weight: 300;
+  color: var(--engrave); text-align: left; opacity: 0; transition: opacity 0.3s ease; white-space: pre-line;
+}
+.stage__readout small { display: block; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--amber); font-weight: 500; }
+.stage__readout.is-on { opacity: 1; }
+
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .live .film .stagecopy .cap, .live .film .models__head { width: auto; right: 0; bottom: 5.2rem; }
+  .live .film .stagecopy::after, .live .film .models::after, .live .film .hero::after, .live .film .contact::after {
+    content: ""; position: absolute; z-index: 1; pointer-events: none; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 55%;
+    background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.88) 45%, var(--void));
+  }
+  .live .film .stagecopy .cap, .live .film .models__head, .live .film .hero__copy, .live .film .contact .cap, .live .film .model-list { z-index: 2; position: absolute; }
+  .live .film .hero__copy { position: relative; }
+  .live .film .contact .cap { position: relative; width: auto; }
+  .live .film .models__head { top: 4.6rem; bottom: auto; }
+  .live .film .model-list { left: 0; right: 0; width: auto; bottom: 5.2rem; height: 8.5rem; }
+  .live .film .model { position: absolute; inset: 0 0 auto; opacity: 0; border: 0; }
+  .live .film .model.is-on, .live .film .model:focus-within { opacity: 1; }
+  .live .film .model-list:focus-within .model:not(:focus-within) { opacity: 0; }
+  .live .film .workshop .cap { width: auto; margin: 0; position: relative; top: auto; padding-block: 55vh 20vh; }
+  .live .film .workshop::after { content: ""; position: absolute; z-index: 1; inset: 40vh calc(var(--gutter-r) * -1) 0 calc(var(--gutter-l) * -1); background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.9) 20vh); pointer-events: none; }
+  .live .film .workshop .cap { z-index: 2; }
+  .stage__readout { top: 5rem; font-size: 2rem; }
+  .ring-text text { font-size: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

@@ -9,6 +9,7 @@ const args = process.argv.slice(2);
 const [out, size] = args;
 const flag = (n) => args.includes('--' + n);
 const opt = (n, d) => (args.find((a) => a.startsWith(`--${n}=`)) || `--${n}=${d}`).split('=').slice(1).join('=');
+const FILE = opt('file', 'kessel/index.html');
 const [w, h] = size.split('x').map(Number);
 const narrow = w < 800;
 mkdirSync(out, { recursive: true });
@@ -20,7 +21,7 @@ page.on('console', (m) => { if (m.type() === 'error') logs.push('console: ' + m.
 page.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
 const q = new URLSearchParams(opt('query', ''));
 if (flag('gl')) q.set('gl', 'force');
-const base = pathToFileURL(resolve('kessel/index.html')).href + (q.toString() ? '?' + q : '');
+const base = pathToFileURL(resolve(FILE)).href + (q.toString() ? '?' + q : '');
 
 const settle = async () => {
   await page.waitForTimeout(500);
