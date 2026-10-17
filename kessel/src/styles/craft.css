@@ -1,20 +1,302 @@
 /* ==================================================================== CRAFT */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(4.5rem, 10vw, 9rem); }
-.step { display: grid; gap: 2rem; align-items: center; }
-.step__copy { display: grid; gap: 1.2rem; align-content: start; }
-.step__head, .step__text { display: grid; gap: 1rem; align-content: start; }
-.step__text p { color: var(--dim); }
-.step__no { font-family: var(--display); font-stretch: 125%; font-weight: 200; font-size: clamp(4.2rem, 2.4rem + 6vw, 8.5rem); line-height: 0.9; color: var(--coat); letter-spacing: -0.01em; }
-@supports (-webkit-text-stroke: 1px) {
-  .step__no { color: transparent; -webkit-text-stroke: 1px rgba(171, 155, 255, 0.85); }
-}
-.step h2 { font-size: clamp(2rem, 1.3rem + 2.6vw, 3.6rem); }
-.endcta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: clamp(4rem, 9vw, 7rem); max-width: none; }
-@media (min-width: 800px) {
-  .step { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
-  .step:nth-child(even):not(.step--wide) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-  .step:nth-child(even):not(.step--wide) .step__img { order: 2; }
-  .step--wide { grid-template-columns: minmax(0, 1fr); }
-  .step--wide .step__copy { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+/* How a lens is made: five steps set like frames of the film, each with
+   its own layout. Every rule is scoped to #craft. A step breaks out of the
+   body padding with negative gutters and pads back in, so its .wrap lines
+   up with the page head while its images reach the viewport edges. */
+#craft {
+  --c-bleed: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  --c-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --c-gap: clamp(6.5rem, 13vw, 12rem);
 }
 
+/* ------------------------------------------------------------ page head */
+#craft .craft-head {
+  position: relative; z-index: 2; display: grid; gap: 1.3rem; align-content: start;
+  padding-top: calc(var(--safe-t) + var(--head) + clamp(2.2rem, 6vw, 5.5rem));
+  padding-bottom: clamp(2rem, 3vw, 2.5rem);
+}
+#craft .craft-head h1 {
+  font-size: clamp(3.1rem, 0.6rem + 9vw, 9.8rem); font-stretch: 125%; font-weight: 250;
+  line-height: 0.9; letter-spacing: -0.012em; max-width: none;
+  text-shadow: 0 0 2.5rem rgba(6, 7, 10, 0.55);
+}
+#craft .craft-head__side { display: grid; gap: clamp(2rem, 3vw, 2.8rem); align-content: start; margin-top: 0.6rem; }
+#craft .craft-head .lead { color: var(--dim); font-style: italic; max-width: 38ch; }
+
+/* The index of the five stages, set like the distance scale on the barrel:
+   a hairline, a tick for each stage and minor ticks between them. */
+#craft .craft-index ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line-2); }
+#craft .craft-index li {
+  background:
+    linear-gradient(var(--line-2), var(--line-2)) 25% 0 / 1px 5px no-repeat,
+    linear-gradient(var(--line-2), var(--line-2)) 50% 0 / 1px 8px no-repeat,
+    linear-gradient(var(--line-2), var(--line-2)) 75% 0 / 1px 5px no-repeat;
+}
+#craft .craft-index a { position: relative; display: grid; gap: 0.45rem; align-content: start; min-height: 44px; padding: 1.15rem 0.4rem 0.5rem 0; text-decoration: none; color: var(--engrave); }
+#craft .craft-index a::before { content: ""; position: absolute; left: 0; top: -1px; width: 1px; height: 0.75rem; background: var(--amber); transition: height 0.3s ease, background-color 0.3s ease; }
+#craft .craft-index__no { font-family: var(--display); font-stretch: 125%; font-weight: 300; font-size: clamp(1.35rem, 1rem + 1vw, 2.1rem); line-height: 1; transition: color 0.3s ease, transform 0.3s ease; }
+#craft .craft-index__name { position: relative; justify-self: start; font-family: var(--display); font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding-bottom: 0.3rem; transition: color 0.3s ease; }
+@media (max-width: 559px) { #craft .craft-index__name { font-size: 0.6rem; letter-spacing: 0.08em; } }
+#craft .craft-index__name::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--coat); transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease; }
+#craft .craft-index a:focus-visible { outline-offset: 4px; }
+#craft .craft-index a:focus-visible::before { height: 1.6rem; background: var(--coat); }
+#craft .craft-index a:focus-visible .craft-index__no { color: var(--coat); transform: translateX(3px); }
+#craft .craft-index a:focus-visible .craft-index__name { color: var(--engrave); }
+#craft .craft-index a:focus-visible .craft-index__name::after { transform: none; }
+@media (hover: hover) {
+  #craft .craft-index a:hover::before { height: 1.6rem; background: var(--coat); }
+  #craft .craft-index a:hover .craft-index__no { color: var(--coat); transform: translateX(3px); }
+  #craft .craft-index a:hover .craft-index__name { color: var(--engrave); }
+  #craft .craft-index a:hover .craft-index__name::after { transform: none; }
+}
+
+/* ---------------------------------------------------------- shared step */
+#craft .csteps { list-style: none; margin: 0; padding: 0; display: grid; }
+#craft .cstep { position: relative; margin-inline: var(--c-bleed); padding-inline: var(--gutter-l) var(--gutter-r); }
+#craft .cstep + .cstep { margin-top: var(--c-gap); }
+#craft .cstep__fig { margin: 0; position: relative; overflow: hidden; }
+#craft .cstep__fig img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--c-ease); }
+#craft .cstep__body { position: relative; display: grid; gap: 1.1rem; align-content: start; }
+#craft .cstep__head { position: relative; z-index: 1; display: grid; gap: 1rem; align-content: start; }
+
+/* The numerals are engraved: outlined, very wide and very light. */
+#craft .cstep__no {
+  font-family: var(--display); font-stretch: 125%; font-weight: 200;
+  font-size: clamp(8.5rem, 3rem + 17vw, 21rem); line-height: 0.78; letter-spacing: -0.03em;
+  color: rgba(241, 239, 233, 0.18); max-width: none; pointer-events: none; user-select: none;
+  transition: color 0.7s ease, -webkit-text-stroke-color 0.7s ease;
+}
+@supports (-webkit-text-stroke: 1px) {
+  #craft .cstep__no { color: transparent; -webkit-text-stroke: 1.5px rgba(241, 239, 233, 0.6); }
+}
+#craft .cstep__tag { font-family: var(--display); font-stretch: 100%; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--coat); max-width: none; }
+#craft .cstep__tag span { color: var(--amber); margin-right: 0.6em; }
+#craft .cstep h2 { font-size: clamp(2.6rem, 1.2rem + 4.4vw, 5.6rem); font-stretch: 125%; font-weight: 200; line-height: 0.96; letter-spacing: -0.005em; }
+#craft .cstep__text { position: relative; z-index: 1; display: grid; gap: 1.05rem; align-content: start; }
+#craft .cstep__text p { color: var(--dim); max-width: 56ch; font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem); line-height: 1.62; }
+@media (hover: hover) {
+  #craft .cstep:hover .cstep__no { color: rgba(240, 166, 74, 0.07); -webkit-text-stroke-color: var(--amber); }
+}
+
+/* ------------------------------------------------------ 01 · the glass */
+/* A large circle of glass bleeding off the left edge; on wide screens it
+   rises behind the page title, which crosses it. */
+#craft .cstep--glass { --d: min(118vw, 40rem); overflow-x: clip; }
+#craft .cstep--glass .cstep__fig {
+  width: var(--d); aspect-ratio: 1; border-radius: 50%;
+  margin-left: calc(var(--gutter-l) * -1 - var(--d) * 0.3);
+  outline: 1px solid rgba(171, 155, 255, 0.22); outline-offset: clamp(10px, 1.4vw, 22px);
+}
+#craft .cstep--glass .cstep__fig img { border-radius: 50%; transform: rotate(40deg); }
+#craft .cstep--glass .cstep__body { margin-top: calc(var(--d) * -0.3); }
+#craft .cstep--glass .cstep__no { justify-self: end; margin-right: -0.04em; }
+@media (hover: hover) {
+  #craft .cstep--glass:hover .cstep__fig img { transform: rotate(28deg) scale(1.05); }
+}
+
+/* ------------------------------------------------------- 02 · the iris */
+/* The frame opens on its own fade, so it needs less room above it. */
+#craft .cstep + .cstep--iris { margin-top: calc(var(--c-gap) * 0.6); }
+#craft .cstep--iris .cstep__frame {
+  position: relative; display: grid; align-content: end; margin-inline: var(--c-bleed);
+  padding: 0 var(--gutter-r) clamp(1.2rem, 3vw, 3rem) var(--gutter-l);
+  min-height: clamp(30rem, 132vw, 42rem); overflow: hidden;
+}
+#craft .cstep--iris .cstep__fig {
+  position: absolute; inset: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 4.4%, rgba(0, 0, 0, 0.35) 8.8%, rgba(0, 0, 0, 0.65) 13.2%, rgba(0, 0, 0, 0.90) 17.6%, #000 22%, #000 62%, rgba(0, 0, 0, 0.90) 69.4%, rgba(0, 0, 0, 0.65) 76.8%, rgba(0, 0, 0, 0.35) 84.2%, rgba(0, 0, 0, 0.10) 91.6%, transparent 99%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 4.4%, rgba(0, 0, 0, 0.35) 8.8%, rgba(0, 0, 0, 0.65) 13.2%, rgba(0, 0, 0, 0.90) 17.6%, #000 22%, #000 62%, rgba(0, 0, 0, 0.90) 69.4%, rgba(0, 0, 0, 0.65) 76.8%, rgba(0, 0, 0, 0.35) 84.2%, rgba(0, 0, 0, 0.10) 91.6%, transparent 99%);
+}
+#craft .cstep--iris .cstep__fig img { object-position: 40% 42%; transform-origin: 40% 45%; }
+#craft .cstep--iris .cstep__no { position: absolute; z-index: 1; top: 8%; right: calc(var(--gutter-r) - 0.06em); }
+#craft .cstep--iris h2 { font-size: clamp(3.8rem, 1rem + 10.5vw, 9.6rem); line-height: 0.84; letter-spacing: -0.015em; }
+#craft .cstep--iris > .cstep__text { margin-top: 1.4rem; }
+@media (hover: hover) {
+  #craft .cstep--iris:hover .cstep__fig img { transform: scale(1.07); }
+}
+
+/* --------------------------------------------- 03 · barrel and focus ring */
+/* A band across the full width; the title is set on its upper edge, the
+   copy on its lower edge, the numeral engraved in amber like the feet. */
+#craft .cstep--knurl .cstep__head { gap: 0.4rem; margin-bottom: -2.2rem; }
+#craft .cstep--knurl .cstep__name { display: grid; gap: 0.9rem; }
+#craft .cstep--knurl .cstep__no { color: rgba(240, 166, 74, 0.2); }
+@supports (-webkit-text-stroke: 1px) {
+  #craft .cstep--knurl .cstep__no { color: transparent; -webkit-text-stroke-color: rgba(240, 166, 74, 0.8); }
+}
+#craft .cstep--knurl .cstep__fig {
+  margin-inline: var(--c-bleed); height: clamp(17rem, 78vw, 40rem);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 4.4%, rgba(0, 0, 0, 0.35) 8.8%, rgba(0, 0, 0, 0.65) 13.2%, rgba(0, 0, 0, 0.90) 17.6%, #000 22%, #000 78%, rgba(0, 0, 0, 0.90) 82.4%, rgba(0, 0, 0, 0.65) 86.8%, rgba(0, 0, 0, 0.35) 91.2%, rgba(0, 0, 0, 0.10) 95.6%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 4.4%, rgba(0, 0, 0, 0.35) 8.8%, rgba(0, 0, 0, 0.65) 13.2%, rgba(0, 0, 0, 0.90) 17.6%, #000 22%, #000 78%, rgba(0, 0, 0, 0.90) 82.4%, rgba(0, 0, 0, 0.65) 86.8%, rgba(0, 0, 0, 0.35) 91.2%, rgba(0, 0, 0, 0.10) 95.6%, transparent 100%);
+}
+/* Phones: the band is 2:1 like the still, so zoom in a little to crop
+   tight on the scale and push its top numeral out from under the title. */
+#craft .cstep--knurl .cstep__fig img { object-position: 66% 50%; transform: scale(1.3); transform-origin: 60% 85%; }
+#craft .cstep--knurl > .cstep__text { margin-top: -1.5rem; }
+@media (hover: hover) {
+  /* Like turning the ring: the scale slides past the index mark. */
+  #craft .cstep--knurl:hover .cstep__fig img { transform: scale(1.1) translateY(-4%); }
+  #craft .cstep--knurl:hover .cstep__no { color: rgba(240, 166, 74, 0.1); }
+}
+
+/* ------------------------------------- 04 · bringing it together (moment) */
+/* The exploded lens at full bleed with the headline across it and each
+   part labelled with a leader line, like a drawing. On wide screens the
+   lens lies along the page; on phones it stands on its axis, front ring at
+   the top, so the parts run down the screen at a size that reads. */
+#craft .cstep--parts .cstep__stage { position: relative; display: grid; margin-inline: var(--c-bleed); padding-inline: var(--gutter-l) var(--gutter-r); overflow-x: clip; }
+#craft .cstep--parts .cstep__head { order: -1; z-index: 2; pointer-events: none; }
+#craft .cstep__line { display: block; }
+#craft .cstep--parts .cstep__title { font-size: clamp(3.3rem, 0.8rem + 9.4vw, 11.5rem); font-weight: 250; line-height: 0.86; letter-spacing: -0.015em; text-shadow: 0 0.1em 1.6rem rgba(6, 7, 10, 0.75); }
+#craft .cstep--parts .cstep__no { order: -2; justify-self: end; margin: 0 -0.04em -2.2rem 0; font-size: clamp(6rem, 2rem + 14vw, 19rem); }
+#craft .cstep--parts .cstep__fig { z-index: 1; margin-inline: var(--c-bleed); }
+#craft .cstep--parts .cstep__fig img { max-width: none; object-fit: fill; transition: transform 0.9s var(--c-ease), scale 0.9s var(--c-ease); }
+#craft .cstep--parts figcaption { position: absolute; inset: 0; padding: 0; border: 0; color: var(--engrave); font-size: 0.62rem; letter-spacing: 0.12em; line-height: 1.25; pointer-events: none; }
+#craft .cparts { list-style: none; margin: 0; padding: 0; }
+#craft .cparts li { position: absolute; display: flex; }
+#craft .cparts li::before { content: ""; flex: 1 1 auto; transition: filter 0.4s ease; }
+#craft .cparts__lab { display: block; flex: 0 0 auto; }
+#craft .cparts__no { display: block; color: var(--amber); }
+#craft .cparts__name { display: block; }
+/* Where each part's silhouette starts and ends across the lens axis, as a
+   percentage of the image height. */
+#craft .cparts li:nth-child(1) { --t: 19.6; --b: 93.8; }
+#craft .cparts li:nth-child(2) { --t: 17.5; --b: 90; }
+#craft .cparts li:nth-child(3) { --t: 18; --b: 82; }
+#craft .cparts li:nth-child(4) { --t: 19; --b: 76; }
+#craft .cparts li:nth-child(5) { --t: 22; --b: 69; }
+#craft .cstep--parts > .cstep__text { margin-top: 2.2rem; }
+@media (hover: hover) {
+  #craft .cstep--parts .cstep__stage:hover .cstep__fig img { scale: 1.03; }
+  #craft .cstep--parts .cstep__stage:hover .cparts li::before { filter: hue-rotate(200deg) saturate(1.4); }
+}
+
+@media (max-width: 959px) {
+  /* The still turned a quarter clockwise: its width runs down the page.
+     --wb and --hb are the turned box; --bx/--by place it so the parts
+     reach the left edge and the empty margins fall outside the frame. */
+  #craft .cstep--parts .cstep__fig {
+    --wb: min(86vw, 26rem); --hb: calc(var(--wb) * 2.1818);
+    --bx: calc(var(--wb) * -0.06); --by: calc(var(--hb) * -0.06);
+    height: calc(var(--hb) * 0.86); margin-top: -0.6rem;
+  }
+  #craft .cstep--parts .cstep__fig img {
+    position: absolute; width: var(--hb); height: var(--wb);
+    left: calc(var(--bx) + (var(--wb) - var(--hb)) / 2); top: calc(var(--by) + (var(--hb) - var(--wb)) / 2);
+    transform: rotate(90deg);
+  }
+  #craft .cparts li {
+    left: calc(var(--bx) + (100 - var(--t)) * var(--wb) / 100 + 0.3rem); right: var(--gutter-r);
+    top: calc(var(--by) + var(--x) * var(--hb) / 100);
+    align-items: center; gap: 0.5rem; transform: translateY(-50%);
+  }
+  #craft .cparts li::before {
+    min-width: 0.8rem; height: 5px;
+    background: radial-gradient(circle, var(--amber) 0 2px, transparent 2.5px) 0 50% / 5px 5px no-repeat, linear-gradient(to left, rgba(240, 166, 74, 0.85), rgba(240, 166, 74, 0.3)) 0 50% / 100% 1px no-repeat;
+  }
+  #craft .cparts__lab { width: 4.9rem; }
+}
+
+@media (min-width: 960px) {
+  #craft .cstep--parts .cstep__no { position: absolute; z-index: 0; top: 0; right: calc(var(--gutter-r) + clamp(0px, 3vw - 8px, 40px)); margin: 0; }
+  #craft .cstep--parts .cstep__fig {
+    --k: 1.14; --o: -6%; --pb: 4.5rem; --imgh: calc(var(--k) * 45.83cqw);
+    container-type: inline-size; padding-bottom: var(--pb); margin-top: clamp(-12rem, -10.5vw, -6rem);
+  }
+  #craft .cstep--parts .cstep__fig img { width: calc(var(--k) * 100%); height: auto; margin-left: var(--o); }
+  #craft .cparts li {
+    left: calc(var(--x) * var(--k) * 1% + var(--o)); bottom: 0; width: 0;
+    height: calc(var(--pb) + (100 - var(--b)) * var(--imgh) / 100 - 0.35rem);
+    flex-direction: column; align-items: center; justify-content: flex-end; gap: 0.35rem;
+    text-align: center; font-size: 0.7rem;
+  }
+  #craft .cparts li::before {
+    align-self: center; min-height: 0.6rem; width: 5px;
+    background: radial-gradient(circle, var(--amber) 0 2px, transparent 2.5px) 50% 0 / 5px 5px no-repeat, linear-gradient(rgba(240, 166, 74, 0.85), rgba(240, 166, 74, 0.25)) 50% 0 / 1px 100% no-repeat;
+  }
+  #craft .cparts__lab { width: max-content; white-space: nowrap; }
+  #craft .cparts li:first-child { align-items: flex-start; text-align: left; }
+  #craft .cparts li:first-child .cparts__lab { margin-left: -0.5rem; }
+  #craft .cparts li:last-child { align-items: flex-end; text-align: right; }
+  #craft .cparts li:last-child .cparts__lab { margin-right: -0.5rem; }
+  #craft .cstep--parts > .cstep__text { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.5rem, 3vw, 3rem); margin-top: 3rem; }
+  #craft .cstep--parts > .cstep__text p:first-child { grid-column: 1 / span 5; }
+  #craft .cstep--parts > .cstep__text p:last-child { grid-column: 7 / span 5; }
+}
+
+/* -------------------------------------------- 05 · signed on the barrel */
+#craft .cstep--sign .cstep__fig {
+  margin-inline: var(--c-bleed); aspect-ratio: 1;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 3.6%, rgba(0, 0, 0, 0.35) 7.2%, rgba(0, 0, 0, 0.65) 10.8%, rgba(0, 0, 0, 0.90) 14.4%, #000 18%, #000 62%, rgba(0, 0, 0, 0.90) 69%, rgba(0, 0, 0, 0.65) 76%, rgba(0, 0, 0, 0.35) 83%, rgba(0, 0, 0, 0.10) 90%, transparent 97%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 3.6%, rgba(0, 0, 0, 0.35) 7.2%, rgba(0, 0, 0, 0.65) 10.8%, rgba(0, 0, 0, 0.90) 14.4%, #000 18%, #000 62%, rgba(0, 0, 0, 0.90) 69%, rgba(0, 0, 0, 0.65) 76%, rgba(0, 0, 0, 0.35) 83%, rgba(0, 0, 0, 0.10) 90%, transparent 97%);
+}
+#craft .cstep--sign .cstep__fig img { object-position: 50% 50%; transform-origin: 50% 55%; }
+#craft .cstep--sign .cstep__in { position: relative; z-index: 1; margin-top: -6.5rem; }
+@media (hover: hover) {
+  #craft .cstep--sign:hover .cstep__fig img { transform: scale(1.05); }
+}
+
+/* -------------------------------------------------------------- the end */
+#craft .craft-end { display: grid; margin-top: clamp(4.5rem, 9vw, 8rem); }
+#craft .craft-end a { position: relative; display: grid; gap: 0.5rem; padding: 1.4rem 0 1.5rem; min-height: 44px; border-top: 1px solid var(--line-2); text-decoration: none; color: var(--engrave); }
+#craft .craft-end a:last-child { border-bottom: 1px solid var(--line-2); }
+#craft .craft-end a::after { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--coat); transform: scaleX(0); transform-origin: left; transition: transform 0.5s var(--c-ease); }
+#craft .craft-end__k { font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--coat); }
+#craft .craft-end__t { font-family: var(--display); font-stretch: 125%; font-weight: 200; font-size: clamp(1.9rem, 1rem + 3.2vw, 4rem); line-height: 1.02; transition: color 0.3s ease; }
+#craft .craft-end__nw { white-space: nowrap; }
+#craft .craft-end__go { display: inline-block; color: var(--amber); transition: transform 0.35s var(--c-ease); }
+#craft .craft-end a:focus-visible::after { transform: none; }
+#craft .craft-end a:focus-visible .craft-end__t { color: var(--coat); }
+#craft .craft-end a:focus-visible .craft-end__go { transform: translateX(0.4em); }
+@media (hover: hover) {
+  #craft .craft-end a:hover::after { transform: none; }
+  #craft .craft-end a:hover .craft-end__t { color: var(--coat); }
+  #craft .craft-end a:hover .craft-end__go { transform: translateX(0.4em); }
+}
+
+/* ============================================================ wide screens */
+@media (min-width: 960px) {
+  #craft .craft-head { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 0; }
+  #craft .craft-head > .eyebrow, #craft .craft-head > h1 { grid-column: 1 / -1; }
+  #craft .craft-head__side { grid-column: 7 / -1; }
+
+  /* 01: the circle is placed against the step's top edge and lifted, so it
+     rises behind the title; the step keeps room for the rest of it. */
+  #craft .cstep--glass { --d: min(72vw, 66rem); min-height: calc(var(--d) * 0.54); }
+  #craft .cstep--glass .cstep__fig { position: absolute; z-index: 0; left: calc(var(--d) * -0.34); top: calc(var(--d) * -0.46); margin: 0; }
+  #craft .cstep--glass .cstep__in { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  #craft .cstep--glass .cstep__body { grid-column: 7 / -1; margin-top: 0; padding-top: clamp(1rem, 3vw, 3rem); }
+  #craft .cstep--glass .cstep__no { justify-self: start; margin-left: -0.32em; }
+
+  /* 02: a whole screen of iris. */
+  #craft .cstep--iris .cstep__frame { min-height: clamp(36rem, 100svh, 62rem); padding-bottom: clamp(3rem, 7vh, 5rem); }
+  #craft .cstep--iris .cstep__fig img { object-position: 42% 50%; }
+  #craft .cstep--iris .cstep__no { top: 13%; right: calc(var(--gutter-r) + max(0px, (100% - 1320px) / 2) + clamp(0px, 3vw - 8px, 40px)); }
+  #craft .cstep--iris > .cstep__text { grid-template-columns: repeat(12, minmax(0, 1fr)); margin-top: clamp(-10rem, -9vw, -5rem); }
+  #craft .cstep--iris > .cstep__text p { grid-column: 7 / span 5; }
+
+  /* 03 */
+  #craft .cstep--knurl .cstep__head { grid-template-columns: auto minmax(0, 1fr); align-items: end; column-gap: clamp(1.5rem, 3vw, 3rem); margin-bottom: clamp(-8rem, -7vw, -4rem); }
+  #craft .cstep--knurl .cstep__name { padding-bottom: clamp(3.5rem, 6vw, 6rem); }
+  #craft .cstep--knurl .cstep__fig { height: clamp(24rem, 42vw, 40rem); }
+  #craft .cstep--knurl .cstep__fig img { object-position: 50% 92%; transform: none; }
+  #craft .cstep--knurl > .cstep__text { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.5rem, 3vw, 3rem); margin-top: clamp(-3rem, -2.4vw, -1.5rem); }
+  #craft .cstep--knurl > .cstep__text p:first-child { grid-column: 1 / span 5; }
+  #craft .cstep--knurl > .cstep__text p:last-child { grid-column: 7 / span 5; }
+
+  /* 05: the signature large on the right, the copy over its faded edge. */
+  #craft .cstep--sign .cstep__fig {
+    position: absolute; top: 0; right: 0; width: 84%; aspect-ratio: 16 / 10; margin: 0;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.10) 8%, rgba(0, 0, 0, 0.35) 16%, rgba(0, 0, 0, 0.65) 24%, rgba(0, 0, 0, 0.90) 32%, #000 40%), linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 3.6%, rgba(0, 0, 0, 0.35) 7.2%, rgba(0, 0, 0, 0.65) 10.8%, rgba(0, 0, 0, 0.90) 14.4%, #000 18%, #000 66%, rgba(0, 0, 0, 0.90) 72.8%, rgba(0, 0, 0, 0.65) 79.6%, rgba(0, 0, 0, 0.35) 86.4%, rgba(0, 0, 0, 0.10) 93.2%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.10) 8%, rgba(0, 0, 0, 0.35) 16%, rgba(0, 0, 0, 0.65) 24%, rgba(0, 0, 0, 0.90) 32%, #000 40%), linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.10) 3.6%, rgba(0, 0, 0, 0.35) 7.2%, rgba(0, 0, 0, 0.65) 10.8%, rgba(0, 0, 0, 0.90) 14.4%, #000 18%, #000 66%, rgba(0, 0, 0, 0.90) 72.8%, rgba(0, 0, 0, 0.65) 79.6%, rgba(0, 0, 0, 0.35) 86.4%, rgba(0, 0, 0, 0.10) 93.2%, transparent 100%);
+    mask-composite: intersect;
+  }
+  #craft .cstep--sign { min-height: calc(84vw * 0.625); }
+  #craft .cstep--sign .cstep__in { margin-top: 0; padding-top: 14vw; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  #craft .cstep--sign .cstep__body { grid-column: 1 / span 5; }
+  #craft .cstep--sign .cstep__text p { max-width: 42ch; }
+
+  #craft .craft-end { grid-template-columns: 1fr 1fr; column-gap: clamp(1.5rem, 3vw, 3rem); }
+  #craft .craft-end a, #craft .craft-end a:last-child { border-bottom: 1px solid var(--line-2); }
+}

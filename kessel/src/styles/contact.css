@@ -1,11 +1,263 @@
 /* ================================================================== CONTACT */
-.ct { display: grid; gap: 3rem; align-items: start; }
-.ct__main { display: grid; gap: clamp(3rem, 6vw, 4.5rem); }
-.ct__help { display: grid; gap: 1rem; }
-.ct__help ul { margin: 0; padding: 0; list-style: none; display: grid; border-top: 1px solid var(--line); }
-.ct__help li { padding: 0.85rem 0 0.85rem 1.6rem; border-bottom: 1px solid var(--line); color: var(--dim); position: relative; }
-.ct__help li::before { content: ""; position: absolute; left: 0; top: 1.45rem; width: 0.7rem; height: 1px; background: var(--coat); }
+/* Email and phone, no form. Three frames, each its own layout:
+   1. the stage: the coated front element at full bleed, the email address
+      set enormous across it (the moment);
+   2. the studio: the signed rear barrel bleeding off the left edge, the
+      phone as a readout and the city crossing the image's edge;
+   3. what helps us answer, set along a hairline like the distance scale.
+   Every rule is scoped to #contact. Frames break out of the body padding
+   with negative gutters and pad back in, so their text lines up with .wrap. */
+#contact {
+  --ct-bleed: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  --ct-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+#contact figure { margin: 0; }
+#contact dl { margin-block: 0; }
+#contact dd { margin: 0; }
+
+/* ---------------------------------------------------------------- stage */
+#contact .ct-stage {
+  position: relative; isolation: isolate; overflow: clip;
+  margin-inline: var(--ct-bleed); padding-inline: var(--gutter-l) var(--gutter-r);
+  min-height: var(--vh); display: flex; flex-direction: column;
+}
+#contact .ct-stage__img {
+  position: absolute; inset: 0; z-index: -1; overflow: clip;
+  -webkit-mask-image: linear-gradient(to bottom, #000 56%, transparent 99%);
+  mask-image: linear-gradient(to bottom, #000 56%, transparent 99%);
+}
+#contact .ct-stage__img img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%;
+  transform-origin: 55.5% 45%; filter: brightness(1.16) contrast(1.06) saturate(1.15);
+  transition: transform 0.9s var(--ct-ease), filter 0.9s var(--ct-ease);
+}
+/* Shade under the copy so the headline reads on the glass. */
+#contact .ct-stage__img::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(6, 7, 10, 0.78) 0%, rgba(6, 7, 10, 0.35) 38%, rgba(6, 7, 10, 0) 62%);
+}
+/* Phones: the front element as a circle, larger than the screen, its ring
+   cropped by the right edge; the headline sits on the glass. */
+@media (max-width: 799px) {
+  #contact .ct-stage__img img {
+    inset: auto; top: calc(var(--safe-t) + var(--head) + 5.5rem); right: -50vw;
+    width: 156vw; max-width: none; height: auto; aspect-ratio: 1;
+    -webkit-mask-image: radial-gradient(closest-side circle at 50% 50%, #000 90%, transparent 100%);
+    mask-image: radial-gradient(closest-side circle at 50% 50%, #000 90%, transparent 100%);
+  }
+}
+/* Wide: the whole front element, its ring readable as a circle, set to the
+   right and cropped by the top and right edges of the viewport. */
 @media (min-width: 800px) {
-  .ct { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
+  #contact .ct-stage__img img {
+    inset: auto; top: calc(var(--safe-t) + var(--head) - min(13vw, 21vh)); right: max(-15vw, -24vh);
+    width: min(80vw, 128vh); height: auto; aspect-ratio: 1;
+    -webkit-mask-image: radial-gradient(closest-side circle at 50% 50%, #000 88%, transparent 100%);
+    mask-image: radial-gradient(closest-side circle at 50% 50%, #000 88%, transparent 100%);
+  }
+  #contact .ct-stage__img::after { background: linear-gradient(95deg, rgba(6, 7, 10, 0.7) 0%, rgba(6, 7, 10, 0.25) 34%, rgba(6, 7, 10, 0) 55%); }
+}
+#contact .ct-stage__in {
+  flex: 1; display: grid; align-content: space-between; gap: clamp(3rem, 8vh, 6rem);
+  padding-top: calc(var(--safe-t) + var(--head) + clamp(2.2rem, 7vh, 5rem));
+  padding-bottom: clamp(2.5rem, 7vh, 4.5rem);
+}
+#contact .ct-head { display: grid; gap: 1.1rem; align-content: start; }
+#contact .ct-head h1 {
+  font-size: clamp(2.6rem, 1.1rem + 4.6vw, 5.8rem); font-weight: 200; font-stretch: 122%;
+  line-height: 0.94; letter-spacing: -0.01em; max-width: 11ch;
+  text-shadow: 0 0 2rem rgba(6, 7, 10, 0.6);
+}
+#contact .ct-head .lead { color: var(--dim); font-style: italic; max-width: 34ch; text-shadow: 0 0 1.2rem rgba(6, 7, 10, 0.9); }
+
+/* The address: one line filling the frame; under 560px of width it breaks
+   once, after the @, and each half fills the line. */
+#contact .ct-mail { container-type: inline-size; display: grid; gap: clamp(0.6rem, 1.4vw, 1rem); }
+#contact .ct-mail dt { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--coat); }
+#contact .ct-mail dd { display: grid; justify-items: start; gap: clamp(1.1rem, 2vw, 1.6rem); }
+#contact .ct-mail__link {
+  position: relative; display: inline-block; color: var(--engrave); text-decoration: none;
+  font-family: var(--display); font-weight: 200; font-stretch: 112%; letter-spacing: -0.02em;
+  font-size: 8.8cqi; line-height: 0.98; overflow-wrap: normal; word-break: keep-all; hyphens: none;
+  padding-bottom: 0.08em; text-shadow: 0 0 2.5rem rgba(6, 7, 10, 0.55);
+  transition: color 0.4s ease;
+}
+@container (max-width: 559px) { #contact .ct-mail__link { font-size: 13.3cqi; line-height: 1; } }
+#contact .ct-mail__link::after {
+  content: ""; position: absolute; left: 0.02em; right: 0.04em; bottom: 0; height: max(2px, 0.025em);
+  background: var(--coat); transform: scaleX(0); transform-origin: left; transition: transform 0.7s var(--ct-ease);
+}
+#contact .ct-mail__link:focus-visible { outline-offset: 6px; color: #fff; }
+#contact .ct-mail__link:focus-visible::after { transform: none; }
+#contact .ct-stage:has(.ct-mail__link:focus-visible) .ct-stage__img img { transform: scale(1.05); filter: brightness(1.32) contrast(1.06) saturate(1.3); }
+@media (hover: hover) {
+  #contact .ct-mail__link:hover { color: #fff; }
+  #contact .ct-mail__link:hover::after { transform: none; }
+  /* Pointing at the address pulls the glass into focus. */
+  #contact .ct-stage:has(.ct-mail__link:hover) .ct-stage__img img { transform: scale(1.05); filter: brightness(1.32) contrast(1.06) saturate(1.3); }
+}
+#contact .copy {
+  min-height: 44px; padding: 0 1.2rem; font-size: 0.72rem; background: rgba(6, 7, 10, 0.55);
+  border-color: var(--line-2); transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+#contact .copy:focus-visible { border-color: var(--coat); background: rgba(171, 155, 255, 0.14); }
+@media (hover: hover) { #contact .copy:hover { border-color: var(--coat); background: rgba(171, 155, 255, 0.14); } }
+
+/* --------------------------------------------------------------- studio */
+#contact .ct-studio {
+  position: relative; isolation: isolate; margin-inline: var(--ct-bleed); padding-inline: var(--gutter-l) var(--gutter-r);
+  margin-top: clamp(3rem, 8vw, 7rem);
+}
+#contact .ct-studio__img { overflow: clip; }
+#contact .ct-studio__img img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.9s var(--ct-ease), object-position 0.9s var(--ct-ease);
+}
+#contact .ct-studio__in { display: grid; gap: clamp(2.5rem, 5vw, 4rem); }
+#contact .ct-studio dt { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--coat); margin-bottom: 0.9rem; }
+#contact .ct-phone { container-type: inline-size; }
+#contact .ct-phone__link {
+  display: inline-grid; justify-items: start; gap: 0.9rem; color: var(--engrave); text-decoration: none;
+}
+#contact .ct-phone__link .selectable {
+  position: relative; font-family: var(--display); font-weight: 200; font-stretch: 112%; letter-spacing: -0.01em;
+  font-size: min(10.3cqi, 7rem); line-height: 1; white-space: nowrap; padding-bottom: 0.1em;
+}
+#contact .ct-phone__link .selectable::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--coat);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.7s var(--ct-ease);
+}
+#contact .ct-phone__go { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); display: inline-flex; gap: 0.5rem; min-height: 44px; align-items: center; transition: color 0.3s ease; }
+#contact .ct-phone__go span { display: inline-block; transition: transform 0.3s ease; }
+#contact .ct-phone__link:focus-visible .selectable::after { transform: none; }
+#contact .ct-phone__link:focus-visible .ct-phone__go { color: var(--coat); }
+#contact .ct-phone__link:focus-visible .ct-phone__go span { transform: translateX(5px); }
+@media (hover: hover) {
+  #contact .ct-phone__link:hover .selectable::after { transform: none; }
+  #contact .ct-phone__link:hover .ct-phone__go { color: var(--coat); }
+  #contact .ct-phone__link:hover .ct-phone__go span { transform: translateX(5px); }
+  #contact .ct-studio:hover .ct-studio__img img { transform: scale(1.04); }
+}
+#contact .ct-city { container-type: inline-size; }
+#contact .ct-city dd { display: inline-grid; gap: 0.9rem; }
+#contact .ct-city__name {
+  font-family: var(--display); font-weight: 200; font-stretch: 125%; letter-spacing: -0.02em;
+  font-size: min(17rem, 35cqi); line-height: 0.8;
+}
+#contact .ct-city__country { justify-self: end; padding-right: 0.3rem; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+
+/* Phones: the barrel on top, full width; the city rises over its fade. */
+@media (max-width: 799px) {
+  #contact .ct-studio__img { margin-inline: var(--ct-bleed); aspect-ratio: 4 / 3.4; }
+  #contact .ct-studio__img img {
+    object-position: 46% 50%;
+    -webkit-mask-image: radial-gradient(ellipse 78% 80% at 50% 56%, #000 58%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 62%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: radial-gradient(ellipse 78% 80% at 50% 56%, #000 58%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 22%, #000 62%, transparent 100%);
+    mask-composite: intersect;
+  }
+  #contact .ct-studio__in { position: relative; margin-top: -5.5rem; }
+}
+/* Wide: the barrel bleeds off the left edge. The image is placed from the
+   text column, not the viewport, so at every width the engraved PUNE sits
+   level with the city, the amber band crosses the city's P and the
+   signature stops short of it. --ct-h is the frame height, --ct-ps where
+   the city starts, --ct-f the city's size (the same sum as 35cqi of it). */
+@media (min-width: 800px) {
+  #contact .ct-studio {
+    --ct-h: min(44rem, 86vh, 60vw); --ct-gap: clamp(2.5rem, 5vw, 4rem); --ct-pad: clamp(0px, 3vw - 8px, 40px);
+    min-height: var(--ct-h); display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch;
+  }
+  #contact .ct-studio__img { position: absolute; z-index: -1; inset: 0; }
+  #contact .ct-studio__img img {
+    --ct-inner: min(1320px, 100% - var(--gutter-l) - var(--gutter-r));
+    --ct-col: calc(var(--ct-inner) - 2 * var(--ct-pad) - var(--ct-gap));
+    --ct-ps: calc(var(--gutter-l) + (100% - var(--gutter-l) - var(--gutter-r) - var(--ct-inner)) / 2 + var(--ct-pad) + var(--ct-col) * 5 / 12 + var(--ct-gap) - 6vw);
+    --ct-f: min(17rem, 0.35 * (var(--ct-col) * 7 / 12 + 6vw));
+    position: absolute; top: 0; height: var(--ct-h); width: auto; max-width: none;
+    left: calc(var(--ct-ps) + 0.36 * var(--ct-f) - 1.21 * var(--ct-h));
+    -webkit-mask-image: radial-gradient(ellipse 44% 72% at 50% 54%, #000 60%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 80%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: radial-gradient(ellipse 44% 72% at 50% 54%, #000 60%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 7%, #000 80%, transparent 100%);
+    mask-composite: intersect;
+  }
+  #contact .ct-studio__in { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--ct-gap); align-content: space-between; padding-block: clamp(3rem, 7vh, 5rem) clamp(2rem, 5vh, 3.5rem); }
+  #contact .ct-phone, #contact .ct-city { grid-column: 2; margin-left: -6vw; }
+  #contact .ct-city dt, #contact .ct-phone dt { padding-left: 6vw; }
 }
 
+/* ----------------------------------------------------------------- help */
+/* The engraved distance scale stands at the right edge; the four points
+   are set beside it like graduations, an amber tick on each. */
+#contact .ct-help {
+  position: relative; isolation: isolate; margin-inline: var(--ct-bleed); padding-inline: var(--gutter-l) var(--gutter-r);
+  margin-top: clamp(4rem, 9vw, 8rem);
+}
+#contact .ct-help__img { position: absolute; z-index: -1; inset: 0; overflow: clip; }
+#contact .ct-help__img img {
+  position: absolute; top: 0; right: 0; height: 100%; width: auto; max-width: none;
+  transition: transform 0.9s var(--ct-ease);
+}
+#contact .ct-help__in { display: grid; gap: clamp(2rem, 4vw, 3.5rem); align-content: start; }
+#contact .ct-help h2 { font-size: clamp(2.1rem, 1.2rem + 3.4vw, 4.4rem); font-weight: 200; font-stretch: 120%; line-height: 1; max-width: 9ch; text-shadow: 0 0 1.5rem rgba(6, 7, 10, 0.8); }
+#contact .ct-help__list {
+  list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+#contact .ct-help__list li {
+  position: relative; display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 0 1rem; align-items: baseline;
+  padding: 1.2rem 0 1.4rem; border-top: 1px solid var(--line-2);
+}
+#contact .ct-help__list li::before { content: ""; position: absolute; left: 0; top: -1px; width: 1px; height: 0.75rem; background: var(--amber); transition: height 0.35s ease, background-color 0.35s ease; }
+#contact .ct-help__no { font-family: var(--display); font-weight: 200; font-stretch: 118%; font-size: 2.6rem; line-height: 1; color: var(--amber); transition: color 0.35s ease, transform 0.35s ease; }
+#contact .ct-help__list p { font-size: clamp(1.15rem, 1rem + 0.5vw, 1.4rem); line-height: 1.4; color: var(--engrave); }
+@media (hover: hover) {
+  #contact .ct-help__list li:hover::before { height: 1.8rem; background: var(--coat); }
+  #contact .ct-help__list li:hover .ct-help__no { color: var(--coat); transform: translateX(4px); }
+  #contact .ct-help:hover .ct-help__img img { transform: translateY(-1.5%); }
+}
+/* Phones: the scale and its index mark stand at the right edge beside the
+   heading; the points follow on the dark below. */
+@media (max-width: 799px) {
+  /* The image is 36rem wide: its numerals stay clear of the heading on the
+     narrowest screens, and it holds to the right edge on wider ones. */
+  #contact .ct-help__img { bottom: auto; height: 22.5rem; }
+  #contact .ct-help__img img {
+    right: auto; left: max(15.5rem - 22.7rem, 100% - 31rem);
+    -webkit-mask-image: linear-gradient(to right, transparent 40%, #000 66%), linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 40%, #000 66%), linear-gradient(to bottom, transparent 0, #000 14%, #000 62%, transparent 100%);
+    mask-composite: intersect;
+  }
+  #contact .ct-help__in { padding-top: 6.5rem; }
+  #contact .ct-help__list { margin-top: 4rem; }
+}
+/* Wide: the scale fills the right of the frame, cropped by the right edge;
+   heading and points stand in the clear space to its left. */
+@media (min-width: 800px) {
+  #contact .ct-help {
+    --ct-gap: clamp(2.5rem, 5vw, 4rem); --ct-pad: clamp(0px, 3vw - 8px, 40px);
+    min-height: min(46rem, 92vh); display: grid; grid-template-columns: minmax(0, 1fr);
+  }
+  /* Sized from the space the points leave: the knurled grip starts past
+     the end of the list, the index mark stays inside the right edge and the
+     outer knurl is cropped by it. */
+  #contact .ct-help__img img {
+    --ct-inner: min(1320px, 100% - var(--gutter-l) - var(--gutter-r));
+    --ct-end: calc(var(--gutter-l) + (100% - var(--gutter-l) - var(--gutter-r) - var(--ct-inner)) / 2 + var(--ct-pad) + min(40rem, (var(--ct-inner) - 2 * var(--ct-pad) - var(--ct-gap)) * 7 / 12));
+    --ct-w: min(1.6 * min(46rem, 92vh), (100% - var(--ct-end) - 1rem) / 0.49);
+    right: auto; left: calc(100% - 0.87 * var(--ct-w)); width: var(--ct-w); height: auto; top: 50%; translate: 0 -50%;
+    -webkit-mask-image: linear-gradient(to right, transparent 18%, #000 46%), linear-gradient(to bottom, transparent 0, #000 17%, #000 82%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 18%, #000 46%), linear-gradient(to bottom, transparent 0, #000 17%, #000 82%, transparent 100%);
+    mask-composite: intersect;
+  }
+  #contact .ct-help__in { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--ct-gap); padding-block: clamp(3rem, 8vh, 5.5rem); }
+  #contact .ct-help h2, #contact .ct-help__list { grid-column: 1; }
+  #contact .ct-help__list { max-width: 40rem; }
+  #contact .ct-help__list p { font-size: clamp(1.15rem, 0.9rem + 0.4vw, 1.3rem); }
+  #contact .ct-help__list li { grid-template-columns: clamp(5rem, 3rem + 3vw, 7rem) minmax(0, 1fr); padding: 1.3rem 0 1.5rem; }
+  /* Each graduation runs on toward the scale. */
+  #contact .ct-help__list li::after { content: ""; position: absolute; left: 100%; top: -1px; width: clamp(4rem, 14vw, 16rem); height: 1px; background: linear-gradient(to right, var(--line-2), transparent); }
+  #contact .ct-help__no { font-size: clamp(3rem, 1.6rem + 2.6vw, 4.6rem); line-height: 0.9; }
+}

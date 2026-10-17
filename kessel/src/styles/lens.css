@@ -1,36 +1,284 @@
-/* ============================================================ LENS DETAIL */
-.lens { display: grid; gap: clamp(3rem, 7vw, 6rem); padding-top: calc(var(--safe-t) + var(--head) + 1.5rem); }
-.crumbs { display: flex; gap: 0.7rem; color: var(--dim); align-items: center; }
-.crumbs a { text-decoration: none; color: var(--engrave); min-height: 44px; display: inline-flex; align-items: center; }
-.crumbs a:hover { color: var(--coat); }
-.lens__top { display: grid; gap: 2.5rem; align-items: center; }
-.lens__img { border-color: var(--line); }
-.lens__img::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--band); }
-.lens__copy { display: grid; gap: 1.4rem; justify-items: start; align-content: center; }
-.lens__copy .eyebrow { display: flex; align-items: center; gap: 0.7rem; }
-.lens__copy h1 { font-size: clamp(3.4rem, 1.6rem + 7vw, 8rem); font-weight: 300; font-stretch: 125%; letter-spacing: 0; }
-.lens__line { font-style: italic; font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem); line-height: 1.35; max-width: 24ch; }
-.enquire { width: 100%; max-width: 30rem; }
-.enquire > summary { list-style: none; width: max-content; max-width: 100%; }
-.enquire > summary::-webkit-details-marker { display: none; }
-.enquire > summary::after { content: "+"; font-weight: 400; font-size: 1.1rem; line-height: 1; }
-.enquire[open] > summary { background: transparent; color: var(--engrave); border-color: var(--coat); }
-.enquire[open] > summary::after { content: "\2212"; }
-.enquire__body { display: grid; gap: 1rem; margin-top: 1rem; padding: 1.2rem; border: 1px solid var(--line); background: var(--anodise); }
-.enquire__body > p { color: var(--dim); font-size: 1rem; }
-.lens__specs { display: grid; gap: 1.5rem; }
-.pager { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1px; background: var(--line); border-block: 1px solid var(--line); }
-.pager__link { display: grid; gap: 0.35rem; padding: 1.6rem 1rem 1.6rem 0; background: var(--void); text-decoration: none; color: var(--engrave); position: relative; }
-.pager__link--next { text-align: right; padding: 1.6rem 0 1.6rem 1rem; }
-.pager__dir { color: var(--dim); }
-.pager__name { font-family: var(--display); font-stretch: 118%; font-weight: 300; font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.8rem); line-height: 1.05; }
-.pager__role { color: var(--dim); font-size: 0.95rem; }
-.pager__link:hover { color: var(--engrave); }
-.pager__link:hover .pager__name { color: var(--band); }
-.pager__link--prev:hover .pager__dir span { transform: translateX(-4px); }
-.pager__link--next:hover .pager__dir span { transform: translateX(4px); }
-@media (min-width: 800px) {
-  .lens__top { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
-  .lens__specs { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+/* ============================================================ LENS DETAIL
+   One template, three routes (#lens-shaniwar, #lens-parvati, #lens-sinhagad).
+   The lens is the page: the shot full bleed with the name set edge to edge
+   behind it (an outline of the name crosses the barrel), a mosaic of tight
+   crops, the key figures as the film's giant readouts beside the table,
+   then the next lens. Every rule is scoped to .route--lens. */
+.route--lens {
+  --lz-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --lz-pl: calc(var(--gutter-l) + clamp(0px, 3vw - 8px, 40px));
+  --lz-pr: calc(var(--gutter-r) + clamp(0px, 3vw - 8px, 40px));
+}
+.route--lens.route > .lens { display: block; margin-bottom: 0; }
+.route--lens > .foot { margin-top: 0; }
+
+/* Full bleed: out of the body padding, then back in for text. */
+.route--lens .lens__hero, .route--lens .lens__detail, .route--lens .lens__specs, .route--lens .lens__pager {
+  position: relative; isolation: isolate; container-type: inline-size;
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
 }
 
+/* ------------------------------------------------------------------ hero */
+.route--lens .lens__hero {
+  /* The name is sized to run edge to edge; --em is its width in em. */
+  --fs: min(calc((100cqi - var(--lz-pl) - var(--lz-pr)) / var(--em) * 0.98), calc(var(--vh) * 0.42));
+  --shot-w: 172cqi;   /* the shot, wider than the screen on phones */
+  --shot-x: -5cqi;    /* its left edge, past the screen edge */
+  --cross: 0.62;      /* where the barrel crosses the name's line box */
+  display: grid; grid-template-rows: auto auto 1fr; align-content: start;
+  overflow-x: clip;
+  padding: calc(var(--safe-t) + var(--head) + 0.25rem) 0 clamp(2rem, 4vw, 3rem);
+}
+/* No side padding on the hero itself, so 100cqi is the full width. */
+.route--lens .lens__bar, .route--lens .lens__title, .route--lens .lens__foot { padding-inline: var(--lz-pl) var(--lz-pr); }
+.route--lens .lens__bar { position: relative; z-index: 4; display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+.route--lens .lens__crumbs { display: flex; gap: 0.7rem; color: var(--dim); align-items: center; }
+.route--lens .lens__crumbs a {
+  text-decoration: none; color: var(--engrave); min-height: 44px; display: inline-flex; align-items: center;
+  background: linear-gradient(var(--coat), var(--coat)) 0 calc(50% + 0.85em) / 0 1px no-repeat;
+  transition: color 0.25s ease, background-size 0.35s var(--lz-ease);
+}
+.route--lens .lens__crumbs a:focus-visible { color: var(--coat); background-size: 100% 1px; }
+@media (hover: hover) { .route--lens .lens__crumbs a:hover { color: var(--coat); background-size: 100% 1px; } }
+.route--lens .lens__eyebrow { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.route--lens .lens__eyebrow > span:first-child { display: inline-flex; align-items: center; gap: 0.75rem; }
+.route--lens .lens__eyebrow > span:first-child::before { content: ""; width: 2rem; height: 2px; background: var(--band); }
+
+/* The name, the shot over it, and an outline of the name over the shot:
+   solid letters around the silhouette, hairline letters across the glass. */
+.route--lens .lens__title { position: relative; margin-top: clamp(0.5rem, 2vw, 1.5rem); }
+.route--lens .lens__name {
+  position: relative; z-index: 1; margin: 0 0 0 -0.035em; max-width: none;
+  font-family: var(--display); font-size: var(--fs); font-weight: 200; font-stretch: 125%;
+  line-height: 0.8; letter-spacing: 0; white-space: nowrap; text-wrap: nowrap; color: var(--engrave);
+}
+.route--lens .lens__name--ghost {
+  position: absolute; z-index: 3; top: 0; left: var(--lz-pl); pointer-events: none; user-select: none;
+  color: transparent; -webkit-text-stroke: 1px rgba(241, 239, 233, 0.55);
+}
+.route--lens .lens__shot {
+  position: absolute; z-index: 2; pointer-events: none;
+  width: var(--shot-w); left: var(--shot-x);
+  /* Top of the barrel crosses the lower part of the name. */
+  top: calc(var(--cross) * 100% - var(--shot-w) * 0.75 * var(--sil, 0.09));
+}
+.route--lens .lens__shot img {
+  width: 100%; max-width: none;
+  /* lens-3 is cut by its left edge and every shot by its bottom: fade both. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
+  mask-composite: intersect;
+}
+
+.route--lens .lens__foot {
+  position: relative; z-index: 4; display: grid; gap: 1.1rem; justify-items: start; align-content: start;
+  /* Phones: clear the part of the shot that is still bright. */
+  margin-top: calc(var(--shot-w) * 0.75 * (0.76 - var(--sil, 0.09)) - var(--fs) * 0.8 * (1 - var(--cross)));
+}
+.route--lens .lens__line {
+  font-family: var(--body); font-style: italic; font-weight: 400;
+  font-size: clamp(1.3rem, 0.85rem + 1.35vw, 2.35rem); line-height: 1.28; max-width: 24ch; text-wrap: pretty;
+}
+.route--lens .lens__foot .note { max-width: 42ch; }
+
+/* Enquire: a <details>, no form. Open, it shows the email and phone lines. */
+.route--lens .enquire { width: 100%; max-width: 30rem; }
+.route--lens .enquire > summary { list-style: none; width: max-content; max-width: 100%; }
+.route--lens .enquire > summary::-webkit-details-marker { display: none; }
+.route--lens .enquire > summary::after { content: "+"; font-weight: 400; font-size: 1.1rem; line-height: 1; transition: transform 0.3s ease; }
+.route--lens .enquire > summary:focus-visible { background: var(--band); border-color: var(--band); color: var(--void); }
+@media (hover: hover) {
+  .route--lens .enquire > summary:hover { background: var(--band); border-color: var(--band); color: var(--void); }
+  .route--lens .enquire:not([open]) > summary:hover::after { transform: rotate(90deg); }
+}
+.route--lens .enquire[open] > summary { background: transparent; color: var(--engrave); border-color: var(--band); }
+.route--lens .enquire[open] > summary::after { content: "\2212"; }
+.route--lens .enquire__body {
+  display: grid; gap: 0.9rem; margin-top: 1rem; padding: 0.4rem 0 0.2rem 1.1rem;
+  border-left: 2px solid var(--band); background: linear-gradient(90deg, rgba(6, 7, 10, 0.92), rgba(6, 7, 10, 0.6));
+}
+.route--lens .enquire__body > p { color: var(--dim); font-size: 1rem; }
+.route--lens .enquire__body .clist { border-top: 0; }
+.route--lens .enquire__body .clist > div:last-child { border-bottom: 0; }
+@media (min-width: 560px) { .route--lens .enquire__body .clist > div { grid-template-columns: 4.6rem minmax(0, 1fr); } }
+.route--lens .enquire__body .copy { min-height: 44px; }
+
+/* ---------------------------------------------------- detail mosaic */
+.route--lens .lens__detail {
+  display: grid; margin-top: clamp(1rem, 6vw, 5rem);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: 104cqi 72cqi;
+  -webkit-mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
+}
+.route--lens .lens__tile { position: relative; margin: 0; overflow: hidden; min-height: 0; }
+.route--lens .lens__tile--glass { grid-column: 1 / -1; }
+.route--lens .lens__crop { position: absolute; inset: 0; }
+.route--lens .lens__crop img {
+  width: 100%; height: 100%; max-width: none; object-fit: cover;
+  object-position: var(--lz-op, 50% 50%); transform-origin: var(--lz-to, 50% 50%);
+  transform: scale(var(--lz-z, 1.1)); transition: transform 0.9s var(--lz-ease), filter 0.6s ease;
+}
+.route--lens .lens__tile--glass { --lz-op: 50% 42%; --lz-to: 50% 40%; --lz-z: 1.08; }
+.route--lens .lens__tile--scale { --lz-op: 66% 50%; --lz-to: 64% 52%; --lz-z: 1.35; }
+.route--lens .lens__tile--mount { --lz-op: 45% 42%; --lz-to: 45% 50%; --lz-z: 1.9; }
+.route--lens .lens__tile::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0) 55%);
+}
+.route--lens .lens__tile--scale::after { background: linear-gradient(to top, rgba(6, 7, 10, 0.9), rgba(6, 7, 10, 0.35) 45%, rgba(6, 7, 10, 0) 70%); }
+@media (hover: hover) {
+  .route--lens .lens__tile:hover img { transform: scale(calc(var(--lz-z, 1.1) * 1.07)); filter: brightness(1.12); }
+}
+
+.route--lens .lens__cap {
+  position: absolute; z-index: 1; left: var(--lz-pl); right: 1rem; bottom: 12%;
+  display: grid; gap: 0.35rem; padding: 0; border: 0; color: var(--engrave);
+  font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-stretch: 100%;
+}
+.route--lens .lens__tile--scale .lens__cap, .route--lens .lens__tile--mount .lens__cap { left: 1rem; }
+.route--lens .lens__tile--scale .lens__cap { bottom: 1.2rem; }
+.route--lens .lens__tile--mount .lens__cap { bottom: 16%; left: auto; right: var(--lz-pr); justify-items: end; text-align: right; }
+.route--lens .lens__cap-k { color: var(--band); }
+.route--lens .lens__cap-v {
+  font-weight: 200; font-stretch: 125%; letter-spacing: 0; text-transform: none; line-height: 0.9;
+  font-size: clamp(2.2rem, 17cqi, 8.5rem);
+}
+.route--lens .lens__tile--scale .lens__cap-v, .route--lens .lens__tile--mount .lens__cap-v { font-size: clamp(1.9rem, 9cqi, 5.5rem); }
+.route--lens .lens__cap-d { color: var(--dim); font-family: var(--body); font-style: italic; text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+.route--lens .lens__unit { font-size: 0.3em; font-weight: 300; font-stretch: 110%; letter-spacing: 0.08em; margin-left: 0.3em; color: var(--dim); }
+
+/* ---------------------------------------------------- specifications */
+.route--lens .lens__specs {
+  display: grid; gap: 2.5rem; grid-template-columns: minmax(0, 1fr);
+  padding: clamp(4rem, 9vw, 8rem) var(--lz-pr) clamp(4rem, 8vw, 7rem) var(--lz-pl);
+}
+.route--lens .lens__specs > * { width: 100%; max-width: 1320px; margin-inline: auto; }
+.route--lens .lens__specs .lens__specs-h { display: flex; align-items: center; gap: 0.75rem; color: var(--coat); }
+.route--lens .lens__key { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.2rem 1.5rem; align-content: start; }
+.route--lens .lens__read { display: grid; gap: 0.6rem; align-content: start; border-top: 1px solid var(--line-2); padding-top: 0.9rem; }
+.route--lens .lens__read--main { grid-column: 1 / -1; border-top: 0; padding-top: 0; }
+.route--lens .lens__read dt {
+  display: flex; align-items: center; gap: 0.7rem; color: var(--dim);
+  font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.route--lens .lens__read--main dt { color: var(--engrave); }
+.route--lens .lens__read--main dt::before { content: ""; width: 2.4rem; height: 2px; background: var(--band); }
+.route--lens .lens__read dd {
+  margin: 0; font-family: var(--display); font-weight: 200; font-stretch: 125%; line-height: 0.88; letter-spacing: -0.01em;
+  font-size: clamp(2.6rem, 12cqi, 7rem); white-space: nowrap;
+}
+.route--lens .lens__read--main dd { font-size: clamp(7rem, 44cqi, 22rem); margin-left: -0.06em; line-height: 0.8; }
+.route--lens .lens__read--main .lens__unit { font-size: 0.2em; color: var(--band); vertical-align: 0.25em; }
+/* Under the focal length, a run of engraved ticks with the index mark in
+   the lens's band, like the distance scale on the barrel. */
+.route--lens .lens__read--main::after {
+  content: ""; height: 1.1rem; margin-top: 0.8rem;
+  background:
+    linear-gradient(var(--band), var(--band)) 0 0 / 3px 100% no-repeat,
+    repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 4.5rem) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 0.9rem) 0 100% / 100% 45% no-repeat;
+}
+
+.route--lens .spec td { font-size: 1.3rem; padding-left: 0.6rem; }
+.route--lens .spec th { padding-left: 0.6rem; }
+.route--lens .spec tr { transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+@media (hover: hover) {
+  .route--lens .spec tbody tr:hover { background: color-mix(in srgb, var(--band) 10%, transparent); box-shadow: inset 3px 0 0 var(--band); }
+  .route--lens .spec tbody tr:hover th { color: var(--engrave); }
+}
+.route--lens .spec-note { padding-left: 0.6rem; }
+
+/* ------------------------------------------------- previous / next */
+.route--lens .lens__pager { display: grid; grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--line); }
+.route--lens .lens__pg {
+  position: relative; isolation: isolate; overflow: hidden; display: grid; gap: 0.6rem; align-content: end;
+  min-height: clamp(15rem, 66cqi, 24rem); padding: 2rem var(--lz-pr) 2.2rem var(--lz-pl);
+  color: var(--engrave); text-decoration: none;
+}
+.route--lens .lens__pg + .lens__pg { border-top: 1px solid var(--line); }
+.route--lens .lens__pg::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--band) 22%, transparent), transparent 75%);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.75s var(--lz-ease);
+}
+.route--lens .lens__pg::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--band);
+  transform: scaleX(0.12); transform-origin: left; transition: transform 0.75s var(--lz-ease);
+}
+.route--lens .lens__pg--next { text-align: right; justify-items: end; }
+.route--lens .lens__pg--next::before { background: linear-gradient(270deg, color-mix(in srgb, var(--band) 22%, transparent), transparent 75%); transform-origin: right; }
+.route--lens .lens__pg--next::after { transform-origin: right; }
+.route--lens .lens__pg-dir { color: var(--dim); transition: color 0.3s ease; }
+.route--lens .lens__pg-name {
+  font-family: var(--display); font-weight: 200; font-stretch: 125%; line-height: 0.88; white-space: nowrap;
+  font-size: clamp(2.6rem, 15cqi, 8.5rem); transition: transform 0.7s var(--lz-ease), color 0.35s ease;
+}
+/* The neighbour's focal length, engraved in outline behind its name; it
+   fills with the band colour on hover and focus. */
+.route--lens .lens__pg-fig {
+  position: absolute; z-index: -1; top: 1.6rem; right: var(--lz-pr); transform-origin: 100% 0;
+  font-family: var(--display); font-weight: 200; font-stretch: 125%; line-height: 0.8; letter-spacing: -0.02em;
+  font-size: clamp(5rem, 30cqi, 22rem); color: transparent; -webkit-text-stroke: 1px var(--line-2);
+  transition: color 0.6s ease, -webkit-text-stroke-color 0.6s ease, transform 0.9s var(--lz-ease);
+}
+.route--lens .lens__pg--next .lens__pg-fig { right: auto; left: var(--lz-pl); transform-origin: 0 0; }
+.route--lens .lens__pg:focus-visible .lens__pg-fig { color: color-mix(in srgb, var(--band) 14%, transparent); -webkit-text-stroke-color: var(--band); transform: scale(1.06); }
+.route--lens .lens__pg-role { color: var(--dim); font-size: 1rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.route--lens .lens__pg--next .lens__pg-role { justify-content: flex-end; }
+.route--lens .lens__pg:focus-visible { outline-offset: -4px; }
+.route--lens .lens__pg:focus-visible::before { transform: none; }
+.route--lens .lens__pg:focus-visible::after { transform: none; }
+.route--lens .lens__pg:focus-visible .lens__pg-name { color: var(--band); transform: translateX(-1.2rem); }
+.route--lens .lens__pg--next:focus-visible .lens__pg-name { transform: translateX(1.2rem); }
+.route--lens .lens__pg:focus-visible .lens__pg-dir { color: var(--engrave); }
+.route--lens .lens__pg--prev:focus-visible .lens__pg-dir span { transform: translateX(-6px); }
+.route--lens .lens__pg--next:focus-visible .lens__pg-dir span { transform: translateX(6px); }
+@media (hover: hover) {
+  .route--lens .lens__pg:hover { color: var(--engrave); }
+  .route--lens .lens__pg:hover::before, .route--lens .lens__pg:hover::after { transform: none; }
+  .route--lens .lens__pg:hover .lens__pg-name { color: var(--band); transform: translateX(-1.2rem); }
+  .route--lens .lens__pg--next:hover .lens__pg-name { transform: translateX(1.2rem); }
+  .route--lens .lens__pg:hover .lens__pg-dir { color: var(--engrave); }
+  .route--lens .lens__pg:hover .lens__pg-fig { color: color-mix(in srgb, var(--band) 14%, transparent); -webkit-text-stroke-color: var(--band); transform: scale(1.06); }
+  .route--lens .lens__pg--prev:hover .lens__pg-dir span { transform: translateX(-6px); }
+  .route--lens .lens__pg--next:hover .lens__pg-dir span { transform: translateX(6px); }
+}
+
+/* ------------------------------------------------------------- wide */
+/* Tablets held upright keep the stacked hero, with a little less crop. */
+@media (min-width: 600px) { .route--lens .lens__hero { --shot-w: 140cqi; --shot-x: -3cqi; } }
+/* Landscape screens: the shot to the right, cut by the edge, the line low
+   on the left. */
+@media (min-width: 800px) and (min-aspect-ratio: 5/4) {
+  .route--lens .lens__hero { --shot-w: 84cqi; --shot-x: 30cqi; min-height: var(--vh); }
+  .route--lens .lens__foot { margin-top: clamp(1.5rem, 3vw, 2.5rem); align-self: end; width: min(calc(26rem + var(--lz-pl)), 32cqi); padding-right: 0; }
+  .route--lens .lens__line { max-width: none; }
+}
+@media (min-width: 800px) {
+  .route--lens .lens__bar { flex-direction: row; justify-content: space-between; align-items: center; gap: 2rem; }
+
+  .route--lens .lens__detail { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-rows: repeat(2, clamp(17rem, 29cqi, 27rem)); }
+  .route--lens .lens__tile--glass { grid-column: 1; grid-row: 1 / 3; }
+  .route--lens .lens__tile--mount { --lz-z: 1.55; }
+  .route--lens .lens__cap { bottom: 14%; }
+  .route--lens .lens__cap-v { font-size: clamp(4rem, 9cqi, 9rem); }
+  .route--lens .lens__tile--scale .lens__cap-v, .route--lens .lens__tile--mount .lens__cap-v { font-size: clamp(2.6rem, 4.6cqi, 4.6rem); }
+  .route--lens .lens__tile--scale .lens__cap { left: clamp(1.25rem, 3cqi, 3rem); }
+  .route--lens .lens__tile--mount .lens__cap { left: auto; right: var(--lz-pr); bottom: 16%; }
+  .route--lens .lens__tile--scale .lens__cap { bottom: 1.6rem; }
+
+  .route--lens .lens__specs { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(3rem, 6vw, 7rem); row-gap: 2rem; }
+  .route--lens .lens__specs > * { max-width: none; }
+  .route--lens .lens__specs-h { grid-column: 1 / -1; }
+  .route--lens .lens__read dd { font-size: clamp(3rem, 6.4cqi, 7rem); }
+  .route--lens .lens__read--main dd { font-size: clamp(9rem, 25cqi, 24rem); }
+  .route--lens .lens__table { align-self: end; }
+
+  .route--lens .lens__pager { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .route--lens .lens__pg { min-height: clamp(17rem, 25cqi, 24rem); }
+  .route--lens .lens__pg-fig { font-size: clamp(6rem, 11.5cqi, 14rem); }
+  .route--lens .lens__pg + .lens__pg { border-top: 0; border-left: 1px solid var(--line); }
+  .route--lens .lens__pg-name { font-size: clamp(2.6rem, 8cqi, 8.5rem); }
+}

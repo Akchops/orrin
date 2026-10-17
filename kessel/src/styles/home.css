@@ -1,29 +1,239 @@
-/* ===================================================================== HOME */
-.after { position: relative; z-index: 3; background: var(--void); margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding-inline: var(--gutter-l) var(--gutter-r); }
-/* The cut: after Focus the site rises over the stage, fading in from clear. */
-.live .after { background: linear-gradient(rgba(6, 7, 10, 0), var(--void) 28vh); padding-top: 20vh; }
-.hhero { min-height: var(--vh); display: grid; align-items: center; padding-block: calc(var(--safe-t) + var(--head) + 2.5rem) clamp(3rem, 7vw, 6rem); }
-.hhero__grid { display: grid; gap: 2.5rem; align-items: center; }
-.hhero__copy { display: grid; gap: 1.4rem; justify-items: start; }
-.hhero__copy .lead { color: var(--dim); }
-.hhero__copy .display { max-width: 15ch; font-size: clamp(2.4rem, 1.2rem + 3.3vw, 4.6rem); }
-.featured { display: grid; gap: clamp(2rem, 4vw, 3.5rem); padding-block: clamp(3rem, 8vw, 7rem); }
-.band { margin-block: clamp(3rem, 8vw, 7rem); margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding: clamp(3.5rem, 8vw, 7rem) var(--gutter-r) clamp(3.5rem, 8vw, 7rem) var(--gutter-l); background: var(--anodise); border-block: 1px solid var(--line); }
-.band__grid { display: grid; gap: 2.5rem; }
-.band__steps { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line-2); }
-.band__steps li { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: baseline; padding: 1.1rem 0; border-bottom: 1px solid var(--line-2); }
-.band__no { color: var(--coat); }
-.band__t { font-family: var(--display); font-stretch: 118%; font-weight: 300; font-size: clamp(1.4rem, 1rem + 1.4vw, 2.2rem); line-height: 1.15; }
-.split { display: grid; gap: 2.5rem; align-items: center; padding-block: clamp(3rem, 8vw, 7rem); }
-.split__copy { display: grid; gap: 1.1rem; }
-.split__copy p:not(.eyebrow) { color: var(--dim); }
-.cstrip { display: grid; gap: 2rem; padding-block: clamp(3rem, 8vw, 7rem) 0; }
-.cstrip > div { display: grid; gap: 1rem; align-content: start; }
-@media (min-width: 800px) {
-  .hhero__grid { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: clamp(2.5rem, 5vw, 5rem); }
-  .lgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .band__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
-  .split { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
-  .cstrip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(3rem, 6vw, 6rem); }
+/* ===================================================================== HOME
+   After the film. The hero is the frame after the film's last one: the same
+   lens, same pose, the camera pushed in and drifted right, so the glass is
+   cropped by the edge of the screen and the headline crosses its rim.
+   Everything here is scoped to #home .after. */
+#home .after { position: relative; z-index: 3; background: var(--void); margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding-inline: var(--gutter-l) var(--gutter-r); }
+
+/* The cut (live film only). On wide screens the site rises over the fixed
+   stage through a veil that goes from clear to the page's black, so the
+   film's last frame dissolves into the hero instead of meeting an edge. */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .live #home .after {
+    padding-top: 34vh;
+    background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.55) 11vh, rgba(6, 7, 10, 0.9) 22vh, var(--void) 32vh);
+  }
+  /* Where the browser can tie an animation to scroll (CSS only, no
+     script), the cut is a real dissolve with the camera still moving: the
+     whole last frame fades to black while the hero's lens, starting where
+     the film left the lens (same pose, same place, a little smaller),
+     pushes in to its place in the hero. */
+  @supports (timeline-scope: --a) and (animation-timeline: view()) {
+    /* The hero's view timeline is named on .after so the veil can use it. */
+    .live #home .after { background: transparent; timeline-scope: --home-hero; }
+    .live #home .after::before {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--void); opacity: 0;
+      animation: home-hero-fade linear both; animation-timeline: --home-hero; animation-range: entry 0% entry 100%;
+    }
+    .live #home .after .hhero { view-timeline: --home-hero block; background: transparent; clip-path: inset(-220vh 0 0 0); }
+    .live #home .after .hhero__lens {
+      /* The film's last frame (story.js, 15.2-16.5): the front ring's
+         centre at 59vw / 52vh, its width about 0.73 of the screen height,
+         which is 0.82 of the hero lens's. */
+      --fx: 59vw; --fy: 52vh; --fs: 0.82;
+      transform-origin: 37.5% 54%;
+      animation: home-hero-push linear both; animation-timeline: --home-hero; animation-range: entry 0% entry 100%;
+    }
+  }
+}
+/* Phones and portrait tablets: the film's last stage already fades to
+   black at its foot, so the site simply continues from black. */
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .live #home .after { padding-top: 0; background: var(--void); }
+}
+@keyframes home-hero-fade { from { opacity: 0; } 12% { opacity: 0; } 72% { opacity: 1; } to { opacity: 1; } }
+@keyframes home-hero-push {
+  from { opacity: 0; scale: var(--fs); translate: calc(var(--fx) - var(--lx) - var(--lw) * 0.375) calc(var(--fy) - var(--vh) - var(--lt) - var(--lw) * 0.54); }
+  10% { opacity: 0; }
+  50% { opacity: 1; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
 }
 
+/* ------------------------------------------------------------------ hero */
+#home .after .hhero {
+  /* --lw: the lens still's width; --lt: where its top lands. The still is
+     square and the lens fills 4%–88% of its width, 17%–90% of its height,
+     with the centre of the glass at 37.5% / 54%. */
+  --lw: min(82vw, 136svh);
+  --lx: calc(66vw - var(--lw) * 0.375);
+  --lt: calc(var(--safe-t) + var(--head) + 1.75rem - var(--lw) * 0.17);
+  position: relative; isolation: isolate; min-height: var(--vh);
+  display: grid; align-items: end;
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  padding: calc(var(--safe-t) + var(--head) + 4.5rem) var(--gutter-r) clamp(4.75rem, 11vh, 7rem) var(--gutter-l);
+  background: var(--void);
+  /* Cropped by the screen's right edge and the section's bottom; open at
+     the top so the bloom can reach up into the veil. */
+  clip-path: inset(-40vh 0 0 0);
+}
+/* The lens fades into the dark at the bottom of the frame, so the crop
+   never reads as an edge once the page scrolls. */
+#home .after .hhero::after {
+  content: ""; position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 30%; pointer-events: none;
+  background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.75) 55%, var(--void));
+}
+/* The film's caption shade: the dark deepens toward the left so the
+   headline reads where it crosses the rim. */
+#home .after .hhero::before {
+  content: ""; position: absolute; z-index: 1; top: 0; bottom: 0; left: 0; width: min(64rem, 70vw); pointer-events: none;
+  background: linear-gradient(90deg, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0.42) 50%, rgba(6, 7, 10, 0));
+}
+#home .after .hhero__lens {
+  position: absolute; z-index: 0; margin: 0; pointer-events: none;
+  width: var(--lw); left: var(--lx); top: var(--lt);
+}
+#home .after .hhero__lens img { width: 100%; position: relative; }
+/* Light behind the glass, in the stage's colours: warm white, then violet,
+   then nothing. It lifts the black barrel off the black page. */
+#home .after .hhero__lens::before {
+  content: ""; position: absolute; inset: -12% -8% -6% -14%;
+  background:
+    radial-gradient(closest-side at 46% 54%, rgba(255, 236, 214, 0.17), rgba(171, 155, 255, 0.075) 46%, rgba(6, 7, 10, 0) 76%),
+    radial-gradient(closest-side at 64% 46%, rgba(98, 220, 192, 0.035), rgba(6, 7, 10, 0) 70%);
+}
+#home .after .hhero__copy { z-index: 2; display: grid; gap: 1.5rem; justify-items: start; min-width: 0; }
+#home .after .hhero__copy .eyebrow { margin-bottom: -0.25rem; }
+#home .after .hhero__title {
+  display: grid; font-weight: 200; font-stretch: 122%; line-height: 0.9; letter-spacing: -0.012em;
+  font-size: clamp(2.75rem, 0.6rem + 7vw, 9.4rem);
+  text-shadow: 0 2px 28px rgba(6, 7, 10, 0.55);
+}
+#home .after .hhero__title span { display: block; white-space: nowrap; }
+#home .after .hhero__title span:last-child { font-weight: 300; }
+#home .after .hhero__foot { display: grid; gap: 1.6rem; justify-items: start; margin-top: 0.6rem; }
+#home .after .hhero__lead { color: var(--dim); font-size: clamp(1.1rem, 1rem + 0.35vw, 1.3rem); line-height: 1.5; max-width: 41ch; text-shadow: 0 1px 14px rgba(6, 7, 10, 0.9); }
+#home .after .hhero .btn span { transition: transform 0.3s ease; }
+#home .after .hhero .btn:hover span, #home .after .hhero .btn:focus-visible span { transform: translateX(4px); }
+#home .after .hhero .btn:not(.btn--solid) { background: rgba(6, 7, 10, 0.55); }
+#home .after .hhero .btn:not(.btn--solid):hover, #home .after .hhero .btn:not(.btn--solid):focus-visible { border-color: var(--coat); background: rgba(171, 155, 255, 0.12); }
+#home .after .hhero .btn--solid:focus-visible { background: var(--coat); border-color: var(--coat); }
+#home .after .hhero__replay { gap: 0.6rem; }
+#home .after .hhero__replay:hover, #home .after .hhero__replay:focus-visible { color: var(--coat); }
+
+/* ------------------------------------------------------------ craft band */
+#home .after .hband {
+  position: relative; isolation: isolate; overflow: clip;
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  padding: clamp(4rem, 9vw, 8rem) var(--gutter-r) clamp(2.5rem, 5vw, 4rem) var(--gutter-l);
+  display: grid; gap: clamp(2.5rem, 5vw, 4rem); align-content: end;
+}
+#home .after .hband__img { margin: 0; position: relative; z-index: 0; }
+#home .after .hband__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+#home .after .hband__head { position: relative; z-index: 2; display: grid; gap: 1.1rem; justify-items: start; }
+#home .after .hband__head h2 { font-weight: 200; font-stretch: 122%; font-size: clamp(2.5rem, 1.2rem + 4.4vw, 6rem); line-height: 0.94; max-width: 10ch; }
+#home .after .hband__scale { position: relative; z-index: 2; list-style: none; margin: 0; padding: 0; display: grid; }
+#home .after .hband__scale li { display: grid; align-content: start; gap: 0.5rem; }
+#home .after .hband__no { font-family: var(--display); font-stretch: 122%; font-weight: 200; line-height: 1; font-size: clamp(2.6rem, 1.6rem + 3vw, 5rem); color: var(--engrave); letter-spacing: 0; text-transform: none; }
+#home .after .hband__scale li:nth-child(even) .hband__no { color: var(--amber); }
+#home .after .hband__t { font-family: var(--display); font-stretch: 100%; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+#home .after .hband .more:hover span, #home .after .hband .more:focus-visible span { transform: translateX(4px); }
+#home .after .hband .more:focus-visible { color: var(--coat); border-color: var(--coat); }
+@media (hover: hover) {
+  #home .after .hband:hover .hband__img img { transform: scale(1.035) translateX(-1%); }
+}
+
+/* --------------------------------------------------------------- lenses */
+#home .after .hrange { display: grid; gap: 1.5rem; padding-block: clamp(4rem, 9vw, 8rem) 0; }
+#home .after .hrange__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 2rem; }
+#home .after .hrange__head .more:focus-visible { color: var(--coat); border-color: var(--coat); }
+#home .after .hrange__head .more:focus-visible span { transform: translateX(4px); }
+#home .after .hrange__list { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+#home .after .hrange__link {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: 0.4rem 1rem;
+  padding: 1.6rem 0 1.5rem; text-decoration: none; color: var(--engrave); border-bottom: 1px solid var(--line); overflow: hidden;
+}
+#home .after .hrange__link::before {
+  content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 2.5rem; background: var(--band);
+  transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+#home .after .hrange__link::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.5s ease;
+  background: radial-gradient(70% 140% at 0% 100%, color-mix(in srgb, var(--band) 16%, transparent), transparent 70%);
+}
+#home .after .hrange__idx { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; color: var(--band); }
+#home .after .hrange__name {
+  font-family: var(--display); font-stretch: 122%; font-weight: 200; line-height: 0.95; letter-spacing: -0.005em;
+  font-size: clamp(2.6rem, 1.2rem + 4.2vw, 5.4rem); transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.4s ease;
+}
+#home .after .hrange__meta { grid-column: 2; display: flex; align-items: center; gap: 0.75rem; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+#home .after .hrange__go { margin-left: auto; font-size: 1.4rem; letter-spacing: 0; color: var(--engrave); transition: transform 0.4s ease, color 0.4s ease; }
+#home .after .hrange__link:focus-visible { outline-offset: -2px; }
+#home .after .hrange__link:focus-visible::before { width: 100%; }
+#home .after .hrange__link:focus-visible::after { opacity: 1; }
+#home .after .hrange__link:focus-visible .hrange__name { transform: translateX(0.5rem); color: var(--band); }
+#home .after .hrange__link:focus-visible .hrange__go { transform: translateX(6px); color: var(--band); }
+@media (hover: hover) {
+  #home .after .hrange__link:hover::before { width: 100%; }
+  #home .after .hrange__link:hover::after { opacity: 1; }
+  #home .after .hrange__link:hover .hrange__name { transform: translateX(0.5rem); color: var(--band); }
+  #home .after .hrange__link:hover .hrange__go { transform: translateX(6px); color: var(--band); }
+}
+#home .after .hrange__link { isolation: isolate; }
+
+/* ---------------------------------------------------------------- phones */
+/* Phones and portrait tablets: the lens sits large at the top, cut by the
+   right edge; the headline crosses its lower rim. */
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  #home .after .hhero {
+    --lw: 150vw;
+    --lx: calc(0.5rem - var(--lw) * 0.04);
+    --lt: calc(var(--safe-t) + var(--head) + 0.25rem - var(--lw) * 0.17);
+    min-height: 0; align-items: start;
+    padding-top: calc(var(--safe-t) + var(--head) + var(--lw) * 0.5);
+    padding-bottom: clamp(3.5rem, 12vw, 5rem);
+  }
+  #home .after .hhero::after { display: none; }
+  #home .after .hhero::before { width: auto; right: 0; top: auto; height: 62%; background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.6) 30%, rgba(6, 7, 10, 0.6)); }
+  #home .after .hhero__copy { gap: 1.2rem; }
+  #home .after .hhero__title { font-size: clamp(2.4rem, 0.3rem + 10.4vw, 4.6rem); font-stretch: 116%; line-height: 0.94; }
+  #home .after .hhero__foot { margin-top: 0.2rem; gap: 1.4rem; }
+  #home .after .hhero__replay { position: relative; left: auto; top: auto; }
+}
+@media (max-width: 799px) {
+  #home .after .hband { padding-top: 0; gap: 2.25rem; }
+  #home .after .hband__img { margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); aspect-ratio: 5 / 4; margin-bottom: -7rem;
+    -webkit-mask-image: linear-gradient(transparent, #000 28%, #000 58%, transparent);
+    mask-image: linear-gradient(transparent, #000 28%, #000 58%, transparent); }
+  #home .after .hband__img img { object-position: 46% 50%; }
+  /* A vertical scale, the way it runs on the ring. */
+  #home .after .hband__scale { border-left: 1px solid var(--line-2); padding-left: 1.25rem; gap: 0; }
+  #home .after .hband__scale li { grid-template-columns: 4.25rem minmax(0, 1fr); align-items: baseline; padding-block: 0.5rem; position: relative; }
+  #home .after .hband__scale li::before { content: ""; position: absolute; left: -1.25rem; top: 50%; width: 0.7rem; height: 1px; background: var(--line-2); }
+  #home .after .hband__no { font-size: 2.4rem; }
+  #home .after .hband__t { font-size: 0.74rem; }
+
+  #home .after .hrange__link { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; padding-block: 1.4rem 1.3rem; }
+  #home .after .hrange__idx { display: none; }
+  #home .after .hrange__meta { grid-column: 1; }
+}
+
+/* --------------------------------------------------------------- desktop */
+@media (min-width: 800px) {
+  #home .after .hhero__copy { max-width: min(62vw, 60rem); }
+  #home .after .hhero__replay { position: absolute; left: var(--gutter-l); top: calc(var(--safe-t) + var(--head) + 1.1rem); }
+  /* The band: the knurled ring and its scale bleed off the right edge; the
+     heading sits in the dark on the left and the five stages run along the
+     bottom like the engraved distance scale. */
+  #home .after .hband { min-height: min(56rem, calc(var(--vh) * 0.96)); grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; padding-top: clamp(5rem, 10vw, 9rem); margin-top: clamp(2rem, 5vw, 5rem); }
+  #home .after .hband__img { position: absolute; z-index: 0; top: 0; bottom: 0; right: 0; width: 72%;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 34%), linear-gradient(transparent, #000 30%, #000 68%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 34%), linear-gradient(transparent, #000 30%, #000 68%, transparent);
+    mask-composite: intersect; }
+  #home .after .hband__img img { object-position: 40% 50%; }
+  #home .after .hband__head { align-self: center; }
+  #home .after .hband__scale { grid-template-columns: repeat(5, minmax(0, 1fr)); padding-top: 1.4rem;
+    background:
+      linear-gradient(var(--line-2), var(--line-2)) top / 100% 1px no-repeat,
+      repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 2.5%) top / 100% 0.45rem no-repeat; }
+  #home .after .hband__scale li { position: relative; padding-right: 1rem; }
+  #home .after .hband__scale li::before { content: ""; position: absolute; left: 0; top: -1.4rem; width: 1px; height: 1rem; background: var(--engrave); }
+
+  #home .after .hrange__list { grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 0; }
+  #home .after .hrange__link { grid-template-columns: minmax(0, 1fr); padding: 2rem 1.5rem 1.8rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); min-height: 15rem; align-content: space-between; }
+  #home .after .hrange__list li + li .hrange__link { padding-left: 1.5rem; border-left: 1px solid var(--line); }
+  #home .after .hrange__list li + li .hrange__link::before { left: 1.5rem; }
+  #home .after .hrange__link:hover::before, #home .after .hrange__link:focus-visible::before { width: calc(100% - 1.5rem); }
+  #home .after .hrange__meta { grid-column: 1; }
+  #home .after .hrange__name { font-size: clamp(2.6rem, 0.8rem + 3.6vw, 4.8rem); }
+}

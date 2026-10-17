@@ -230,7 +230,8 @@ html:not(.js) main:not(:has(.route:not(#home):target, .route:not(#home) :target)
 .spec caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .spec th, .spec td { text-align: left; padding: 0.95rem 1rem 0.95rem 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
 .spec tr:first-child > * { border-top: 1px solid var(--line); }
-.spec th { color: var(--dim); font-weight: 400; width: 42%; }
+.spec th { color: var(--dim); font-weight: 400; }
+.spec tbody th { width: 42%; }
 .spec td { font-family: var(--display); font-stretch: 110%; font-size: 1.2rem; }
 .spec-note { margin-top: 0.9rem; color: var(--amber); font-size: 0.7rem; letter-spacing: 0.1em; max-width: none; }
 .spec--compare th, .spec--compare td { width: auto; }
@@ -259,7 +260,7 @@ html:not(.js) main:not(:has(.route:not(#home):target, .route:not(#home) :target)
 .foot__mark { font-family: var(--display); font-stretch: 125%; font-weight: 600; letter-spacing: 0.3em; color: var(--engrave); font-size: 0.9rem; margin-bottom: 0.8rem; }
 .foot__brand p:not(.foot__mark) { max-width: 36ch; }
 .foot__nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.1rem; }
-.foot__nav a { display: inline-flex; min-height: 40px; align-items: center; text-decoration: none; color: var(--engrave); }
+.foot__nav a { display: inline-flex; min-height: 44px; align-items: center; text-decoration: none; color: var(--engrave); }
 .foot__nav a:hover { color: var(--coat); }
 .foot__contact { display: grid; gap: 0.3rem; align-content: start; font-family: var(--display); font-stretch: 110%; color: var(--engrave); }
 .foot__base { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1.5rem; padding-block: 1.2rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }

@@ -1,16 +1,205 @@
 /* ================================================================= WORKSHOP */
-.ws__top { display: grid; gap: 2.5rem; align-items: start; }
-.facts { margin: 0; display: grid; border-top: 1px solid var(--line); }
-.facts > div { display: grid; gap: 0.25rem; padding: 1.1rem 0; border-bottom: 1px solid var(--line); }
-.facts dt { color: var(--dim); }
-.facts dd { margin: 0; font-family: var(--display); font-stretch: 112%; font-weight: 300; font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem); line-height: 1.15; }
-.wsecs { display: grid; gap: 3rem; margin-top: clamp(4rem, 9vw, 7rem); }
-.wsec { display: grid; gap: 1rem; align-content: start; border-top: 1px solid var(--line-2); padding-top: 1.5rem; }
-.wsec__no { font-family: var(--display); color: var(--coat); font-size: 0.78rem; letter-spacing: 0.14em; }
-.wsec h2 { font-size: clamp(1.9rem, 1.4rem + 1.4vw, 2.6rem); }
-.wsec p:not(.wsec__no) { color: var(--dim); }
-@media (min-width: 800px) {
-  .ws__top { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(3rem, 6vw, 6rem); }
-  .wsecs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(2rem, 4vw, 4rem); }
+/* The maker in Pune, set like frames of the film. Every rule is scoped to
+   #workshop. Blocks that reach the viewport edges break out of the body
+   padding with negative gutters and pad back in, so their .wrap lines up
+   with the rest of the site. */
+#workshop {
+  --ws-bleed: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  --ws-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ws-gap: clamp(4.5rem, 9vw, 8.5rem);
+  --ws-pad: clamp(0px, 3vw - 8px, 40px); /* the .wrap side padding */
 }
 
+/* ---------------------------------------------------------------- hero */
+/* The signature on the rear barrel fills the first screen; the headline is
+   set low across it, over the dark barrel below the signature. */
+#workshop .ws-hero {
+  --ws-fig-h: min(72svh, 150vw); /* the image band on phones and tablets */
+  position: relative; isolation: isolate; overflow: hidden;
+  margin-inline: var(--ws-bleed); padding-inline: var(--gutter-l) var(--gutter-r);
+  min-height: var(--vh); display: grid; align-content: end;
+  padding-top: calc(var(--safe-t) + var(--head) + var(--ws-fig-h) * 0.74); padding-bottom: clamp(2.5rem, 7vh, 5rem);
+}
+#workshop .ws-hero__fig {
+  position: absolute; z-index: -1; inset: calc(var(--safe-t) + var(--head)) 0 auto; height: var(--ws-fig-h); margin: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 48%, rgba(0, 0, 0, 0.42) 76%, transparent 99%);
+  mask-image: linear-gradient(#000 48%, rgba(0, 0, 0, 0.42) 76%, transparent 99%);
+}
+/* Phones and tablets: the engraving over the signature, the signature
+   filling the width, the headline under it. */
+#workshop .ws-hero__fig img { width: 100%; height: 100%; object-fit: cover; object-position: 51.3% 0%; }
+/* Shade the left side so the headline reads over the knurled grip. */
+#workshop .ws-hero__fig::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0.2) 38%, rgba(6, 7, 10, 0) 60%, rgba(6, 7, 10, 0) 78%, rgba(6, 7, 10, 0.6));
+}
+#workshop .ws-hero__copy { position: relative; display: grid; gap: 1.2rem 0; grid-template-columns: minmax(0, 1fr); }
+#workshop .ws-hero h1 {
+  font-size: var(--ws-h1); font-stretch: 125%; font-weight: 200;
+  line-height: 0.88; letter-spacing: -0.025em; max-width: none; text-wrap: initial;
+  text-shadow: 0 0 2.5rem rgba(6, 7, 10, 0.6);
+}
+#workshop .ws-hero { --ws-h1: clamp(3.3rem, 0.9rem + 8.2vw, 10.4rem); }
+#workshop .ws-hero__l { display: block; }
+#workshop .ws-hero__lead { color: var(--engrave); font-style: italic; font-size: clamp(1.1rem, 1rem + 0.45vw, 1.35rem); line-height: 1.5; max-width: 34ch; }
+/* Wide screens: the whole first screen, tighter, the signature large over
+   the dark barrel and the engraving cropped off by the top edge. The lead
+   sits beside the short second line, clear of the amber band on the right
+   (which lands at about 85% of the width). */
+@media (min-width: 1100px) {
+  #workshop .ws-hero { padding-top: calc(var(--safe-t) + var(--head) + 2rem); --ws-lead-off: max(0px, min(12vw + 12px, 640px - 35vw)); }
+  #workshop .ws-hero__fig { bottom: 0; height: auto; }
+  #workshop .ws-hero__fig img { object-position: 27% 100%; transform-origin: 27% 100%; transform: scale(1.25); }
+  /* Column one is as wide as the second line, "one lens" (4.2em). */
+  #workshop .ws-hero__copy { grid-template-columns: calc(var(--ws-h1) * 4.62) minmax(0, 1fr); grid-template-rows: auto auto auto; }
+  #workshop .ws-hero__copy > .eyebrow { grid-column: 1 / -1; }
+  #workshop .ws-hero h1 { grid-column: 1 / -1; grid-row: 2 / 4; }
+  /* Squarer screens show more of the height: zoom further so the engraving
+     stays fully out of frame instead of half cut under the header. */
+  @media (max-aspect-ratio: 16 / 10) {
+    #workshop .ws-hero__fig img { transform: scale(1.4); }
+  }
+  #workshop .ws-hero__lead { grid-column: 2; grid-row: 3; align-self: end; padding-bottom: 0.35rem; margin-right: var(--ws-lead-off); max-width: 31rem; font-size: clamp(1.05rem, 0.4rem + 0.85vw, 1.3rem); }
+}
+
+/* ------------------------------------------------------------- readout */
+/* The facts, read out like the film's focus distance: an amber label over
+   a giant thin value, on a hairline ruled like the distance scale. */
+#workshop .ws-read { margin-inline: var(--ws-bleed); padding-inline: var(--gutter-l) var(--gutter-r); margin-top: clamp(1rem, 3vw, 2.5rem); }
+#workshop .ws-read__list { position: relative; margin-block: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.6rem 1rem; padding-top: 1.7rem; }
+#workshop .ws-read__list::before {
+  content: ""; position: absolute; top: 0; left: var(--ws-pad); right: var(--ws-pad); height: 7px;
+  background:
+    linear-gradient(var(--line-2), var(--line-2)) top / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 1.1rem) top / 100% 6px no-repeat;
+}
+#workshop .ws-read__item { position: relative; display: grid; gap: 0.7rem; align-content: start; }
+#workshop .ws-read__item::before { content: ""; position: absolute; left: 0; top: -1.7rem; width: 1px; height: 1.15rem; background: var(--amber); }
+#workshop .ws-read__item dt { font-family: var(--display); font-stretch: 100%; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); }
+#workshop .ws-read__item dd { margin: 0; display: grid; gap: 0.8rem; }
+#workshop .ws-read__value {
+  font-family: var(--display); font-stretch: 125%; font-weight: 200; font-size: clamp(3.6rem, 0.9rem + 10.6vw, 12rem);
+  line-height: 0.8; letter-spacing: -0.035em; color: var(--engrave);
+}
+#workshop .ws-read__note { font-style: italic; color: var(--dim); font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem); line-height: 1.35; max-width: 15ch; }
+@media (max-width: 899px) {
+  /* Two rows on phones: each value gets its own length of the ruler. */
+  #workshop .ws-read__list { padding-top: 0; row-gap: 2.4rem; column-gap: 0; }
+  #workshop .ws-read__list::before { display: none; }
+  #workshop .ws-read__item { padding: 1.7rem 1rem 0 0; background: linear-gradient(var(--line-2), var(--line-2)) top / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 1.1rem) top / 100% 6px no-repeat; }
+  #workshop .ws-read__item::before { top: 0; }
+  #workshop .ws-read__value { font-size: clamp(3.2rem, 0.2rem + 15.5vw, 6.5rem); }
+}
+@media (min-width: 900px) {
+  #workshop .ws-read__list { grid-template-columns: repeat(4, auto); justify-content: space-between; column-gap: 2rem; }
+}
+
+/* ------------------------------------------------------- shared section */
+#workshop .ws-secs { display: grid; gap: var(--ws-gap); margin-top: var(--ws-gap); }
+#workshop .ws-sec { position: relative; isolation: isolate; margin-inline: var(--ws-bleed); padding-inline: var(--gutter-l) var(--gutter-r); }
+#workshop .ws-sec__fig { margin: 0; position: relative; overflow: hidden; }
+#workshop .ws-sec__fig img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ws-ease), filter 0.6s ease; }
+#workshop .ws-sec__in { position: relative; z-index: 1; display: grid; gap: 1.6rem; align-content: start; }
+#workshop .ws-sec__head { display: grid; gap: 1rem; align-content: start; }
+#workshop .ws-tag { font-family: var(--display); font-stretch: 100%; font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--coat); max-width: none; }
+#workshop .ws-tag span { color: var(--amber); margin-right: 0.6em; }
+#workshop .ws-sec h2 { font-size: clamp(2.6rem, 1.2rem + 4.6vw, 6rem); font-stretch: 125%; font-weight: 200; line-height: 0.94; letter-spacing: -0.01em; }
+#workshop .ws-line { font-style: italic; font-weight: 300; font-size: clamp(1.7rem, 1rem + 2.6vw, 3.5rem); line-height: 1.14; color: var(--engrave); max-width: 20ch; text-wrap: balance; }
+#workshop .ws-body { display: grid; gap: 1rem; align-content: start; }
+#workshop .ws-body p { color: var(--dim); max-width: 50ch; font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem); line-height: 1.62; }
+#workshop .ws-body p:first-child { color: var(--engrave); }
+@media (hover: hover) {
+  #workshop .ws-sec:hover .ws-sec__fig img { transform: scale(1.045); filter: brightness(1.08); }
+}
+
+/* -------------------------------------------- 01 · the range (scale) */
+/* The engraved distance scale, bleeding off the right edge; the heading
+   runs onto the barrel. */
+#workshop .ws-sec--range .ws-sec__fig {
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); aspect-ratio: 16 / 11;
+  -webkit-mask-image: linear-gradient(transparent, #000 16%, #000 80%, transparent);
+  mask-image: linear-gradient(transparent, #000 16%, #000 80%, transparent);
+}
+#workshop .ws-sec--range .ws-sec__fig img { object-position: 80% 50%; transform-origin: 70% 50%; }
+#workshop .ws-sec--range .ws-sec__in { margin-top: -3.5rem; }
+@media (min-width: 900px) {
+  #workshop .ws-sec--range { min-height: min(54rem, 92vh); display: grid; align-items: center; }
+  #workshop .ws-sec--range .ws-sec__fig {
+    position: absolute; inset: 0 0 0 31%; margin: 0; aspect-ratio: auto;
+    -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 84%, transparent);
+    mask-image: linear-gradient(transparent, #000 14%, #000 84%, transparent);
+  }
+  #workshop .ws-sec--range .ws-sec__fig img { object-position: 64% 50%; transform-origin: 74% 50%; }
+  #workshop .ws-sec--range .ws-sec__in { margin-top: 0; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); column-gap: 3rem; }
+  #workshop .ws-sec--range .ws-sec__in > * { grid-column: 1; }
+  #workshop .ws-sec--range h2 { max-width: none; text-shadow: 0 0 2rem rgba(6, 7, 10, 0.8); }
+  #workshop .ws-sec--range .ws-line, #workshop .ws-sec--range .ws-body { max-width: 30rem; }
+}
+
+/* ---------------------------------- 02 · the same pair of hands (mount) */
+#workshop .ws-sec--hands .ws-sec__fig {
+  width: 128%; margin-left: -34%; aspect-ratio: 1;
+  -webkit-mask-image: linear-gradient(transparent, #000 24%);
+  mask-image: linear-gradient(transparent, #000 24%);
+}
+#workshop .ws-sec--hands .ws-sec__fig img { transform-origin: 40% 50%; }
+#workshop .ws-sec--hands .ws-sec__in { margin-top: -22%; }
+@media (min-width: 900px) {
+  #workshop .ws-sec--hands { min-height: min(60rem, 100vh); display: grid; align-items: center; }
+  #workshop .ws-sec--hands .ws-sec__fig { position: absolute; top: 50%; left: -14vw; width: min(64vw, 60rem); margin: 0; translate: 0 -50%; }
+  #workshop .ws-sec--hands .ws-sec__in { margin-top: 0; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 3rem; }
+  #workshop .ws-sec--hands .ws-sec__in > * { grid-column: 2; }
+  #workshop .ws-sec--hands .ws-line { margin-left: -12vw; max-width: 19ch; font-size: clamp(2.2rem, 0.8rem + 3.2vw, 4.4rem); text-shadow: 0 0 2rem rgba(6, 7, 10, 0.7); }
+}
+
+/* -------------------------------------- 03 · signed on the barrel (sign) */
+/* A second crop of the rear barrel: the engraving, large, as a band across
+   the page; the closing line set beside the heading under it. */
+#workshop .ws-sec--signed .ws-sec__fig {
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); height: clamp(14rem, 62vw, 22rem);
+  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 60%, transparent);
+  mask-image: linear-gradient(transparent, #000 30%, #000 60%, transparent);
+}
+#workshop .ws-sec--signed .ws-sec__fig img { object-position: 51% 0%; transform-origin: 51% 0%; scale: 2.6; }
+/* A side vignette keeps the eye on the engraving, not the studio light. */
+#workshop .ws-sec--signed .ws-sec__fig::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(6, 7, 10, 0.75), rgba(6, 7, 10, 0) 26%, rgba(6, 7, 10, 0) 72%, rgba(6, 7, 10, 0.85));
+}
+#workshop .ws-sec--signed .ws-sec__in { margin-top: -4.5rem; }
+@media (min-width: 900px) {
+  #workshop .ws-sec--signed .ws-sec__fig { height: clamp(22rem, 34vw, 32rem); }
+  #workshop .ws-sec--signed .ws-sec__fig img { object-position: 52% 0%; transform-origin: 52% 0%; scale: 1.25; }
+  #workshop .ws-sec--signed .ws-sec__in { margin-top: -9rem; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(2rem, 5vw, 5rem); align-items: end; }
+  #workshop .ws-sec--signed .ws-sec__head, #workshop .ws-sec--signed .ws-body { grid-column: 1; }
+  #workshop .ws-sec--signed .ws-line { grid-column: 2; grid-row: 1 / 3; align-self: end; font-size: clamp(2.6rem, 0.8rem + 4.2vw, 6rem); max-width: 14ch; }
+}
+
+/* ---------------------------------------------------------- where next */
+#workshop .ws-next { margin-inline: var(--ws-bleed); padding-inline: var(--gutter-l) var(--gutter-r); margin-top: var(--ws-gap); }
+#workshop .ws-next__list { list-style: none; margin-block: 0; display: grid; }
+#workshop .ws-next__list li { border-top: 1px solid var(--line-2); }
+#workshop .ws-next__list li:last-child { border-bottom: 1px solid var(--line-2); }
+#workshop .ws-next__link {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem 1.5rem; align-items: end;
+  min-height: 44px; padding-block: clamp(1.4rem, 3vw, 2.4rem); color: var(--engrave); text-decoration: none;
+}
+#workshop .ws-next__link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--coat); transform: scaleX(0); transform-origin: left; transition: transform 0.5s var(--ws-ease); }
+#workshop .ws-next__label { grid-column: 1 / -1; font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber); }
+#workshop .ws-next__text { font-family: var(--display); font-stretch: 125%; font-weight: 200; font-size: clamp(2.1rem, 0.9rem + 4.6vw, 6.2rem); line-height: 0.95; letter-spacing: -0.015em; transition: transform 0.5s var(--ws-ease), color 0.3s ease; }
+#workshop .ws-next__arrow { font-family: var(--display); font-weight: 200; font-size: clamp(2rem, 1rem + 3vw, 4.4rem); line-height: 1; color: var(--dim); transition: transform 0.5s var(--ws-ease), color 0.3s ease; }
+#workshop .ws-next__link:focus-visible { outline-offset: 6px; }
+#workshop .ws-next__link:focus-visible::after { transform: none; }
+#workshop .ws-next__link:focus-visible .ws-next__text { color: var(--coat); transform: translateX(0.5rem); }
+#workshop .ws-next__link:focus-visible .ws-next__arrow { color: var(--coat); transform: translateX(0.6rem); }
+@media (hover: hover) {
+  #workshop .ws-next__link:hover { color: var(--engrave); }
+  #workshop .ws-next__link:hover::after { transform: none; }
+  #workshop .ws-next__link:hover .ws-next__text { color: var(--coat); transform: translateX(0.5rem); }
+  #workshop .ws-next__link:hover .ws-next__arrow { color: var(--coat); transform: translateX(0.6rem); }
+}
+@media (min-width: 900px) {
+  #workshop .ws-next__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(2rem, 4vw, 4rem); }
+  #workshop .ws-next__list li:last-child { border-bottom: 0; }
+  #workshop .ws-next__list li { border-bottom: 1px solid var(--line-2); }
+}

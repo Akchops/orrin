@@ -58,25 +58,26 @@ await shot('01-film-top');
 if (live) {
   await toStory(1.95); await shot('02-film-iris');
   await toStory(10.5); await shot('03-film-focus');
-  // The cut: half a screen after the focus pin lets go.
-  const y = await page.evaluate(() => { const o = window.__kessel; let lo = 0, hi = o.ScrollTrigger.maxScroll(window); for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (o.storyAt(m) < 11.2) lo = m; else hi = m; } return hi; });
-  await page.evaluate((y) => window.__kessel.lenis.scrollTo(y + innerHeight * 0.55, { immediate: true }), y);
-  await shot('04-cut');
+  await toStory(12.4); await shot('04-film-lenses');
+  await toStory(16.5); await shot('05-film-contact');
+  // The cut: the site's hero rising over the film's last frame.
+  await page.evaluate(() => { const y = document.getElementById('after').getBoundingClientRect().top + scrollY - innerHeight * 0.5; window.__kessel.lenis.scrollTo(y, { immediate: true }); });
+  await shot('06-cut');
   await toStory(0); await settle();
 }
 // Skip film from the top.
 await page.click('.skipfilm');
-await shot('05-skip-to-hero');
+await shot('07-skip-to-hero');
 for (let i = 1; i <= 4; i++) {
   await page.evaluate((i) => { const y = document.getElementById('home-hero').getBoundingClientRect().top + scrollY + innerHeight * 0.9 * i; window.__kessel ? window.__kessel.lenis.scrollTo(y, { immediate: true }) : scrollTo(0, y); }, i);
-  await shot(`06-after-${i}`);
+  await shot(`08-after-${i}`);
 }
 await nav('lenses');
-await shot('07-lenses');
+await shot('09-lenses');
 await nav('home');
-await shot('08-home-again');
+await shot('10-home-again');
 await page.reload();
 await page.waitForFunction(() => { const t = document.getElementById('tier'); return t.dataset.kind !== 'stills' || !/Starting/.test(t.textContent); }, null, { timeout: 120000 }).catch(() => {});
-await shot('09-reload');
+await shot('11-reload');
 console.log(logs.slice(0, 20).join('\n'));
 await browser.close();
