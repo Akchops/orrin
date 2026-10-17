@@ -16,7 +16,7 @@ only pass the fragment through):
 
 | Address | Page |
 | --- | --- |
-| `#home` (or none) | Scroll film intro, then hero, the three lenses, craft, workshop, contact |
+| `#home` (or none) | The scroll film (iris, glass, back together, focus, the three lenses, the signed barrel, contact), then the hero, craft and links to the lenses |
 | `#lenses` | The three lenses, with a side-by-side table |
 | `#lens-shaniwar`, `#lens-parvati`, `#lens-sinhagad` | One lens: large still, one line, specifications, enquire |
 | `#craft` | How a lens is made, five steps with stills from the scene |
@@ -26,9 +26,11 @@ only pass the fragment through):
 The first script in `<head>` picks the route from the address before first
 paint. Without JavaScript the same routes work through CSS `:target`.
 
-The film (the lens scene and its scroll move) lives on home only and ends
-after Focus; the site's hero takes over there. A fresh load always plays the
-film from the top; coming back to home from another page lands on the hero.
+The film (the lens scene and its scroll move) lives on home only and runs
+in full, through its own Lenses, signed-barrel and Contact stages; the
+site's hero starts when the film's Contact stage has filled the screen. A
+fresh load always plays the film from the top; coming back to home from
+another page lands on the hero.
 "Skip film" jumps to the hero without changing the address. Other pages are
 plain HTML with stills: the lens code does not start until home is shown,
 and stops drawing while another page is up.
@@ -38,16 +40,20 @@ and stops drawing while another page is up.
 - `src/content/*.js` — all words and figures (site, home, film captions,
   lenses and their sample specs, craft steps, workshop, contact, image alt
   text). Edit these, not the templates.
-- `src/site/render.js` — build-time templates that turn the content into
-  the routes. `src/site/site.js` — the router, menu, copy buttons, badge pill.
+- `src/site/render.js` — assembles the routes; `src/site/pages/*.js` — one
+  template per page; `src/site/film.js` — the film's markup (do not
+  restyle); `src/site/parts.js` — shared pieces (images, footer, tables).
+  `src/site/site.js` — the router, menu, copy buttons, badge pill.
 - `src/app/*` — the lens: scene, story timeline, live/2D tiers, tier badge.
-- `src/page.html`, `src/styles.css` — the shell and all styles.
+- `src/page.html` — the shell. `src/styles/*.css` — `base.css` (shared),
+  `film.css` (the film, as it was), then one stylesheet per page.
 
 ## Build
 
 ```bash
-node kessel/scripts/build.mjs      # writes kessel/index.html
+node kessel/scripts/build.mjs      # writes kessel/index.html (--out=path to write elsewhere)
 node kessel/scripts/stills.mjs     # re-renders kessel/stills/*.webp from the scene (then rebuild)
+python3 kessel/scripts/lineup.py   # composes the three-lens lineup from lineup-1..3
 node kessel/scripts/verify.mjs     # offline, host-policy, no-WebGL and boot-failure checks
 node kessel/scripts/pages.mjs out 390x844 "lenses,craft" --full   # page screenshots
 node kessel/scripts/home.mjs out 1440x900 --gl                     # home walk-through with the live film
@@ -79,9 +85,15 @@ the pointer changes it.
 Story units, scroll-mapped: 0–1 hero, iris closed · 1–3 iris opens blade by
 blade (pinned, 2 beats) · 3–3.6 dive onto the axis · 3.6–7.2 through the
 barrel (pinned, 4 beats) · 7.2–7.8 out to the sensor, turn · 7.8–9 lens
-closes up (pinned, 1.5 beats) · 9.6–11.2 focus ring turns (pinned, 2 beats),
-end of film. One beat is 700 px on desktop, 420 px on phones. The rest of
-the timeline (11.2–16.5) is only used to pose stills for the site.
+closes up (pinned, 1.5 beats) · 9.6–11.2 focus ring turns (pinned, 2 beats) ·
+11.8–14.2 the three lenses (pinned, 3 beats) · 14.2–15.2 the signed barrel
+· 15.2–16.5 contact, end of film. One beat is 700 px on desktop, 420 px on
+phones.
+
+Site imagery is rendered from the same scene (`src/app/stills.js` poses):
+close crops of the iris, coated glass, knurled ring, engraved scale,
+signature and mount, the three lenses, an exploded view and a lineup. These
+keep a transparent background so they sit on the page with no box.
 
 ## QA flags
 
