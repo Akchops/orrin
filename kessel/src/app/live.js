@@ -5,13 +5,15 @@ import { buildStory, createState, STORY_END } from './story.js';
 import { distanceAt } from './textures.js';
 
 const NARROW = '(max-width: 799px), (orientation: portrait) and (max-width: 1100px)';
+// The film ends after Focus; the site's own hero takes over from there.
+// The rest of the story timeline is left in place (the stills use it).
+const FILM_END = 11.2;
 
 export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const { gsap, ScrollTrigger, Lenis } = L;
   gsap.registerPlugin(ScrollTrigger);
   const root = document.documentElement;
   const $ = (s) => document.querySelector(s);
-  const $$ = (s) => [...document.querySelectorAll(s)];
   const stage = $('#stage');
   const narrowMQ = matchMedia(NARROW);
 
@@ -43,7 +45,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   gsap.ticker.lagSmoothing(0);
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="#"]');
-    if (!a) return;
+    if (!a || e.defaultPrevented) return;
     const id = a.getAttribute('href');
     const el = id === '#top' ? 0 : document.querySelector(id);
     if (el === null) return;
@@ -77,29 +79,30 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     pins.ex = pin('#exit', 1.5);
     // FOCUS: 2 beats: one turn of the ring from infinity to the closest mark.
     pins.fo = pin('#focus', 2);
-    // LENSES: 3 beats, one per proposal: half held, half morphing.
-    pins.mo = pin('#models', 3);
-    pins.ws = ScrollTrigger.create({ trigger: '#workshop', start: 'top top', end: 'bottom top' });
     return () => { for (const k of Object.keys(pins)) delete pins[k]; };
   });
 
   // Story time as a piecewise-linear function of scroll, anchored to the
   // pins. One source of truth for the camera.
-  let anchors = [[0, 0], [1, STORY_END]];
+  let anchors = [[0, 0], [1, FILM_END]];
+  // Past this scroll position the site covers the stage completely.
+  let coveredAt = Infinity, filmEndY = Infinity;
   function rebuild() {
     const p = pins;
-    if (!p.ap || !p.mo) return;
+    if (!p.ap || !p.fo) return;
     const pts = [[0, 0], [p.ap.start, 1], [p.ap.end, 3], [p.th.start, 3.6], [p.th.end, 7.2], [p.ex.start, 7.8], [p.ex.end, 9.0],
-      [p.fo.start, 9.6], [p.fo.end, 11.2], [p.mo.start, 11.8], [p.mo.end, 14.2], [p.ws.start, 15.2], [ScrollTrigger.maxScroll(window), STORY_END]];
+      [p.fo.start, 9.6], [p.fo.end, FILM_END]];
     for (let i = 1; i < pts.length; i++) if (pts[i][0] <= pts[i - 1][0]) pts[i][0] = pts[i - 1][0] + 1;
     anchors = pts;
+    filmEndY = p.fo.end;
+    coveredAt = p.fo.end + innerHeight * 1.2;
   }
   const storyAt = (y) => {
     for (let i = 1; i < anchors.length; i++) {
       const [y0, s0] = anchors[i - 1], [y1, s1] = anchors[i];
       if (y <= y1) return s0 + (s1 - s0) * Math.max(0, (y - y0) / (y1 - y0));
     }
-    return STORY_END;
+    return FILM_END;
   };
   ScrollTrigger.addEventListener('refresh', rebuild);
   narrowMQ.addEventListener('change', () => {
@@ -131,9 +134,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   // --------------------------------------------------------------- DOM bits
   const ring = $('.ring-text');
   const readout = $('#readout');
-  const models = $$('.model');
-  const navLinks = $$('.masthead__nav a');
-  let activeModel = -1, navIdx = -2, readOn = false, lastRead = '';
+  let readOn = false, lastRead = '', covered = false;
 
   // ------------------------------------------------------------ the loop
   let sCur = 0, last = performance.now(), slow = 0, fast = 0, lastSig = '', resized = 0;
@@ -154,6 +155,21 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     pointer.x += (pointer.tx - pointer.x) * k;
     pointer.y += (pointer.ty - pointer.y) * k;
     pointer.spin += (pointer.tspin - pointer.spin) * (1 - Math.exp(-dt / (drag ? 0.06 : 0.35)));
+
+    // Once the site has scrolled over the stage there is nothing to draw.
+    const cov = window.scrollY > coveredAt;
+    if (cov !== covered) { covered = cov; root.classList.toggle('film-covered', cov); lastSig = ''; }
+    if (cov) { window.__kessel && (window.__kessel.idle = true); return; }
+
+    // Focus readout: what the index mark points at. Checked every frame,
+    // as it also goes off when the film ends, where the scene stands still.
+    const wantRead = sCur > 9.55 && sCur < 11.3 && window.scrollY < filmEndY;
+    if (wantRead !== readOn) { readOn = wantRead; readout.classList.toggle('is-on', wantRead); }
+    if (wantRead) {
+      const d = distanceAt(S.focus);
+      const txt = d === Infinity ? '∞' : (d >= 10 ? d.toFixed(0) : d.toFixed(1)) + ' m';
+      if (txt !== lastRead) { lastRead = txt; readout.innerHTML = '<small>Focused at</small>' + txt; }
+    }
 
     // Render only when something changed. Nothing in this scene moves on
     // its own, so a still page costs no GPU time at all: kinder to phone
@@ -183,21 +199,6 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       ring.style.setProperty('--ring-rot', (sCur * 40).toFixed(1) + 'deg');
     }
     ring.style.setProperty('--ring-o', ringOn ? Math.min(1, (3.3 - sCur) * 3).toFixed(2) : '0');
-
-    // Focus readout: what the index mark points at.
-    const wantRead = sCur > 9.55 && sCur < 11.3;
-    if (wantRead !== readOn) { readOn = wantRead; readout.classList.toggle('is-on', wantRead); }
-    if (wantRead) {
-      const d = distanceAt(S.focus);
-      const txt = d === Infinity ? '∞' : (d >= 10 ? d.toFixed(0) : d.toFixed(1)) + ' m';
-      if (txt !== lastRead) { lastRead = txt; readout.innerHTML = '<small>Focused at</small>' + txt; }
-    }
-    const am = Math.round(S.model);
-    if (sCur > 11.6 && sCur < 14.3) {
-      if (am !== activeModel) { activeModel = am; models.forEach((m, i) => m.classList.toggle('is-on', i === am)); }
-    } else if (activeModel !== -1) { activeModel = -1; models.forEach((m) => m.classList.remove('is-on')); }
-    const ni = sCur < 0.9 ? -1 : sCur < 3.2 ? 0 : sCur < 9.3 ? 1 : sCur < 11.5 ? 2 : sCur < 14.6 ? 3 : 4;
-    if (ni !== navIdx) { navIdx = ni; navLinks.forEach((a, i) => a.toggleAttribute('aria-current', i === ni)); }
 
     // Watchdog (only counts frames that were actually drawn): sustained
     // frames over 22 ms step the resolution down; still slow at DPR 1 drops
@@ -230,8 +231,22 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   sCur = storyAt(window.scrollY);
   storyTl.time(sCur);
   frame();
-  gsap.ticker.add(frame);
-  if (location.hash.length > 1) { const el = document.querySelector(location.hash); if (el) lenis.scrollTo(el, { immediate: true }); }
+
+  // Other pages of the site hide the film: stop drawing while they are up,
+  // and re-measure the pins when home comes back.
+  let running = false;
+  function setActive(on) {
+    if (on === running) return;
+    running = on;
+    if (on) { ScrollTrigger.refresh(); rebuild(); lastSig = ''; gsap.ticker.add(frame); }
+    else gsap.ticker.remove(frame);
+  }
+  addEventListener('kessel:route', (e) => setActive(e.detail.route === 'home'));
+  setActive(root.dataset.route === 'home');
+  // Land where the site asked for (a deep link, or the hero after the
+  // film) now that the live layout has replaced the stills.
+  const land = window.__kesselSite && window.__kesselSite.anchor();
+  if (land) { lenis.resize(); lenis.scrollTo(land, { immediate: true, force: true }); }
 
   window.__kessel = { S, get s() { return sCur; }, storyAt, lenis, ScrollTrigger, get tier() { return tier; } };
   return tier;

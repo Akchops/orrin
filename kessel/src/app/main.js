@@ -78,21 +78,6 @@ function probe(allowSoftware) {
   return { ok: true, tier, soft: softGL };
 }
 
-// ------------------------------------------------------------- copy email
-const copyBtn = document.getElementById('copy-email');
-if (copyBtn) {
-  copyBtn.hidden = false;
-  copyBtn.addEventListener('click', async () => {
-    const text = document.getElementById('email').textContent;
-    try { await navigator.clipboard.writeText(text); copyBtn.textContent = 'Copied'; }
-    catch {
-      const r = document.createRange(); r.selectNodeContents(document.getElementById('email'));
-      getSelection().removeAllRanges(); getSelection().addRange(r); copyBtn.textContent = 'Selected';
-    }
-    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1800);
-  });
-}
-
 // ----------------------------------------------------------------- start
 async function start({ force = false } = {}) {
   if (params.has('static')) return stills('still frames were requested in the address (?static).');
@@ -139,5 +124,13 @@ async function start({ force = false } = {}) {
 playBtn.addEventListener('click', () => start({ force: true }));
 reduce.addEventListener?.('change', () => location.reload());
 
+// The lens belongs to the home page only: other pages are plain and
+// fast, so it starts the first time home is shown (src/site/site.js
+// announces every route change).
 if (params.get('still')) renderStill(params.get('still'), FONT);
-else start();
+else if (root.dataset.route === 'home') start();
+else addEventListener('kessel:route', function once(e) {
+  if (e.detail.route !== 'home') return;
+  removeEventListener('kessel:route', once);
+  start();
+});

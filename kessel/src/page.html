@@ -9,11 +9,23 @@
 <meta name="theme-color" content="#06070a">
 <meta name="color-scheme" content="dark">
 <meta name="claude:viewport-fit-sides" content="cover">
-<script>document.documentElement.classList.add('js')</script>
+<script>
+  // Before first paint: mark JS on, and pick the route from the address so
+  // only that page is ever drawn. A fresh load always starts at the top.
+  (function () {
+    var d = document.documentElement, m = /*%%ROUTEMAP%%*/{};
+    d.classList.add('js');
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    var h = location.hash.slice(1);
+    try { h = decodeURIComponent(h); } catch (e) {}
+    window.__kesselRoutes = m;
+    d.setAttribute('data-route', m[h] || 'home');
+  })();
+</script>
 <style>/*%%CSS%%*/</style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main" data-skip>Skip to content</a>
 
 <!-- Which version of the page is running, always visible. Without JS this
      default text stays; with JS the bootstrap below replaces it at once. -->
@@ -21,6 +33,7 @@
   <span class="tier__kind">STILLS</span>
   <span class="tier__why">JavaScript is off, so these are still frames, not the live lens.</span>
   <button class="tier__play" type="button" hidden>Play the live version</button>
+  <button class="tier__toggle" type="button" aria-expanded="false" hidden><span class="sr-only">Why this version</span></button>
 </div>
 <script>
   // Runs before first paint: from here on the badge reports what is
@@ -32,138 +45,26 @@
   })();
 </script>
 
-<header class="masthead">
-  <a class="masthead__mark" href="#top" aria-label="Kessel Optics, back to top">KESSEL</a>
-  <nav class="masthead__nav" aria-label="Sections">
-    <a href="#aperture">Iris</a>
-    <a href="#through">Glass</a>
-    <a href="#focus">Focus</a>
-    <a href="#models">Lenses</a>
-    <a href="#contact">Contact</a>
-  </nav>
-</header>
-
-<noscript>
-  <p class="notice">JavaScript is off. The live lens needs it, so each stage below is a still frame with its caption.</p>
-</noscript>
-<p class="notice" id="notice" hidden></p>
+<!--%%HEADER%%-->
 
 <div class="stage" id="stage" aria-hidden="true">
-  <svg class="ring-text" viewBox="0 0 1000 1000" focusable="false">
-    <defs><path id="ringpath" d="M500,500 m-430,0 a430,430 0 1,1 860,0 a430,430 0 1,1 -860,0"/></defs>
-    <text><textPath href="#ringpath" startOffset="0">KESSEL OPTICS &#183; HAND-ASSEMBLED LENSES &#183; PUNE &#183; EST. 2017 &#183; KESSEL OPTICS &#183; HAND-ASSEMBLED LENSES &#183; PUNE &#183; EST. 2017 &#183;</textPath></text>
-  </svg>
+  <!-- The ring layer is masked under the header band so the engraved text
+       never runs into the navigation. -->
+  <div class="ring-layer">
+    <svg class="ring-text" viewBox="0 0 1000 1000" focusable="false">
+      <defs><path id="ringpath" d="M500,500 m-430,0 a430,430 0 1,1 860,0 a430,430 0 1,1 -860,0"/></defs>
+      <text><textPath href="#ringpath" startOffset="0">KESSEL OPTICS &#183; HAND-ASSEMBLED LENSES &#183; PUNE &#183; EST. 2017 &#183; KESSEL OPTICS &#183; HAND-ASSEMBLED LENSES &#183; PUNE &#183; EST. 2017 &#183;</textPath></text>
+    </svg>
+  </div>
   <div class="stage__readout" id="readout"></div>
 </div>
 
-<main id="main">
-  <section class="hero" id="top" aria-labelledby="hero-title">
-    <figure class="still still--hero">
-      <img src="%%STILL:hero%%" width="900" height="900" alt="A Kessel lens seen straight on: black anodised front ring, coated front element, the iris closed to a pinhole of light.">
-      <figcaption>Still frame &middot; the iris closed to a pinhole</figcaption>
-    </figure>
-    <div class="hero__copy">
-      <h1 id="hero-title"><span class="hero__name">Kessel Optics</span> <span class="hero__line">Lenses assembled by hand in Pune.</span></h1>
-      <p class="hero__sub">Cinema and photography lenses. Three models. One optician builds each lens and signs the barrel.</p>
-      <a class="hero__cue" href="#aperture">Scroll to open the iris</a>
-    </div>
-  </section>
-
-  <section class="stagecopy" id="aperture" aria-labelledby="ap-title">
-    <figure class="still"><img src="%%STILL:aperture%%" width="900" height="900" loading="lazy" alt="The iris open, its blades drawn back to the edge, light blooming through the glass."><figcaption>Still frame &middot; the iris open</figcaption></figure>
-    <div class="cap">
-      <p class="cap__num">01 &middot; Iris</p>
-      <h2 id="ap-title">Light waits for the blades</h2>
-      <p>The iris sits in the middle of the lens. Scroll and it opens one blade at a time until light floods the glass.</p>
-    </div>
-  </section>
-
-  <section class="stagecopy" id="through" aria-labelledby="th-title">
-    <figure class="still"><img src="%%STILL:through%%" width="900" height="900" loading="lazy" alt="Inside the barrel: coated glass elements spaced apart, the open iris ahead with light beyond it."><figcaption>Still frame &middot; inside the barrel</figcaption></figure>
-    <div class="cap">
-      <p class="cap__num">02 &middot; Glass</p>
-      <h2 id="th-title">Through the glass</h2>
-      <p>Each element sits at its own distance from the next. Here they slide apart so the camera can pass between them, through the iris and out at the back.</p>
-    </div>
-  </section>
-
-  <section class="stagecopy" id="exit" aria-labelledby="ex-title">
-    <figure class="still"><img src="%%STILL:exit%%" width="900" height="900" loading="lazy" alt="The lens seen from behind, reassembled: stainless mount, rear element and black barrel."><figcaption>Still frame &middot; the lens closed up again</figcaption></figure>
-    <div class="cap">
-      <p class="cap__num">03 &middot; Back together</p>
-      <h2 id="ex-title">Out the back, closed up</h2>
-      <p>Past the mount the camera turns round and the lens closes up behind it, element by element, until it is whole again.</p>
-    </div>
-  </section>
-
-  <section class="stagecopy" id="focus" aria-labelledby="fo-title">
-    <figure class="still"><img src="%%STILL:focus%%" width="900" height="900" loading="lazy" alt="The side of the lens: knurled focus ring, engraved distance scale and the index mark."><figcaption>Still frame &middot; focus ring and distance scale</figcaption></figure>
-    <div class="cap">
-      <p class="cap__num">04 &middot; Focus</p>
-      <h2 id="fo-title">Focus by hand</h2>
-      <p>The knurled ring turns and the engraved distance scale rolls past the index mark, from infinity down to the closest mark.</p>
-    </div>
-  </section>
-
-  <section class="models" id="models" aria-labelledby="models-title">
-    <header class="models__head">
-      <p class="cap__num">05 &middot; Lenses</p>
-      <h2 id="models-title">Three lenses</h2>
-      <p class="models__note">The names and roles below are proposals for this concept.</p>
-    </header>
-    <ol class="model-list">
-      <li class="model" data-model="0">
-        <figure class="still"><img src="%%STILL:model-1%%" width="600" height="600" loading="lazy" alt="The wide lens: short barrel, large front."><figcaption>Still frame</figcaption></figure>
-        <h3>Shaniwar <span>proposal</span></h3>
-        <p>The wide one. For rooms, streets and landscapes, where everything in front of you belongs in the frame.</p>
-      </li>
-      <li class="model" data-model="1">
-        <figure class="still"><img src="%%STILL:model-2%%" width="600" height="600" loading="lazy" alt="The standard lens: medium barrel."><figcaption>Still frame</figcaption></figure>
-        <h3>Parvati <span>proposal</span></h3>
-        <p>The standard one. Frames a scene close to the way your eye does.</p>
-      </li>
-      <li class="model" data-model="2">
-        <figure class="still"><img src="%%STILL:model-3%%" width="600" height="600" loading="lazy" alt="The portrait lens: the longest barrel."><figcaption>Still frame</figcaption></figure>
-        <h3>Sinhagad <span>proposal</span></h3>
-        <p>The long one. For faces and details at a distance, with the background let go.</p>
-      </li>
-    </ol>
-  </section>
-
-  <section class="workshop" id="workshop" aria-labelledby="ws-title">
-    <figure class="still"><img src="%%STILL:signed%%" width="900" height="900" loading="lazy" alt="Close up of the rear barrel: the engraved maker's mark and a hand signature."><figcaption>Still frame &middot; the signed barrel</figcaption></figure>
-    <div class="cap">
-      <p class="cap__num">06 &middot; The workshop</p>
-      <h2 id="ws-title">One optician, one lens</h2>
-      <p>Kessel Optics was founded in Pune in 2017 as an independent lens maker.</p>
-      <p>Every lens is assembled by hand by one optician from start to finish, and that optician signs the barrel.</p>
-      <dl class="facts">
-        <div><dt>Founded</dt><dd>2017, Pune</dd></div>
-        <div><dt>Makes</dt><dd>Cinema and photography lenses</dd></div>
-        <div><dt>Models</dt><dd>Three</dd></div>
-        <div><dt>Each lens</dt><dd>One optician, signed</dd></div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="contact" id="contact" aria-labelledby="ct-title">
-    <div class="cap">
-      <p class="cap__num">07 &middot; Contact</p>
-      <h2 id="ct-title">Write to the studio</h2>
-      <dl class="contact__list">
-        <div><dt>Email</dt><dd><span class="selectable" id="email">studio@kessel.example</span> <button class="copy" type="button" id="copy-email" hidden>Copy</button></dd></div>
-        <div><dt>Phone</dt><dd><span class="selectable">+91 00000 00000</span></dd></div>
-        <div><dt>Studio</dt><dd>Pune</dd></div>
-      </dl>
-    </div>
-  </section>
+<main id="main" tabindex="-1">
+<!--%%ROUTES%%-->
 </main>
 
-<footer class="footer">
-  <p>Unofficial concept created independently for presentation purposes.</p>
-  <a href="#top">Back to top</a>
-</footer>
-
+<!-- The site shell (routes, menu, enquiries) runs first; the lens follows. -->
+<script>/*%%SITE%%*/</script>
 <!-- Libraries: wrapped in a function so the browser only pre-parses them;
      they compile and run when the live lens is actually started. -->
 <script>/*%%LIBS%%*/</script>
