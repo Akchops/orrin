@@ -1,7 +1,7 @@
 // The live layer: pins, scroll -> story time, pointer, render loop and the
 // adaptive-quality watchdog. Called by main.js with the libraries already
 // started; it reports every tier change back through `report`.
-import { buildStory, createState, STORY_END } from './story.js';
+import { buildStory, createState, STORY_END, FILM_END, TEAR_CAPTIONS } from './story.js';
 import { distanceAt } from './textures.js';
 
 const NARROW = '(max-width: 799px), (orientation: portrait) and (max-width: 1100px)';
@@ -48,7 +48,11 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const el = id === '#top' ? 0 : document.querySelector(id);
     if (el === null) return;
     e.preventDefault();
-    lenis.scrollTo(el, { duration: 1.6 });
+    // Long jumps (the nav, the hero buttons) land at once instead of
+    // fast-forwarding through the whole film; short ones glide.
+    const y = el === 0 ? 0 : el.getBoundingClientRect().top + window.scrollY;
+    if (Math.abs(y - window.scrollY) > innerHeight * 2.5) lenis.scrollTo(y, { immediate: true, force: true });
+    else lenis.scrollTo(el, { duration: 1.6 });
   });
   document.addEventListener('focusin', (e) => {
     const r = e.target.getBoundingClientRect?.();
@@ -80,9 +84,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // LENSES: 3 beats, one per proposal: half held, half morphing.
     pins.mo = pin('#models', 3);
     pins.ws = ScrollTrigger.create({ trigger: '#film-workshop', start: 'top top', end: 'bottom top' });
-    // CONTACT: the film's last stage. The story reaches its end when it
-    //   fills the screen; the site's hero follows it.
+    // CONTACT: the film's last stage. The film ends when it fills the
+    //   screen; the same move carries on as it scrolls away.
     pins.ct = ScrollTrigger.create({ trigger: '#film-contact', start: 'top top', end: 'bottom top' });
+    // TEARDOWN: one beat per story unit (8.3): the parts leave, eight
+    //   captions held, then back together.
+    pins.td = pin('#teardown', STORY_END - 17.0);
     return () => { for (const k of Object.keys(pins)) delete pins[k]; };
   });
 
@@ -93,12 +100,17 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   let coveredAt = Infinity;
   function rebuild() {
     const p = pins;
-    if (!p.ap || !p.mo || !p.ct) return;
+    if (!p.ap || !p.mo || !p.ct || !p.td) return;
     const pts = [[0, 0], [p.ap.start, 1], [p.ap.end, 3], [p.th.start, 3.6], [p.th.end, 7.2], [p.ex.start, 7.8], [p.ex.end, 9.0],
-      [p.fo.start, 9.6], [p.fo.end, 11.2], [p.mo.start, 11.8], [p.mo.end, 14.2], [p.ws.start, 15.2], [p.ct.start, STORY_END]];
+      [p.fo.start, 9.6], [p.fo.end, 11.2], [p.mo.start, 11.8], [p.mo.end, 14.2], [p.ws.start, 15.2], [p.ct.start, FILM_END],
+      [p.td.start, 17.0], [p.td.end, STORY_END]];
     for (let i = 1; i < pts.length; i++) if (pts[i][0] <= pts[i - 1][0]) pts[i][0] = pts[i - 1][0] + 1;
     anchors = pts;
-    coveredAt = p.ct.end + innerHeight * 0.5;
+    coveredAt = p.td.end + innerHeight;
+    // The pins change the page's length; make the smooth scroller measure it
+    // now rather than on its next resize check, so the page never stops
+    // short of the teardown in the first second after the live layout.
+    lenis.resize();
   }
   const storyAt = (y) => {
     for (let i = 1; i < anchors.length; i++) {
@@ -139,6 +151,11 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const readout = $('#readout');
   const models = $$('.film .model');
   let activeModel = -1, readOn = false, lastRead = '', covered = false;
+  // Teardown: labels that follow the parts, and one caption at a time.
+  const tdTags = $$('.td-tag').map((el) => ({ el, id: el.dataset.part, on: false, w: 0 }));
+  const tdCaps = new Map($$('.td-cap').map((el) => [el.dataset.part, el]));
+  const tdIntro = $('.td-intro'), tdOutro = $('.td-outro');
+  let tdState = '';
 
   // ------------------------------------------------------------ the loop
   let sCur = 0, last = performance.now(), slow = 0, fast = 0, lastSig = '', resized = 0;
@@ -192,7 +209,13 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       }
       ring.style.setProperty('--ring-rot', (sCur * 40).toFixed(1) + 'deg');
     }
-    ring.style.setProperty('--ring-o', ringOn ? Math.min(1, (3.3 - sCur) * 3).toFixed(2) : '0');
+    // The ring comes in as the hero text goes, so the headline never sits
+    // on it.
+    const ringIn = Math.min(1, Math.max(0, (sCur - 0.12) / 0.45));
+    ring.style.setProperty('--ring-o', ringOn ? (Math.min(1, (3.3 - sCur) * 3) * ringIn).toFixed(2) : '0');
+    root.style.setProperty('--hero-o', Math.max(0, 1 - sCur / 0.55).toFixed(3));
+
+    placeTeardown();
 
     // Focus readout: what the index mark points at.
     const wantRead = sCur > 9.55 && sCur < 11.3;
@@ -217,6 +240,54 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
         const d = view.getDPR();
         if (d > 1.01) view.setDPR(Math.max(1, d - 0.25)); else degrade('3D could not hold its frame rate here');
       } else if (fast > 600) { fast = 0; view.setDPR(view.getDPR() + 0.25); }
+    }
+  }
+
+  // Labels on the parts while they are apart: every label on wide screens
+  // (the featured one bright), only the featured one on phones. The leader
+  // points away from the centre of the exploded lens, as on the Orrin watch.
+  function placeTeardown() {
+    const s = sCur;
+    const cap = TEAR_CAPTIONS.find((c) => s >= c.from && s < c.to);
+    const state = s < 18.55 ? (s > 16.9 ? 'intro' : '') : s < 23.55 ? 'cap:' + (cap ? cap.id : '') : s < STORY_END + 0.01 ? 'outro' : '';
+    if (state !== tdState) {
+      tdState = state;
+      tdIntro && tdIntro.classList.toggle('is-on', state === 'intro');
+      tdOutro && tdOutro.classList.toggle('is-on', state === 'outro');
+      for (const [id, el] of tdCaps) el.classList.toggle('is-on', !!cap && state === 'cap:' + id);
+    }
+    const narrow = narrowMQ.matches;
+    const apart = s > 18.45 && s < 23.75;
+    const center = view.project('__target');
+    for (const t of tdTags) {
+      const featured = !!cap && cap.id === t.id;
+      const want = apart && (featured || !narrow);
+      const p = want ? view.project('td-' + t.id) : null;
+      const show = !!(p && p.visible);
+      if (show !== t.on) { t.on = show; t.el.classList.toggle('is-on', show); }
+      t.el.classList.toggle('is-featured', featured);
+      if (!show) continue;
+      let dx = p.x - (center ? center.x : innerWidth / 2), dy = p.y - (center ? center.y : innerHeight / 2);
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+      const L = narrow ? 30 : 46;
+      const ex = dx * L;
+      let ey = dy * L - 6;
+      // Keep the name below the header and the badge.
+      const top = (narrow ? 132 : 92) - p.y;
+      if (ey < top) ey = top;
+      const st = t.el.style;
+      st.setProperty('--x', p.x.toFixed(1) + 'px');
+      st.setProperty('--y', p.y.toFixed(1) + 'px');
+      st.setProperty('--dx', ex.toFixed(1) + 'px');
+      st.setProperty('--dy', ey.toFixed(1) + 'px');
+      st.setProperty('--len', Math.hypot(ex, ey).toFixed(1) + 'px');
+      st.setProperty('--ang', Math.atan2(ey, ex).toFixed(3) + 'rad');
+      if (!t.w) t.w = t.el.querySelector('.td-tag__text').offsetWidth || 110;
+      let left = dx < 0;
+      if (!left && p.x + ex + t.w > innerWidth - 8) left = true;
+      else if (left && p.x + ex - t.w < 8) left = false;
+      st.setProperty('--tx', left ? '-100%' : '0%');
     }
   }
 

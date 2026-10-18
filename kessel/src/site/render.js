@@ -15,13 +15,13 @@ import { contactHTML } from './pages/contact.js';
 
 // --------------------------------------------------------------- shell
 export function header() {
-  const links = site.nav.map((n) => `<a href="${href(n.route)}" data-nav="${n.route}">${esc(n.label)}</a>`).join('\n    ');
+  // One page: three jumps within it. Earlier pages live in the footer.
+  const links = site.nav.map((n) => `<a href="${n.href}">${esc(n.label)}</a>`).join('\n    ');
   return `<header class="masthead">
-  <a class="masthead__mark" href="#home" aria-label="${esc(site.name)}, home">KESSEL<span> OPTICS</span></a>
+  <a class="masthead__mark" href="#top" aria-label="${esc(site.name)}, back to the top">KESSEL<span> OPTICS</span></a>
   <nav class="masthead__nav" id="site-nav" aria-label="Main">
     ${links}
   </nav>
-  <button class="masthead__menu" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
 </header>`;
 }
 

@@ -14,25 +14,38 @@
 //  11.8 - 14.2  LENSES (pinned, 3 beats): three proposals
 //  14.2 - 15.2  close on the signed barrel
 //  15.2 - 16.5  contact: front three-quarters, iris half open
-export const STORY_END = 16.5;
+//  ---- teardown (the About section), continuing the same move ----
+//  16.5 - 17.0  the film's last frame eases to a three-quarter view
+//  17.0 - 18.7  the parts leave, each on its own path; the camera orbits
+//  18.7 - 23.5  held apart: labels on every part, one caption at a time
+//  23.5 - 24.8  back together while the camera comes round to the front
+//  24.8 - 25.3  hold on the whole lens
+export const FILM_END = 16.5;
+export const STORY_END = 25.3;
+// Caption windows in the teardown, one per part (story units).
+export const TEAR_CAPTIONS = ['front-element', 'glass-1', 'blades', 'focus-ring', 'scale', 'barrel', 'mount', 'signature']
+  .map((id, i) => ({ id, from: 18.7 + i * 0.6, to: 18.7 + (i + 1) * 0.6 }));
 
 export function createState() {
   return {
     az: 0, el: 0, frame: 46, tx: 0, ty: 0, tz: -10, sx: 0, sy: 0, fov: 26,
     inside: 0, cz: 160, yaw: 0, roll: 0, rx: 0, ry: 0,
-    iris: 0, spread: 0, focus: 0, model: 1, light: 1, sensor: 0,
+    iris: 0, spread: 0, focus: 0, model: 1, light: 1, sensor: 0, throat: 0, tear: 0, oroll: 0, tlight: 0, tspread: 1,
   };
 }
 
 export function buildStory(gsap, S, layout) {
   const N = layout === 'narrow';
   const v = (w, n) => (N ? n : w);
-  Object.assign(S, createState(), { sx: v(0.14, 0), sy: v(0, 0.12) });
+  // The first frame is the hero: the lens large and cropped by the edges,
+  // the iris closed to a pinhole, pushed right (wide) or up (phones) so the
+  // headline never covers the bright centre.
+  Object.assign(S, createState(), { frame: v(35, 34), sx: v(0.22, 0), sy: v(0, 0.14), tspread: v(1, 0.78) });
   const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
   const to = (a, b, vals, ease = 'power1.inOut') => tl.to(S, { ...vals, duration: b - a, ease }, a);
 
   // Hero: a slow push toward the pinhole.
-  to(0, 1, { frame: 42 }, 'sine.inOut');
+  to(0, 1, { frame: v(36, 37.5) }, 'sine.inOut');
   // Aperture: the iris channel is linear; each blade applies its own
   // smoothstep with a staggered start, so they open one at a time.
   to(1.05, 2.85, { iris: 1 }, 'none');
@@ -44,12 +57,18 @@ export function buildStory(gsap, S, layout) {
   to(3.0, 3.6, { el: 0, sx: 0, sy: 0 }, 'sine.inOut');
   to(3.0, 3.9, { spread: 1 }, 'power1.inOut');
   to(3.0, 3.35, { inside: 1 }, 'power1.inOut');
-  to(3.0, 3.75, { cz: 32, fov: 64 }, 'power2.in');
+  // Phones see the barrel through a portrait frame, so the trip uses a
+  // wider lens there: the walls and rings stay in view around the camera.
+  to(3.0, 3.75, { cz: 32, fov: v(64, 84) }, 'power2.in');
   // Through the barrel, past each element and through the open iris.
   to(3.75, 7.2, { cz: -236 }, 'sine.inOut');
   // The sensor appears beyond the mount for the exit, then is put away.
-  to(5.6, 6.2, { sensor: 1 }, 'power1.out');
+  // The sensor lights up at the far end of the barrel once the camera is
+  // past the iris, small and distant; it is only close at the exit. Its
+  // throat surrounds it so it never floats on its own.
+  to(5.3, 5.9, { sensor: 1, throat: 1 }, 'power1.out');
   to(7.7, 7.85, { sensor: 0 }, 'power1.in');
+  to(7.75, 8.15, { throat: 0 }, 'power1.inOut');
   to(3.6, 7.2, { roll: 18 }, 'sine.inOut');
 
   // Out at the mount, turn round to face the way we came.
@@ -82,6 +101,21 @@ export function buildStory(gsap, S, layout) {
   to(14.2, 15.2, { az: 90, el: 2, frame: v(15, 20), tx: 39, ty: 0, tz: -68, sx: v(-0.2, 0), sy: v(0, 0.2), model: 1 }, 'power1.inOut');
   // Contact: front three-quarters, iris settled half open.
   to(15.2, 16.5, { az: 24, el: 8, frame: v(56, 62), tx: 0, ty: 0, tz: -40, sx: v(0.18, 0), sy: v(0, 0.16), iris: 0.55 }, 'power1.inOut');
+
+  // ---- Teardown. The camera eases from the film's last frame into a
+  // three-quarter view and orbits while the parts leave (on phones it also
+  // rolls a quarter turn, so the lens comes apart down the screen).
+  // The parts are discs and rings, so the camera stays in front
+  // three-quarter (never side-on, where they would turn edge-on), a little
+  // above, and a teardown light comes up to separate them from the dark.
+  to(16.5, 17.0, { az: 40, el: 16, frame: v(80, 70), tx: 0, ty: -10, tz: -34, sx: v(0.03, 0), sy: v(0.04, 0.06), iris: 1, focus: 0 }, 'power1.inOut');
+  to(16.5, 17.2, { tlight: 1, light: 0 }, 'power1.inOut');   // no iris, no light through it
+  to(17.0, 18.7, { tear: 1 }, 'none');
+  to(17.0, 18.7, { az: 54, el: 22, frame: v(142, 120), ty: -10, tz: -36, sx: v(0.07, 0), sy: v(0.03, 0.12), oroll: v(0, 90) }, 'sine.inOut');
+  to(18.7, 23.5, { az: 76, el: 17 }, 'none');
+  to(23.5, 24.8, { tear: 0 }, 'none');
+  to(23.5, 24.8, { az: 384, el: 8, frame: v(56, 62), tx: 0, ty: 0, tz: -40, sx: v(0.18, 0), sy: v(0, 0.16), oroll: 0, iris: 0.55 }, 'power1.inOut');
+  to(24.3, 25.1, { tlight: 0, light: 1 }, 'power1.inOut');
 
   tl.set({}, {}, STORY_END);
   // Render to the end and back so every tween records its start value now.

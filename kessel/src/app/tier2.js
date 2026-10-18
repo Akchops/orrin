@@ -4,6 +4,7 @@
 // barrel rings and glass, turns at the back, and the focus scale rolls.
 import { IRIS_Z, SPREAD } from './lens.js';
 import { DISTANCES, throwPos } from './textures.js';
+import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset } from './teardown.js';
 
 const TAU = Math.PI * 2, DEG = Math.PI / 180;
 const SECTION_MID = [-5, -24, -50, -72, -92];
@@ -46,7 +47,9 @@ export function mount2D(container, { font }) {
     const k = S.inside;
     const pos = op.map((v, i) => v + (ap[i] - v) * k), tgt = ot.map((v, i) => v + (at[i] - v) * k);
     const f = norm(sub(tgt, pos));
-    const up = [Math.sin(S.roll * DEG), Math.cos(S.roll * DEG), 0];
+    let up = [Math.sin(S.roll * DEG), Math.cos(S.roll * DEG), 0];
+    // Orbit roll (teardown on phones), as on the WebGL tier.
+    if (S.oroll) up = rotAbout(up, f, -S.oroll * DEG);
     const r = norm(cross(f, up)), u = cross(r, f);
     Object.assign(cam, { pos, f, r, u, tan, sx: S.sx, sy: S.sy, tgt });
   }
@@ -81,6 +84,22 @@ export function mount2D(container, { font }) {
     const tiltX = pointer.y * 0.12 * (1 - S.inside), tiltY = (pointer.x * 0.18 + pointer.spin) * (1 - S.inside);
     xf = (p) => rotXY(rotXY([p[0] * fr, p[1] * fr, p[2] * lz], S.rx, S.ry), tiltX, tiltY);
     const off = (g) => SECTION_MID[g] * SPREAD * S.spread;
+    // Teardown: the same part paths as the WebGL tier (teardown.js).
+    const tear = S.tear || 0, to = {}, ks = S.tspread || 1;
+    let bladePart = null, bladeE = 0;
+    for (const p of TEAR_PARTS) {
+      const e = tearProgress(tear, p.order);
+      const o = p.id === 'blades' ? bladeOffset(p, e, 0, [0, 0, 0]) : tearOffset(p, e, [0, 0, 0]);
+      to[p.id] = [o[0] * ks, o[1] * ks, o[2] * ks];
+      if (p.id === 'blades') { bladePart = p; bladeE = e; }
+    }
+    const mv = (pts, o) => (o && (o[0] || o[1] || o[2]) ? pts.map((q) => [q[0] + o[0], q[1] + o[1], q[2] + o[2]]) : pts);
+    const ringPart = (g, ro) => (g === 0 ? 'barrel-front' : g === 1 ? (ro >= 41 ? 'focus-ring' : 'scale') : g === 4 ? 'mount' : 'barrel');
+    const SECTION_OF = { 'front-element': 0, 'glass-1': 1, 'glass-2': 2, 'glass-3': 3, 'glass-4': 4, blades: 2, 'focus-ring': 1, scale: 1, barrel: 3, mount: 4, signature: 3 };
+    for (const [id, a] of Object.entries(TEAR_ANCHORS)) {
+      const o = to[id] || [0, 0, 0];
+      anchorsLocal['td-' + id] = [a[0] + o[0], a[1] + o[1], a[2] + o[2] + off(SECTION_OF[id])];
+    }
 
     // Light far behind the lens.
     const lc = proj(xf([0, 0, -700]));
@@ -97,8 +116,8 @@ export function mount2D(container, { font }) {
     // inside as a tunnel rushing past.
     for (const [g, rings] of RINGS) {
       for (const [z, ro, ri, sh] of rings) {
-        const zz = z + off(g);
-        const outer = circlePts(ro, zz), inner = circlePts(ri, zz).reverse();
+        const zz = z + off(g), o = to[ringPart(g, ro)];
+        const outer = mv(circlePts(ro, zz), o), inner = mv(circlePts(ri, zz), o).reverse();
         const metal = g === 4;
         push(outer.concat(inner), (it) => {
           path(it.scr);
@@ -116,7 +135,7 @@ export function mount2D(container, { font }) {
 
     // Glass: faint discs edged with the coating colours.
     ELEMENTS.forEach(([z, r, g], i) => {
-      push(circlePts(r, z + off(g)), (it) => {
+      push(mv(circlePts(r, z + off(g)), to[i === 0 ? 'front-element' : 'glass-' + g]), (it) => {
         path(it.scr);
         ctx.fillStyle = 'rgba(14,18,26,0.16)'; ctx.fill();
         ctx.strokeStyle = COATS[i]; ctx.globalAlpha = 0.55; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 1;
@@ -136,15 +155,16 @@ export function mount2D(container, { font }) {
       const phi = (b / 11) * TAU;
       const st = (b / 11) * 0.55, e = smooth(st, st + 0.45, S.iris);
       const th = 0.7 * (1 - e);
+      const bo = bladePart ? bladeOffset(bladePart, bladeE, phi, [0, 0, 0]).map((v) => v * ks) : [0, 0, 0];
       const pts = blade.map(([x, y]) => {
         const xr = x * Math.cos(th) - y * Math.sin(th), yr = x * Math.sin(th) + y * Math.cos(th);
         const X = xr + 30, Y = yr;
-        return [X * Math.cos(phi) - Y * Math.sin(phi), X * Math.sin(phi) + Y * Math.cos(phi), izz + b * 0.03];
+        return [X * Math.cos(phi) - Y * Math.sin(phi) + bo[0], X * Math.sin(phi) + Y * Math.cos(phi) + bo[1], izz + b * 0.03 + bo[2]];
       });
       push(pts, (it) => { path(it.scr); ctx.fillStyle = '#17181c'; ctx.fill(); ctx.strokeStyle = 'rgba(160,166,176,0.35)'; ctx.lineWidth = 1; ctx.stroke(); }, -1);
     }
     // Cover ring in front of the blades, as on the WebGL tier.
-    push(circlePts(37.2, izz + 0.9).concat(circlePts(21.8, izz + 0.9).reverse()), (it) => { path(it.scr); ctx.fillStyle = '#0c0d10'; ctx.fill('evenodd'); }, -1.5);
+    push(mv(circlePts(37.2, izz + 0.9).concat(circlePts(21.8, izz + 0.9).reverse()), to.blades), (it) => { path(it.scr); ctx.fillStyle = '#0c0d10'; ctx.fill('evenodd'); }, -1.5);
     // Bloom at the aperture when looking into the front.
     const ic = proj(xf([0, 0, izz]));
     if (ic) {
@@ -163,7 +183,8 @@ export function mount2D(container, { font }) {
     const rot = S.focus * 160 * DEG, fz = -31.5 + off(1);
     DISTANCES.forEach((d) => {
       const phi = (90 - throwPos(d.m) * 160) * DEG + rot;
-      const p = [40.6 * Math.sin(phi), -40.6 * Math.cos(phi), fz];
+      const so = to.scale;
+      const p = [40.6 * Math.sin(phi) + so[0], -40.6 * Math.cos(phi) + so[1], fz + so[2]];
       const n = [Math.sin(phi), -Math.cos(phi), 0];
       const wp = xf(p), wn = norm(sub(xf([p[0] + n[0], p[1] + n[1], p[2]]), wp));
       if (dot(wn, norm(sub(cam.pos, wp))) < 0.25) return;
@@ -173,10 +194,11 @@ export function mount2D(container, { font }) {
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(d.label, s[0], s[1]);
       }, -3);
     });
-    push([[40.2, 0, -40.6 + off(2)]], (it) => { const s = it.scr[0]; ctx.fillStyle = '#f1efe9'; ctx.fillRect(s[0] - 1, s[1] - 2.3 * s[3], 2, 4.6 * s[3]); }, -3);
+    push(mv([[40.2, 0, -40.6 + off(2)]], to.barrel), (it) => { const s = it.scr[0]; ctx.fillStyle = '#f1efe9'; ctx.fillRect(s[0] - 1, s[1] - 2.3 * s[3], 2, 4.6 * s[3]); }, -3);
     // Maker's mark on the rear barrel.
     {
-      const p = [38.8, 0, -66 + off(3)], wp = xf(p), wn = norm(sub(xf([p[0] + 1, 0, p[2]]), wp));
+      const so = to.signature;
+      const p = [38.8 + so[0], so[1], -66 + off(3) + so[2]], wp = xf(p), wn = norm(sub(xf([p[0] + 1, p[1], p[2]]), wp));
       if (dot(wn, norm(sub(cam.pos, wp))) > 0.3) push([p], (it) => {
         const s = it.scr[0]; ctx.fillStyle = '#f1efe9'; ctx.font = `600 ${Math.max(9, 3 * s[3])}px ${font}`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('KESSEL', s[0], s[1]);
@@ -184,14 +206,25 @@ export function mount2D(container, { font }) {
     }
 
     // Sensor and its image circle, for the exit.
+    // The sensor lights up at the far end; its throat (dark rings) holds it.
+    const zs = -98 - 46.5 + off(4);
+    if ((S.throat || 0) > 0.01) {
+      for (const dz of [9, 21, 33, 45]) {
+        push(circlePts(31, zs + dz).concat(circlePts(26.5, zs + dz).reverse()), (it) => {
+          path(it.scr); ctx.globalAlpha = S.throat; ctx.fillStyle = '#1b1d22'; ctx.fill('evenodd');
+          ctx.strokeStyle = 'rgba(210,214,220,0.10)'; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+        });
+      }
+    }
     if (S.sensor > 0.01) {
-      const zs = -98 - 46.5 + off(4), w = 18 * S.sensor, h = 12 * S.sensor;
+      const w = 18, h = 12;
       push([[-w, -h, zs], [w, -h, zs], [w, h, zs], [-w, h, zs]], (it) => {
         path(it.scr); ctx.fillStyle = '#16131f'; ctx.fill();
         let cx = 0, cy = 0; it.scr.forEach((q) => { cx += q[0]; cy += q[1]; }); cx /= 4; cy /= 4;
         const rad = Math.hypot(it.scr[0][0] - cx, it.scr[0][1] - cy);
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-        g.addColorStop(0, 'rgba(255,238,214,0.95)'); g.addColorStop(0.5, 'rgba(214,190,255,0.45)'); g.addColorStop(1, 'rgba(40,30,80,0)');
+        const a = S.sensor;
+        g.addColorStop(0, `rgba(255,238,214,${0.95 * a})`); g.addColorStop(0.5, `rgba(214,190,255,${0.45 * a})`); g.addColorStop(1, 'rgba(40,30,80,0)');
         ctx.save(); path(it.scr); ctx.clip(); ctx.fillStyle = g; ctx.fillRect(cx - rad, cy - rad, rad * 2, rad * 2); ctx.restore();
       }, 0);
     }
@@ -214,6 +247,11 @@ export function mount2D(container, { font }) {
   };
 }
 
+// Rodrigues: rotate v about the unit axis k by angle a.
+function rotAbout(v, k, a) {
+  const c = Math.cos(a), s = Math.sin(a), kv = cross(k, v), d = dot(k, v);
+  return [v[0] * c + kv[0] * s + k[0] * d * (1 - c), v[1] * c + kv[1] * s + k[1] * d * (1 - c), v[2] * c + kv[2] * s + k[2] * d * (1 - c)];
+}
 function smooth(a, b, x) { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 function rotXY(p, rx, ry) {
   let [x, y, z] = p;

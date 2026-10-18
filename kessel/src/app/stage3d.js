@@ -35,6 +35,11 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   // rings and element edges read as they rush past. Off outside.
   const lamp = new T.PointLight(0xfff0e0, 0, 140, 2);
   scene.add(lamp);
+  // Teardown light: a cool rim from behind and above, and a stronger key,
+  // so dark anodised parts separate from the dark page. Off in the film.
+  const rim = new T.DirectionalLight(0xdfe6ff, 0);
+  rim.position.set(-140, 120, -160);
+  scene.add(rim, rim.target);
 
   const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font), rear: rearBarrelTexture(T, font) };
   const lens = buildLens(T, L, { quality, textures });
@@ -54,7 +59,7 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost = true; onContextLost && onContextLost(); });
 
   const orbitPos = new T.Vector3(), orbitTgt = new T.Vector3(), axisPos = new T.Vector3(), axisTgt = new T.Vector3();
-  const target = new T.Vector3(), tmp = new T.Vector3();
+  const target = new T.Vector3(), tmp = new T.Vector3(), fwd = new T.Vector3();
 
   function render(S, tSec, pointer) {
     if (lost) return;
@@ -66,6 +71,9 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     lens.root.rotation.set(pointer.y * 0.12 * (1 - inside), (pointer.x * 0.18 + pointer.spin) * (1 - inside), 0);
     scene.environmentRotation.set(pointer.y * 0.3, pointer.x * 0.7 + pointer.spin * 0.5, 0);
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
+    const tl = S.tlight || 0;
+    key.intensity = 1.4 + 1.3 * tl;
+    rim.intensity = 2.6 * tl;
 
     // Orbit camera: `frame` is the half-size in mm that must fit the smaller
     // viewport side, so phone and desktop show the same composition.
@@ -86,12 +94,25 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     camera.position.lerpVectors(orbitPos, axisPos, inside);
     target.lerpVectors(orbitTgt, axisTgt, inside);
     camera.up.set(Math.sin(S.roll * DEG), Math.cos(S.roll * DEG), 0);
+    // Orbit roll (teardown on phones): turn the picture about the view
+    // direction, so the exploded lens can run down a portrait screen.
+    if (S.oroll) camera.up.applyAxisAngle(fwd.subVectors(target, camera.position).normalize(), -S.oroll * DEG);
     camera.lookAt(target);
     camera.setViewOffset(W, H, -S.sx * W, S.sy * H, W, H);
     camera.updateProjectionMatrix();
 
     lamp.position.copy(camera.position);
     lamp.intensity = 7000 * inside;
+
+    // Photosite grid: only when the sensor fills the frame, faded in by its
+    // size on screen, so it never turns into moire at a distance.
+    if (lens.sensor.visible && S.sensor > 0.01) {
+      lens.sensor.getWorldPosition(tmp);
+      const h = 2 * camera.position.distanceTo(tmp) * Math.tan((S.fov * DEG) / 2);
+      const fill = Math.max(24 / h, 36 / (h * camera.aspect));
+      const k = Math.min(1, Math.max(0, (fill - 0.7) / 0.4));
+      lens.sensorGrid.opacity = 0.32 * S.sensor * k * k * (3 - 2 * k);
+    } else lens.sensorGrid.opacity = 0;
 
     // The window behind the lens is only ever seen through the glass: shown
     // when the camera is close to the optical axis and still in front of the

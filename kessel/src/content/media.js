@@ -29,4 +29,9 @@ export const media = {
   'd-sign': { w: 1600, h: 1000, alt: "The optician's signature on the rear barrel, under the engraved maker's mark." },
   'd-mount': { w: 1400, h: 1400, alt: 'The back of the lens: the stainless mount and the rear element.' },
   'exploded-wide': { w: 2400, h: 1100, alt: 'The lens taken apart along its axis: front ring, focus section, iris, rear section and mount spaced out in a line, each with its glass.' },
+  // One-page hero and teardown stills (stills mode: reduced motion, no JS).
+  'hero-wide': { w: 1600, h: 1000, alt: 'A Kessel lens seen straight on and close, cropped by the frame, the iris closed to a pinhole of light.' },
+  'hero-tall': { w: 900, h: 1600, alt: 'A Kessel lens seen straight on and close, cropped by the frame, the iris closed to a pinhole of light.' },
+  'td-apart': { w: 1600, h: 1000, alt: 'The lens taken apart: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount, each on its own.' },
+  'td-apart-tall': { w: 900, h: 1600, alt: 'The lens taken apart down the frame: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount.' },
 };

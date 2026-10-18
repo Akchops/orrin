@@ -16,7 +16,8 @@ const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600],
   'hero-lens': [1800, 1800], 'lens-1': [1800, 1350], 'lens-2': [1800, 1350], 'lens-3': [1800, 1350],
   'lineup-1': [1800, 760], 'lineup-2': [1800, 760], 'lineup-3': [1800, 760],
   'd-iris': [1600, 1600], 'd-glass': [1600, 1600], 'd-knurl': [2000, 1000], 'd-scale': [1600, 1000], 'd-sign': [1600, 1000],
-  'd-mount': [1400, 1400], 'exploded-wide': [2400, 1100] };
+  'd-mount': [1400, 1400], 'exploded-wide': [2400, 1100],
+  'hero-wide': [1600, 1000], 'hero-tall': [900, 1600], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
 // Site imagery keeps its transparent background; the film's still frames
 // are flattened onto black as before.
 const site = ['hero-lens', 'lens-1', 'lens-2', 'lens-3', 'lineup-1', 'lineup-2', 'lineup-3', 'd-iris', 'd-glass', 'd-knurl', 'd-scale', 'd-sign', 'd-mount', 'exploded-wide'];
@@ -32,6 +33,8 @@ for (const n of names) {
   await page.setViewportSize({ width: rw, height: rh });
   await page.goto(pathToFileURL(resolve(FILE)).href + '?still=' + n, { timeout: 180000 });
   await page.waitForFunction(() => !!window.__still, null, { timeout: 180000 });
+  const marks = await page.evaluate(() => window.__stillMarks || null);
+  if (marks && n.startsWith('td-')) writeFileSync(`kessel/stills/${n}.json`, JSON.stringify(marks));
   const png = `kessel/stills/${n}.png`;
   writeFileSync(png, Buffer.from((await page.evaluate(() => window.__still)).split(',')[1], 'base64'));
   const mode = site.includes(n) ? 'RGBA' : 'RGB';

@@ -3,6 +3,7 @@
 // same scene, timeline and materials as the live lens.
 import { mountWebGL } from './stage3d.js';
 import { buildStory, createState } from './story.js';
+import { TEAR_ANCHORS } from './teardown.js';
 
 const POSES = {
   hero: { s: 0 },
@@ -42,6 +43,11 @@ const POSES = {
   'd-scale': { s: 16.5, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -19, focus: 0.62, light: 0, sx: 0, sy: 0 },
   'd-sign': { s: 16.5, model: 1, az: 90, el: 2, frame: 15, tx: 39, ty: 0, tz: -68, light: 0, sx: 0, sy: 0 },
   'd-mount': { s: 16.5, az: 162, el: 14, frame: 40, tx: 0, ty: 0, tz: -86, light: 0, sx: 0, sy: 0 },
+  // One-page site: the hero (the film's first frame) and the teardown.
+  'hero-wide': { s: 0 },
+  'hero-tall': { s: 0, layout: 'narrow' },
+  'td-apart': { s: 21.1 },
+  'td-apart-tall': { s: 21.1, layout: 'narrow' },
   'exploded-wide': { s: 16.5, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
 };
 
@@ -65,12 +71,20 @@ export async function renderStill(name, font) {
   stage.appendChild(view.canvas);
   view.resize();
   const S = createState();
-  const tl = buildStory(L.gsap, S, 'wide');
+  const tl = buildStory(L.gsap, S, pose.layout || 'wide');
   await view.warm(S);
   tl.time(pose.s);
-  for (const [k, v] of Object.entries(pose)) if (k !== 's' && k !== 'noLeaks') S[k] = v;
+  for (const [k, v] of Object.entries(pose)) if (!['s', 'noLeaks', 'layout'].includes(k)) S[k] = v;
   const p = { x: 0, y: 0, spin: 0 };
   view.render(S, 0.4, p);
   view.render(S, 0.4, p);
+  // Where each teardown label points, as a fraction of the frame, so the
+  // stills page can number the parts (kessel/scripts/stills.mjs saves it).
+  const W = stage.clientWidth, H = stage.clientHeight, marks = {};
+  for (const id of Object.keys(TEAR_ANCHORS)) {
+    const q = view.project('td-' + id);
+    if (q) marks['td-' + id] = [+(q.x / W).toFixed(4), +(q.y / H).toFixed(4), q.visible && q.x > 0 && q.x < W && q.y > 0 && q.y < H];
+  }
+  window.__stillMarks = marks;
   window.__still = view.canvas.toDataURL('image/png');
 }

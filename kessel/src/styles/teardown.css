@@ -1,0 +1,88 @@
+/* ================================================================ TEARDOWN
+   After the film the same lens comes apart. Live: a pinned stage, one
+   caption at a time low on the left (low on phones) and labels that follow
+   the parts. Stills (reduced motion, no JS): a labelled exploded view with
+   every caption under it. */
+
+/* ---------------------------------------------------------------- stills */
+.film .teardown { display: grid; gap: 2rem; }
+.film .td-tags { display: none; }
+.film .td-still { position: relative; }
+.film .td-still--tall { display: none; }
+.film .td-marks { position: absolute; inset: 0 0 auto; aspect-ratio: 1600 / 1000; list-style: none; margin: 0; padding: 0; pointer-events: none; }
+.film .td-still--tall .td-marks { aspect-ratio: 900 / 1600; }
+.film .td-marks li { position: absolute; transform: translate(-50%, -50%); }
+.film .td-marks li span:first-child {
+  display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+  background: rgba(6, 7, 10, 0.82); border: 1px solid var(--coat); color: var(--engrave);
+  font-family: var(--display); font-size: 0.78rem;
+}
+.film .td-copy { display: grid; gap: 1.6rem; }
+.film .td-intro { display: grid; gap: 0.9rem; }
+.film .td-intro > p:not(.cap__num) { color: var(--dim); max-width: 46ch; }
+.film .td-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); counter-reset: none; }
+.film .td-cap { display: grid; grid-template-columns: 3rem minmax(0, 1fr); column-gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.film .td-cap__no { grid-row: span 2; font-family: var(--display); font-stretch: 125%; font-weight: 300; font-size: 1.5rem; color: var(--coat); line-height: 1.1; }
+.film .td-cap h3 { font-size: 1.35rem; font-weight: 400; }
+.film .td-cap p:not(.td-cap__no) { color: var(--dim); font-size: 1rem; max-width: 60ch; }
+.film .td-outro { display: grid; gap: 0.5rem; }
+.film .td-outro h3 { font-size: 1.35rem; font-weight: 400; }
+.film .td-outro p { color: var(--dim); font-size: 1rem; }
+@media (min-width: 800px) {
+  .film .teardown { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; gap: 2rem 3rem; }
+  .film .td-still--wide { grid-column: 1 / -1; }
+}
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .film .td-still--wide { display: none; }
+  .film .td-still--tall { display: grid; }
+}
+
+/* ------------------------------------------------------------------ live */
+.live .film .teardown { display: block; min-height: var(--vh); }
+.live .film .td-still { display: none; }
+.live .film .td-copy { position: absolute; z-index: 2; left: 0; bottom: 4.8rem; width: min(27rem, 36vw); height: 0; display: block; }
+.live .film .td-intro, .live .film .td-cap, .live .film .td-outro {
+  position: absolute; left: 0; bottom: 0; width: 100%; display: grid; gap: 0.7rem;
+  opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s;
+  text-shadow: 0 1px 16px rgba(6, 7, 10, 0.9), 0 0 2px rgba(6, 7, 10, 0.7);
+}
+.live .film .td-intro.is-on, .live .film .td-cap.is-on, .live .film .td-outro.is-on { opacity: 1; visibility: visible; }
+.live .film .td-caps { border: 0; }
+.live .film .td-cap { grid-template-columns: minmax(0, 1fr); padding: 0; border: 0; }
+.live .film .td-cap__no { grid-row: auto; font-size: 0.78rem; font-family: var(--display); letter-spacing: 0.14em; color: var(--coat); }
+.live .film .td-cap h3, .live .film .td-outro h3 { font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3.2rem); font-weight: 300; }
+.live .film .td-intro h2 { font-size: clamp(2.1rem, 1.3rem + 3vw, 3.8rem); }
+.live .film .td-cap p:not(.td-cap__no), .live .film .td-outro p, .live .film .td-intro > p:not(.cap__num) { font-size: 1.05rem; color: var(--dim); }
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .live .film .teardown::before {
+    content: ""; position: absolute; z-index: 1; pointer-events: none; left: calc(var(--gutter-l) * -1); bottom: 0; height: 60%;
+    width: calc(min(27rem, 36vw) + 16vw);
+    background: radial-gradient(120% 90% at 0% 100%, rgba(6, 7, 10, 0.9), rgba(6, 7, 10, 0.55) 55%, rgba(6, 7, 10, 0) 80%);
+  }
+}
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .live .film .td-copy { right: 0; width: auto; bottom: 5.2rem; }
+  .live .film .teardown::after {
+    content: ""; position: absolute; z-index: 1; pointer-events: none; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 42%;
+    background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.86) 40%, var(--void));
+  }
+}
+
+/* Labels that follow the parts: a dot on the part, a leader line, the name.
+   The featured part's label is bright; the others recede. */
+.live .film .td-tags { display: block; position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+.td-tag {
+  position: absolute; left: 0; top: 0; color: var(--engrave);
+  transform: translate3d(var(--x, -999px), var(--y, -999px), 0);
+  opacity: 0; transition: opacity 0.35s ease; white-space: nowrap;
+  font-family: var(--display); font-stretch: 100%; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.td-tag.is-on { opacity: 0.55; }
+.td-tag.is-on.is-featured { opacity: 1; }
+.td-tag__dot { position: absolute; left: -3.5px; top: -3.5px; width: 7px; height: 7px; border-radius: 50%; background: var(--dim); box-shadow: 0 0 0 3px rgba(171, 155, 255, 0.12); }
+.td-tag.is-featured .td-tag__dot { background: var(--coat); box-shadow: 0 0 0 4px rgba(171, 155, 255, 0.25); }
+.td-tag__line { position: absolute; left: 0; top: 0; height: 1px; width: var(--len, 40px); background: linear-gradient(90deg, var(--dim), rgba(162, 168, 177, 0.3)); transform-origin: 0 0; transform: rotate(var(--ang, 0rad)); }
+.td-tag.is-featured .td-tag__line { background: linear-gradient(90deg, var(--coat), rgba(171, 155, 255, 0.35)); }
+.td-tag__text { position: absolute; left: var(--dx, 40px); top: var(--dy, -20px); transform: translate(var(--tx, 0), -50%); padding: 0.25rem 0.5rem; background: rgba(6, 7, 10, 0.7); border-radius: 2px; }
+.td-tag.is-featured .td-tag__text { color: var(--engrave); border: 1px solid rgba(171, 155, 255, 0.5); }
+@media (max-width: 799px) { .td-tag { font-size: 0.66rem; } }

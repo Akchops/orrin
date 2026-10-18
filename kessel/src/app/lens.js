@@ -4,6 +4,8 @@
 // Every channel the scroll timeline animates is applied in update(), and
 // nothing else moves the parts.
 
+import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset } from './teardown.js';
+
 const TAU = Math.PI * 2;
 
 // Glass elements: front vertex z, clear radius, surface radii (R1 > 0 is
@@ -97,17 +99,38 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   const groups = SECTIONS.map(() => { const g = new T.Group(); lens.add(g); return g; });
   const [gFront, gFocus, gIris, gRear, gMount] = groups;
   const anchors = {};
+  // Teardown parts: each part is a group inside its section, so it can
+  // leave on its own path (teardown.js). A part can span sections.
+  const parts = {};
+  const part = (id, parent) => { const g = new T.Group(); parent.add(g); (parts[id] ||= []).push(g); return g; };
+  const pBarrelFront = part('barrel-front', gFront);
+  const pFocusRing = part('focus-ring', gFocus);
+  const pScale = part('scale', gFocus);
+  const pBarrelTube = part('barrel-front', gFocus);
+  const pBarrelIris = part('barrel', gIris);
+  const pIris = part('blades', gIris);
+  const pBarrelRear = part('barrel', gRear);
+  const pSignature = part('signature', gRear);
+  const pMount = part('mount', gMount);
+  // A round hole for the extruded rings, with as many points as the lathes
+  // so it never shows a corner: an arc built from too few curve segments
+  // turns into a square or an octagon whose faces poke into the light path.
+  const roundHole = (r) => {
+    const h = new T.Path();
+    for (let i = 0; i <= seg; i++) { const a = -(i / seg) * TAU; if (i) h.lineTo(Math.cos(a) * r, Math.sin(a) * r); else h.moveTo(r, 0); }
+    return h;
+  };
 
   // ----------------------------------------------------------- front ring
-  gFront.add(mesh(lathe([[40, -9.5], [40, -1.3]]), anodise));
-  gFront.add(mesh(lathe([[40, -1.3], [39.5, -0.35], [38.7, 0]]), bare));
-  gFront.add(mesh(lathe([[38.7, 0], [35.3, 0]]), anodise));
-  gFront.add(mesh(lathe([[35.3, 0], [34.8, -0.45]]), bare));
-  gFront.add(mesh(lathe(ribbed(34.8, -0.45, -9.5, 1.4)), flock));
+  pBarrelFront.add(mesh(lathe([[40, -9.5], [40, -1.3]]), anodise));
+  pBarrelFront.add(mesh(lathe([[40, -1.3], [39.5, -0.35], [38.7, 0]]), bare));
+  pBarrelFront.add(mesh(lathe([[38.7, 0], [35.3, 0]]), anodise));
+  pBarrelFront.add(mesh(lathe([[35.3, 0], [34.8, -0.45]]), bare));
+  pBarrelFront.add(mesh(lathe(ribbed(34.8, -0.45, -9.5, 1.4)), flock));
   {
     const r = mesh(new T.RingGeometry(35.4, 38.6, seg, 1), decal(textures.front));
     r.position.z = 0.02;
-    gFront.add(r);
+    pBarrelFront.add(r);
   }
 
   // ----------------------------------------------------------- focus ring
@@ -125,43 +148,41 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       const rr = 41.4 - 0.75 * (1 - c * c);
       if (i === 0) s.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); else s.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
     }
-    const hole = new T.Path();
-    hole.absarc(0, 0, 38.8, 0, TAU, true);
-    s.holes.push(hole);
+    s.holes.push(roundHole(38.8));
     const g = new T.ExtrudeGeometry(s, { depth: 13, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.35, bevelSegments: 2, curveSegments: 4 });
     g.translate(0, 0, -25);
     const sm = L.toCreasedNormals(g, Math.PI / 5);
     g.dispose();
-    gFocus.add(mesh(sm, anodise));
+    pFocusRing.add(mesh(sm, anodise));
   }
-  gFocus.add(mesh(lathe([[40.6, -26.5], [40.6, -25.6], [41.0, -25.2]]), bare));
-  gFocus.add(mesh(lathe([[41.0, -10.8], [40.6, -10.4], [40.6, -9.8]]), bare));
+  pFocusRing.add(mesh(lathe([[40.6, -26.5], [40.6, -25.6], [41.0, -25.2]]), bare));
+  pFocusRing.add(mesh(lathe([[41.0, -10.8], [40.6, -10.4], [40.6, -9.8]]), bare));
   // Smooth scale band, engraved with the distance marks.
-  gFocus.add(mesh(lathe([[40.4, -37.5], [40.4, -26.5]]), anodise));
+  pScale.add(mesh(lathe([[40.4, -37.5], [40.4, -26.5]]), anodise));
   {
     const d = mesh(lathe([[40.47, -37.2], [40.47, -26.8]]), decal(textures.scale));
-    gFocus.add(d);
+    pScale.add(d);
   }
-  gFocus.add(mesh(lathe(ribbed(38.6, -9.8, -37.5, 1.6)), flock));
+  pBarrelTube.add(mesh(lathe(ribbed(38.6, -9.8, -37.5, 1.6)), flock));
   anchors.focusRing = new T.Object3D(); anchors.focusRing.position.set(41.5, 0, -18); gFocus.add(anchors.focusRing);
 
   // ------------------------------------------------- index + aperture + iris
-  gIris.add(mesh(lathe([[39.6, -44.5], [39.6, -38.2], [40.2, -37.8]]), anodise));
+  pBarrelIris.add(mesh(lathe([[39.6, -44.5], [39.6, -38.2], [40.2, -37.8]]), anodise));
   // Index mark: a filled line at 12 o'clock, fixed while the scale turns.
   {
     // On the +X side, the side the focus puller (and the camera) faces.
     const m = mesh(new T.BoxGeometry(0.25, 0.7, 4.6), white);
     m.position.set(39.68, 0, -40.6);
-    gIris.add(m);
+    pBarrelIris.add(m);
     const tri = mesh(new T.ConeGeometry(0.9, 1.4, 3), white);
     tri.rotation.set(Math.PI / 2, 0, -Math.PI / 2);
     tri.position.set(39.75, 0, -38.4);
     tri.scale.set(1, 0.25, 1);
-    gIris.add(tri);
+    pBarrelIris.add(tri);
   }
   // Aperture ring: coarse ridges that turn as the iris opens.
   const apRing = new T.Group();
-  gIris.add(apRing);
+  pBarrelIris.add(apRing);
   {
     const s = new T.Shape();
     const ridges = 36, n = ridges * 8;
@@ -171,25 +192,25 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       const rr = f < 0.5 ? 40.1 : 39.4;
       if (i === 0) s.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); else s.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
     }
-    const hole = new T.Path(); hole.absarc(0, 0, 37.5, 0, TAU, true); s.holes.push(hole);
+    s.holes.push(roundHole(37.5));
     const g = new T.ExtrudeGeometry(s, { depth: 10, bevelEnabled: true, bevelThickness: 0.35, bevelSize: 0.25, bevelSegments: 1, curveSegments: 2 });
     g.translate(0, 0, -56.5);
     const sm = L.toCreasedNormals(g, Math.PI / 5);
     g.dispose();
     apRing.add(mesh(sm, anodise));
   }
-  gIris.add(mesh(lathe(ribbed(37.0, -38.2, -57, 1.6)), flock));
+  pBarrelIris.add(mesh(lathe(ribbed(37.0, -38.2, -57, 1.6)), flock));
   // Iris housing: a plate behind the blades and a cover ring in front, so
   // the blades slide out from under the housing as on a real iris.
   {
     const plate = mesh(new T.RingGeometry(21.6, 37.2, seg, 1), flock);
     plate.position.z = IRIS_Z - 0.6;
-    gIris.add(plate);
+    pIris.add(plate);
     const cover = mesh(new T.RingGeometry(21.8, 37.2, seg, 1), flock);
     cover.position.z = IRIS_Z + 0.9;
-    gIris.add(cover);
+    pIris.add(cover);
     const lip = mesh(lathe([[21.8, IRIS_Z + 0.9], [21.8, IRIS_Z + 1.6]], 96), bare);
-    gIris.add(lip);
+    pIris.add(lip);
   }
   // Blades: each an arc-shaped plate pivoting near its leading end. Turning
   // them about their pivots swings their inner edges toward the axis, so the
@@ -220,36 +241,38 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       holder.rotation.z = phi;
       const b = new T.Mesh(g, bladeMat);      // rotates about its pivot
       holder.add(b);
-      gIris.add(holder);
+      pIris.add(holder);
+      holder.userData.rest = holder.position.clone();
+      holder.userData.phi = phi;
       blades.push(b);
     }
   }
   anchors.iris = new T.Object3D(); anchors.iris.position.set(0, 0, IRIS_Z); gIris.add(anchors.iris);
 
   // ---------------------------------------------------------- rear barrel
-  gRear.add(mesh(lathe([[34.2, -86], [36.4, -82], [38.6, -78.4], [38.6, -58.4], [38.2, -58]]), anodise));
-  gRear.add(mesh(lathe([[38.2, -58], [37.6, -57.6]]), bare));
+  pBarrelRear.add(mesh(lathe([[34.2, -86], [36.4, -82], [38.6, -78.4], [38.6, -58.4], [38.2, -58]]), anodise));
+  pBarrelRear.add(mesh(lathe([[38.2, -58], [37.6, -57.6]]), bare));
   {
     const d = mesh(lathe([[38.66, -77.8], [38.66, -58.8]]), decal(textures.rear));
-    gRear.add(d);
+    pSignature.add(d);
   }
   // Model band: a coloured ring, the way cine sets mark one lens from another.
-  gRear.add(mesh(lathe([[38.7, -58.9], [38.7, -58.5]]), band));
-  gRear.add(mesh(lathe([[36.9, -81.4], [37.6, -80.2]]), band));
-  gRear.add(mesh(lathe(ribbed(33.6, -57.6, -86, 1.6)), flock));
+  pBarrelRear.add(mesh(lathe([[38.7, -58.9], [38.7, -58.5]]), band));
+  pBarrelRear.add(mesh(lathe([[36.9, -81.4], [37.6, -80.2]]), band));
+  pBarrelRear.add(mesh(lathe(ribbed(33.6, -57.6, -86, 1.6)), flock));
   anchors.signature = new T.Object3D(); anchors.signature.position.set(39, 0, -68); gRear.add(anchors.signature);
 
   // ---------------------------------------------------------------- mount
-  gMount.add(mesh(lathe([[31.2, -98], [33.6, -97.6], [34.0, -90], [34.2, -86]]), steel));
-  gMount.add(mesh(lathe([[29, -98], [31.2, -98]]), steel));
+  pMount.add(mesh(lathe([[31.2, -98], [33.6, -97.6], [34.0, -90], [34.2, -86]]), steel));
+  pMount.add(mesh(lathe([[29, -98], [31.2, -98]]), steel));
   for (let k = 0; k < 4; k++) {
     const lug = mesh(new T.BoxGeometry(12, 2.4, 2), steel);
     const a = (k / 4) * TAU + 0.4;
     lug.position.set(Math.cos(a) * 33.2, Math.sin(a) * 33.2, -95.5);
     lug.rotation.z = a + Math.PI / 2;
-    gMount.add(lug);
+    pMount.add(lug);
   }
-  gMount.add(mesh(lathe(ribbed(28.6, -86, -98, 1.6)), flock));
+  pMount.add(mesh(lathe(ribbed(28.6, -86, -98, 1.6)), flock));
 
   // --------------------------------------------------------------- glass
   const elementMeshes = [];
@@ -274,16 +297,28 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     if (first) grp.add(new T.Mesh(keep(lathe(back, HQ ? 96 : 64)), coat));
     grp.add(new T.Mesh(fg, bodyMat));
     grp.add(mesh(lathe([[e.r, bz], [e.r, fz]], 64), flock));
-    groups[e.group].add(grp);
+    // Teardown: the front element on its own, the rest in their optical
+    // groups (glass-1 .. glass-4).
+    const gid = idx === 0 ? 'front-element' : `glass-${e.group}`;
+    const pg = parts[gid] ? parts[gid][0] : part(gid, groups[e.group]);
+    pg.add(grp);
     elementMeshes.push(grp);
   });
+  for (const [id, pos] of Object.entries(TEAR_ANCHORS)) {
+    const a = new T.Object3D(); a.position.set(...pos);
+    parts[id][0].add(a);
+    anchors['td-' + id] = a;
+  }
   anchors.front = new T.Object3D(); anchors.front.position.set(0, 0, 0); gFront.add(anchors.front);
   anchors.ringEdge = new T.Object3D(); anchors.ringEdge.position.set(43, 0, 0); gFront.add(anchors.ringEdge);
 
   // --------------------------------------------------------------- sensor
-  // Where the camera leaves the lens: an image sensor behind the mount with
-  // the lens's image circle glowing on it. Shown only on the trip through.
+  // Where the camera leaves the lens: an image sensor 46.5 mm behind the
+  // mount with the lens's image circle glowing on it, at the bottom of a
+  // short camera throat so it never floats on its own. Seen first as a
+  // small light at the far end of the barrel; close only at the exit.
   const sensor = new T.Group();
+  let chip, gridMat, throatMat, throat, plateGroup;
   {
     const c = document.createElement('canvas'); c.width = 768; c.height = 512;
     const g = c.getContext('2d');
@@ -292,18 +327,54 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     rg.addColorStop(0, 'rgba(255,238,214,1)'); rg.addColorStop(0.45, 'rgba(214,190,255,0.55)'); rg.addColorStop(1, 'rgba(40,30,80,0)');
     g.fillStyle = '#000'; g.fillRect(0, 0, 768, 512);
     g.fillStyle = rg; g.fillRect(0, 0, 768, 512);
-    // Photosite grid, very fine.
-    g.fillStyle = 'rgba(0,0,0,0.35)';
-    for (let x = 0; x < 768; x += 6) g.fillRect(x, 0, 1, 512);
-    for (let y = 0; y < 512; y += 6) g.fillRect(0, y, 768, 1);
     const em = keep(new T.CanvasTexture(c)); em.colorSpace = T.SRGBColorSpace;
-    const chip = keep(LQ
-      ? new T.MeshStandardMaterial({ color: 0x14121c, metalness: 0.6, roughness: 0.25, emissive: 0xffffff, emissiveMap: em, emissiveIntensity: 0.9 })
-      : new T.MeshPhysicalMaterial({ color: 0x14121c, metalness: 0.6, roughness: 0.2, iridescence: 1, iridescenceThicknessRange: [200, 520], emissive: 0xffffff, emissiveMap: em, emissiveIntensity: 0.9 }));
+    chip = keep(LQ
+      ? new T.MeshStandardMaterial({ color: 0x14121c, metalness: 0.6, roughness: 0.25, emissive: 0xffffff, emissiveMap: em, emissiveIntensity: 0 })
+      : new T.MeshPhysicalMaterial({ color: 0x14121c, metalness: 0.6, roughness: 0.2, iridescence: 1, iridescenceThicknessRange: [200, 520], emissive: 0xffffff, emissiveMap: em, emissiveIntensity: 0 }));
+    // Photosite grid on its own layer, drawn only when the sensor fills the
+    // frame (stage3d sets its opacity from the sensor's size on screen), so
+    // at a distance there is no fine pattern to moire.
+    const gc = document.createElement('canvas'); gc.width = 1152; gc.height = 768;
+    const gg = gc.getContext('2d');
+    gg.fillStyle = 'rgba(0,0,0,1)';
+    for (let x = 0; x < 1152; x += 8) gg.fillRect(x, 0, 1, 768);
+    for (let y = 0; y < 768; y += 8) gg.fillRect(0, y, 1152, 1);
+    const gt = keep(new T.CanvasTexture(gc)); gt.anisotropy = 8;
+    gridMat = keep(new T.MeshBasicMaterial({ color: 0x000000, alphaMap: gt, transparent: true, opacity: 0, depthWrite: false }));
+    plateGroup = new T.Group();
     const plate = new T.Mesh(keep(new T.PlaneGeometry(36, 24)), chip);
+    const grid = new T.Mesh(keep(new T.PlaneGeometry(36, 24)), gridMat);
+    grid.position.z = 0.05;
     const frame = new T.Mesh(keep(new T.PlaneGeometry(46, 34)), flock);
     frame.position.z = -0.3;
-    sensor.add(plate, frame);
+    plateGroup.add(plate, grid, frame);
+    sensor.add(plateGroup);
+    // The camera's throat, from the mount flange down to the sensor: dark
+    // walls with a few baffles, so the exit reads as the inside of a body.
+    throatMat = keep(new T.MeshStandardMaterial({ color: 0x24272d, metalness: 0.5, roughness: 0.42, envMapIntensity: 0.6, side: T.BackSide, transparent: true, opacity: 0 }));
+    throat = new T.Group();
+    const tube = new T.Mesh(keep(new T.CylinderGeometry(30, 30, 46, 64, 1, true)), throatMat);
+    tube.rotation.x = Math.PI / 2;
+    tube.position.z = 23;
+    throat.add(tube);
+    const baffleMat = keep(new T.MeshStandardMaterial({ color: 0x24272d, metalness: 0.5, roughness: 0.42, envMapIntensity: 0.6, side: T.DoubleSide, transparent: true, opacity: 0 }));
+    const lipMat = keep(new T.MeshStandardMaterial({ color: 0xd4d7db, metalness: 1, roughness: 0.25, side: T.DoubleSide, transparent: true, opacity: 0 }));
+    throat.userData.baffle = baffleMat;
+    throat.userData.lip = lipMat;
+    for (const z of [9, 21, 33, 45]) {
+      const r = new T.Mesh(keep(new T.RingGeometry(26.5, 30, 64, 1)), baffleMat);
+      r.position.z = z;
+      const lip = new T.Mesh(keep(new T.RingGeometry(26.2, 26.7, 64, 1)), lipMat);
+      lip.position.z = z + 0.05;
+      throat.add(r, lip);
+    }
+    // The image circle lights its own throat, so the walls read around the
+    // sensor instead of leaving it alone in the dark.
+    const glowLight = new T.PointLight(0xe2d6ff, 0, 90, 2);
+    glowLight.position.z = 8;
+    throat.userData.light = glowLight;
+    sensor.add(glowLight);
+    sensor.add(throat);
   }
   lens.add(sensor);
 
@@ -339,6 +410,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   // ---------------------------------------------------------------- update
   let lastModel = -1;
   const ca = new T.Color(), cb = new T.Color();
+  const tv = [0, 0, 0];
   function update(S, tSec) {
     // Sections slide apart along the axis together with their glass.
     const sp = S.spread;
@@ -350,10 +422,16 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     });
     leakMat.opacity = 0.12 * Math.min(1, sp * 2);
 
-    // The sensor rides with the mount, 46.5 mm behind its flange.
+    // The sensor rides with the mount, 46.5 mm behind its flange. It lights
+    // up rather than grows; its throat fades in and out around it.
     sensor.position.z = -98 - 46.5 + SECTIONS[4].mid * SPREAD * sp;
-    sensor.visible = S.sensor > 0.01;
-    sensor.scale.setScalar(Math.max(0.01, S.sensor));
+    const th = S.throat || 0;
+    sensor.visible = S.sensor > 0.01 || th > 0.01;
+    plateGroup.visible = S.sensor > 0.01;
+    chip.emissiveIntensity = 0.9 * S.sensor;
+    throat.visible = th > 0.01;
+    throatMat.opacity = th; throat.userData.baffle.opacity = th; throat.userData.lip.opacity = th;
+    throat.userData.light.intensity = 1600 * S.sensor * th;
 
     // Focus: the ring turns, the engraved scale turns with it.
     gFocus.rotation.z = (S.focus * THROW_RAD);
@@ -375,6 +453,29 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     glow.scale.set(gs, gs, 1);
     lightMat.opacity = S.light;
 
+    // Teardown: every part on its own path (teardown.js).
+    const u = S.tear || 0, ks = S.tspread || 1;   // tighter on phones
+    for (const p of TEAR_PARTS) {
+      const e = tearProgress(u, p.order);
+      if (p.id === 'blades') {
+        // The iris comes out of the front, then the blades fan out.
+        bladeOffset(p, e, 0, tv);
+        parts.blades[0].position.set(0, 0, tv[2] * ks);
+        for (const b of blades) {
+          const h = b.parent, r = h.userData.rest;
+          bladeOffset(p, e, h.userData.phi, tv);
+          h.position.set(r.x + tv[0] * ks, r.y + tv[1] * ks, r.z);
+          h.rotation.z = h.userData.phi + e * 0.35;
+        }
+        continue;
+      }
+      tearOffset(p, e, tv);
+      for (const g of parts[p.id]) {
+        g.position.set(tv[0] * ks, tv[1] * ks, tv[2] * ks);
+        g.rotation.z = (p.spin || 0) * TAU * e;
+      }
+    }
+
     // Model: barrel length and front size per lens, and its colour band.
     if (Math.abs(S.model - lastModel) > 1e-4) {
       lastModel = S.model;
@@ -388,7 +489,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   }
 
   function dispose() { own.forEach((x) => x.dispose && x.dispose()); }
-  return { root, lens, update, anchors, dispose, glow, lightDisc };
+  return { root, lens, update, anchors, dispose, glow, lightDisc, sensor, sensorGrid: gridMat };
 }
 
 const THROW_RAD = (160 / 180) * Math.PI;

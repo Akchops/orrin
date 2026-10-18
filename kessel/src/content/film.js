@@ -1,12 +1,15 @@
 // Captions for the scroll film on the home page. The film itself (the lens
 // scene and its camera move) lives in src/app; this is only its words.
 export const film = {
+  // The hero is the film's first frame: the lens cropped by the screen
+  // edges, iris closed to a pinhole. The text fades as the camera moves.
   hero: {
-    name: 'Kessel Optics',
-    line: 'Lenses assembled by hand in Pune.',
-    sub: 'Cinema and photography lenses. Three models. One optician builds each lens and signs the barrel.',
-    cue: 'Scroll to open the iris',
-    caption: 'Still frame · the iris closed to a pinhole',
+    brand: 'Kessel Optics',
+    title: 'Lenses built by one pair of hands, and signed by them.',
+    primary: { label: 'See the teardown', href: '#teardown' },
+    secondary: { label: 'Contact', href: '#film-contact' },
+    cue: 'Scroll',
+    alt: 'A Kessel lens seen straight on and close: the black front ring cropped by the edges of the screen, the coated glass, the iris closed to a pinhole of light.',
   },
   stages: [
     { id: 'aperture', num: '01 · Iris', title: 'Light waits for the blades', still: 'aperture', caption: 'Still frame · the iris open',

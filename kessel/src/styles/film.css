@@ -6,18 +6,36 @@
 
 /* ------------------------------------------------- stills layout (default) */
 .stage { display: none; }
-.film { display: grid; gap: clamp(4rem, 10vw, 8rem); padding-block: calc(var(--head) + 1rem) 4rem; }
-.notice:not([hidden]) + .film { padding-top: 2.5rem; }
+.film { display: grid; gap: clamp(4rem, 10vw, 8rem); padding-block: 0 4rem; }
 .film .still { margin: 0; display: grid; gap: 0.5rem; }
 .film .still img { border: 1px solid var(--line); background: var(--anodise); }
 .film figcaption { color: var(--amber); font-size: 0.68rem; }
-.film .hero { display: grid; gap: 2rem; align-items: center; }
-.film .hero h1 { display: grid; gap: 0.6rem; }
-.film .hero__name { font-size: clamp(2.6rem, 1.4rem + 6vw, 6.4rem); font-stretch: 125%; font-weight: 300; letter-spacing: 0.02em; }
-.film .hero__line { font-family: var(--body); font-stretch: normal; font-size: clamp(1.3rem, 1rem + 1.2vw, 1.9rem); font-weight: 400; font-style: italic; }
-.film .hero__copy { display: grid; gap: 1rem; }
-.film .hero__sub { color: var(--dim); }
-.film .hero__cue { color: var(--dim); text-decoration: none; justify-self: start; }
+ /* The hero is the film's first frame: the lens fills the screen, cropped
+   by its edges, with no box. In stills mode the frame is a full-bleed image;
+   live, it is the canvas behind. The headline sits low on the left (low on
+   phones), clear of the bright centre of the lens. */
+.film .hero {
+  position: relative; min-height: var(--vh); display: grid; align-content: end; overflow: hidden;
+  margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
+  padding: calc(var(--safe-t) + var(--head) + 2rem) var(--gutter-r) clamp(3rem, 7vh, 4.5rem) var(--gutter-l);
+}
+.film .hero__still { position: absolute; inset: 0; margin: 0; z-index: 0; }
+.film .hero__still img { width: 100%; height: 100%; object-fit: cover; object-position: 72% 50%; border: 0; background: var(--void); }
+.film .hero__still::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6, 7, 10, 0.86), rgba(6, 7, 10, 0.4) 46%, rgba(6, 7, 10, 0) 64%); }
+.film .hero__copy { position: relative; z-index: 2; display: grid; gap: 1.3rem; justify-items: start; max-width: min(44rem, 46vw); opacity: var(--hero-o, 1); }
+.film .hero__brand { font-family: var(--display); font-stretch: 125%; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; font-size: 0.8rem; color: var(--coat); }
+.film .hero__title { font-size: clamp(2.5rem, 0.9rem + 4.4vw, 5.6rem); font-weight: 250; font-stretch: 118%; line-height: 1.02; letter-spacing: -0.005em; max-width: 15ch; }
+.film .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; max-width: none; margin-top: 0.4rem; }
+.film .hero__cue { display: inline-flex; align-items: center; gap: 0.75rem; min-height: 44px; color: var(--dim); text-decoration: none; }
+.film .hero__cue-line { width: 2.6rem; height: 1px; background: currentColor; transform-origin: left; transition: transform 0.4s ease; }
+.film .hero__cue:hover { color: var(--engrave); }
+.film .hero__cue:hover .hero__cue-line { transform: scaleX(1.4); }
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .film .hero__still img { object-position: 50% 24%; }
+  .film .hero__still::after { background: linear-gradient(rgba(6, 7, 10, 0) 40%, rgba(6, 7, 10, 0.8) 66%, var(--void)); }
+  .film .hero__copy { max-width: none; gap: 1.1rem; }
+  .film .hero__title { font-size: clamp(2.2rem, 1rem + 6.2vw, 3.6rem); }
+}
 .film .stagecopy, .film .workshop { display: grid; gap: 1.5rem 3rem; align-items: center; }
 .film .cap { display: grid; gap: 0.9rem; min-width: 0; }
 .film .cap > p:not(.cap__num) { color: var(--dim); }
@@ -40,7 +58,7 @@
 }
 .film .models__note, .film .facts dt, .film .contact__list dt { font-size: 0.78rem; }
 @media (min-width: 800px) {
-  .film .hero, .film .stagecopy, .film .workshop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .film .stagecopy, .film .workshop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .film .stagecopy:nth-of-type(even) .still { order: 2; }
   .film .model-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -66,9 +84,9 @@ html.live:not([data-route="home"]) .stage { display: none; }
 .live .film .still { display: none; }
 .live .film { display: block; padding: 0; gap: 0; }
 .live .film section { position: relative; z-index: 2; }
-.live .film .hero { min-height: var(--vh); display: grid; align-content: end; padding-block: 6rem 4.5rem; grid-template-columns: minmax(0, 1fr); }
-.live .film .hero__copy { max-width: 30rem; }
-.live .film .hero__name { font-size: clamp(2.2rem, 1.2rem + 3.6vw, 4.2rem); }
+.live .film .hero { margin-inline: 0; padding-inline: 0; overflow: visible; }
+.live .film .hero__still { display: none; }
+.live .film .hero__copy { pointer-events: auto; }
 
 /* Pinned stages: one viewport each, copy low on the left. */
 .live .film .stagecopy, .live .film .workshop { min-height: var(--vh); display: block; }

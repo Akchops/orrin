@@ -26,7 +26,8 @@ export const contactLines = (cls = '') => `
 
 export const proposalTag = '<span class="tag">Proposal</span>';
 export function footer(topHref) {
-  const links = site.nav.map((n) => `<li><a href="${href(n.route)}">${esc(n.label)}</a></li>`).join('');
+  const links = site.nav.map((n) => `<li><a href="${n.href}">${esc(n.label)}</a></li>`).join('');
+  const more = site.more.map((n) => `<a href="${n.href}">${esc(n.label)}</a>`).join('<span aria-hidden="true"> · </span>');
   return `<footer class="foot">
   <div class="wrap foot__grid">
     <div class="foot__brand">
@@ -42,6 +43,7 @@ export function footer(topHref) {
   </div>
   <div class="wrap foot__base">
     <p>${esc(site.footer.disclaimer)}</p>
+    <p class="foot__more">More: ${more}</p>
     <a href="${topHref}">Back to top</a>
   </div>
 </footer>`;

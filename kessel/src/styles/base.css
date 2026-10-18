@@ -94,12 +94,12 @@ p { margin: 0; max-width: 60ch; }
 html[data-route]:not([data-route="home"]) .tier { display: none; }
 html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .tier { display: none; }
 
-/* Phones: a pill in the header band, so it never covers the copy; tap it
-   for the reason. */
+/* Phones: a small pill just under the header on the right, clear of the
+   nav and of the copy low on the screen; tap it for the reason. */
 @media (max-width: 799px) {
   .js .tier {
-    left: 50%; bottom: auto; top: calc(var(--safe-t) + (var(--head) - 1.9rem) / 2); transform: translateX(-50%);
-    min-height: 1.9rem; padding: 0.3rem 0.75rem; border-radius: 999px; align-content: center; width: max-content; max-width: calc(100vw - 15rem);
+    left: auto; right: var(--gutter-r); bottom: auto; top: calc(var(--safe-t) + var(--head) + 0.5rem);
+    min-height: 1.9rem; padding: 0.3rem 0.75rem; border-radius: 999px; align-content: center; width: max-content; max-width: calc(100vw - 32px);
   }
   .js .tier .tier__kind { font-size: 0.66rem; white-space: nowrap; }
   .js .tier .tier__why, .js .tier .tier__play { display: none; }
@@ -109,7 +109,7 @@ html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .tier { d
   .js .tier__toggle:not([hidden]) { display: block; position: absolute; left: 0; right: 0; top: 0; height: max(1.9rem, 44px); margin-top: -6px; appearance: none; background: none; border: 0; cursor: pointer; }
   .js .tier__toggle:focus-visible { outline: 2px solid var(--coat); outline-offset: 0; border-radius: 999px; }
   .js .tier:not(.is-open):not(:has(.tier__why:empty)) .tier__kind::after { content: "?"; font-weight: 400; color: var(--dim); margin-left: -0.1rem; }
-  html:not(.js) .tier { position: relative; left: auto; bottom: auto; margin-top: 7rem; max-width: none; }
+  html:not(.js) .tier { position: relative; left: auto; bottom: auto; margin-top: calc(var(--head) + 1rem); max-width: none; }
   html:not(.js) .notice { margin-top: 1.5rem; }
 }
 
@@ -124,17 +124,15 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: var(--safe
 .masthead {
   position: fixed; z-index: 40; left: 0; right: 0; top: var(--safe-t); min-height: var(--head);
   display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-  padding: 0 var(--gutter-r) 0 var(--gutter-l);
-  background: rgba(6, 7, 10, 0.94); border-bottom: 1px solid var(--line);
-  transition: background-color 0.35s ease, border-color 0.35s ease;
+  padding: 0 var(--gutter-r) 0 var(--gutter-l); width: 100%; max-width: 100vw;
+  /* Solid, so page text never shows through it. */
+  background: var(--void); border-bottom: 1px solid var(--line);
 }
-/* Over the live film the header is only a shade, so the lens shows. */
-html.live[data-route="home"]:not(.past-film):not(.menu-open) .masthead { background: linear-gradient(rgba(6, 7, 10, 0.9), rgba(6, 7, 10, 0.72) 60%, rgba(6, 7, 10, 0)); border-bottom-color: transparent; }
 .masthead__mark { font-family: var(--display); font-stretch: 125%; font-weight: 600; letter-spacing: 0.34em; text-decoration: none; font-size: 0.95rem; padding-block: 0.6rem; white-space: nowrap; }
 .masthead__mark span { font-weight: 300; color: var(--dim); }
 .masthead__mark:hover { color: var(--engrave); }
 .masthead__mark:hover span { color: var(--coat); }
-.masthead__nav { display: flex; gap: clamp(1.2rem, 2.6vw, 2.6rem); }
+.masthead__nav { display: flex; gap: clamp(1.2rem, 2.6vw, 2.6rem); min-width: 0; }
 .masthead__nav a { position: relative; color: var(--dim); text-decoration: none; padding-block: 0.7rem; }
 .masthead__nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.35rem; height: 1px; background: var(--coat); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
 .masthead__nav a:hover { color: var(--engrave); }
@@ -146,7 +144,9 @@ html.live[data-route="home"]:not(.past-film):not(.menu-open) .masthead { backgro
 @media (min-width: 800px) { .masthead__menu { display: none; } }
 @media (max-width: 799px) {
   .masthead__mark span { display: none; }
-  .js .masthead__nav { display: none; }
+  .masthead__mark { letter-spacing: 0.26em; font-size: 0.85rem; }
+  .masthead__nav { gap: 1rem; font-size: 0.68rem; letter-spacing: 0.1em; }
+  .masthead__nav a { padding-block: 0.85rem; }
   .js.menu-open .masthead__nav {
     display: flex; flex-direction: column; gap: 0; position: fixed; left: 0; right: 0; bottom: 0; top: calc(var(--safe-t) + var(--head));
     padding: 1.5rem var(--gutter-r) 2rem var(--gutter-l); background: var(--void); overflow-y: auto;
@@ -155,9 +155,8 @@ html.live[data-route="home"]:not(.past-film):not(.menu-open) .masthead { backgro
   .js.menu-open .masthead__nav a::after { display: none; }
   .js.menu-open .masthead__nav a[aria-current] { color: var(--coat); }
   .menu-open .skipfilm { visibility: hidden; }
-  html:not(.js) .masthead { flex-wrap: wrap; row-gap: 0; padding-block: 0.4rem; }
-  html:not(.js) .masthead__nav { gap: 0.9rem; font-size: 0.7rem; letter-spacing: 0.08em; flex-wrap: wrap; }
 }
+@media (max-width: 359px) { .masthead__nav { gap: 0.7rem; letter-spacing: 0.06em; } }
 
 /* ------------------------------------------------------------------ routes */
 /* With JS, html[data-route] picks the route (rules generated by the build).
@@ -265,6 +264,8 @@ html:not(.js) main:not(:has(.route:not(#home):target, .route:not(#home) :target)
 .foot__contact { display: grid; gap: 0.3rem; align-content: start; font-family: var(--display); font-stretch: 110%; color: var(--engrave); }
 .foot__base { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1.5rem; padding-block: 1.2rem calc(1.5rem + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 .foot__base p { max-width: none; }
+.foot__more a { color: var(--dim); text-decoration: none; display: inline-flex; min-height: 44px; align-items: center; }
+.foot__more a:hover { color: var(--coat); }
 .foot__base a { min-height: 44px; display: inline-flex; align-items: center; }
 @media (min-width: 800px) {
   .foot__grid { grid-template-columns: 1.6fr 1fr 1fr; }
