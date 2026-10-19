@@ -164,7 +164,9 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const tdSection = $('#teardown');
   // Selection (tap a part or its name on the rail): the camera flies to a
   // close-up blended over the scroll camera by td.f (0..1).
-  const td = { sel: null, f: 0, tween: null, y0: 0, hover: null, hoverAt: null, railKey: '', capKey: '' };
+  // td.e (0..1) is the picked part's emphasis, which comes up first; td.f
+  // follows a moment later and carries the camera in.
+  const td = { sel: null, e: 0, f: 0, tween: null, y0: 0, hover: null, hoverAt: null, railKey: '', capKey: '' };
 
   // ------------------------------------------------------------ the loop
   let sCur = 0, last = performance.now(), lastSig = '', resized = 0;
@@ -207,7 +209,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // its own, so a still page costs no GPU time at all: kinder to phone
     // batteries and to slow GPUs that would otherwise queue frames.
     const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + resized +
-      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4);
+      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4) + ',' + td.e.toFixed(3);
     const changed = sig !== lastSig;
     lastSig = sig;
     window.__kessel && (window.__kessel.idle = !changed && !td.tween);
@@ -297,7 +299,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     }
     if (td.sel) {
       hl = td.sel;
-      dim = Math.max(dim * (1 - td.f), 0.8 * td.f);
+      dim = Math.max(dim * (1 - td.e), 0.8 * td.e);
       const k = ease(td.f), c = TEAR_CLOSE[td.sel], n = narrowMQ.matches;
       partCentre(td.sel, S.tear, S.tspread || 1, cen);
       for (const key of CAM_KEYS) camBase[key] = S[key];
@@ -336,7 +338,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     return hi;
   }
 
-  function select(id) {
+  function select(id, { hold = false } = {}) {
     if (!id) return;
     if (td.sel === id) { deselect(); return; }
     if (!isApart()) {
@@ -351,7 +353,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     td.y0 = window.scrollY;
     try { history[had ? 'replaceState' : 'pushState']({ kTd: id }, ''); } catch { /* sandboxed */ }
     td.tween && td.tween.kill();
-    td.tween = gsap.to(td, { f: 1, duration: had ? 0.6 : 0.9, ease: 'power2.inOut', onComplete: () => { td.tween = null; } });
+    // First the part lights up and the others dim, then the camera flies
+    // in, so the visitor sees what they picked before the view moves.
+    // (hold: stop after the first step; a test hook.)
+    td.tween = gsap.timeline({ onComplete: () => { td.tween = null; } })
+      .to(td, { e: 1, duration: 0.3, ease: 'power1.out' }, 0);
+    if (!hold) td.tween.to(td, { f: 1, duration: had ? 0.6 : 0.9, ease: 'power2.inOut' }, had ? 0 : 0.3);
     root.classList.add('td-picked');
     td.capKey = '';
   }
@@ -367,7 +374,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     td.leaving = true;
     td.tween && td.tween.kill();
     root.classList.remove('td-picked');
-    td.tween = gsap.to(td, { f: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => { td.sel = null; td.leaving = false; td.tween = null; td.capKey = ''; } });
+    td.tween = gsap.to(td, { f: 0, e: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => { td.sel = null; td.leaving = false; td.tween = null; td.capKey = ''; } });
     td.capKey = '';
   }
   addEventListener('popstate', () => { if (td.sel) deselect(true); });
@@ -397,7 +404,10 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const s = sCur;
     const cap = capAt(s);
     const sel = td.sel && !td.leaving ? td.sel : null;
-    const state = sel ? 'sel:' + sel : s < 18.55 ? (s > 16.9 ? 'intro' : '') : s < 23.55 ? 'cap:' + (cap ? cap.id : '') : s < STORY_END + 0.01 ? 'outro' : '';
+    // The caption becomes a card beside the part once the camera is on its
+    // way in; until then it is the part's usual caption.
+    const close = !!sel && td.f > 0.4;
+    const state = sel ? (close ? 'sel:' : 'cap:') + sel : s < 18.55 ? (s > 16.9 ? 'intro' : '') : s < 23.55 ? 'cap:' + (cap ? cap.id : '') : s < STORY_END + 0.01 ? 'outro' : '';
     if (state !== tdState) {
       tdState = state;
       tdIntro && tdIntro.classList.toggle('is-on', state === 'intro');
@@ -408,6 +418,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
         el.classList.toggle('is-selected', state === 'sel:' + id);
       }
       if (sel) tdCaps.get(sel)?.appendChild(back); else back.remove();
+      td.capKey = '';
     }
     const narrow = narrowMQ.matches;
     // The rail: shown through the teardown; the part being explained or
@@ -437,7 +448,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // Open caption beside the part on wide screens: the close-up puts the
     // part's centre at a known place, left of centre, so the card goes to
     // its right, clear of the rail.
-    if (sel && !narrow) {
+    if (close && !narrow) {
       const el = tdCaps.get(sel), W = innerWidth, H = innerHeight;
       const cx = W / 2 - 0.17 * W, rpx = (Math.min(W, H) / 2) / 1.3;
       const railL = rail.getBoundingClientRect().left || W;
@@ -457,8 +468,11 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const rightEdge = !narrow && railOn ? rail.getBoundingClientRect().left - 12 : innerWidth - 8;
     for (const t of tdTags) {
       const featured = sel ? t.id === sel : !!cap && cap.id === t.id;
-      const want = apart && (sel ? featured && td.f > 0.85 : featured || !narrow);
-      const below = !sel && !narrow && RAIL.indexOf(t.id) % 2 === 1;
+      // In the close-up only the open part's label, straight above it;
+      // while the camera flies, none.
+      const inClose = !!sel && td.f > 0.85, flying = !!sel && td.f > 0.05 && !inClose;
+      const want = apart && !flying && (sel ? featured : featured || !narrow);
+      const below = !inClose && !narrow && RAIL.indexOf(t.id) % 2 === 1;
       const p = want ? view.project('td-' + t.id + (below ? '-b' : '')) || view.project('td-' + t.id) : null;
       const show = !!(p && p.visible);
       if (show !== t.on) { t.on = show; t.el.classList.toggle('is-on', show); }
@@ -467,14 +481,14 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       let dx = p.x - (center ? center.x : innerWidth / 2), dy = p.y - (center ? center.y : innerHeight / 2);
       // Close-up: straight up from the part. Wide screens: labels alternate
       // above and below the line, so neighbours never collide.
-      if (sel) { dx = 0.5; dy = -1; } else if (!narrow) { dx = 0.3; dy = below ? 1 : -1; }
+      if (inClose) { dx = 0.5; dy = -1; } else if (!narrow) { dx = 0.3; dy = below ? 1 : -1; }
       const len = Math.hypot(dx, dy) || 1;
       dx /= len; dy /= len;
       const L = narrow ? 30 : 46;
       const ex = dx * L;
       let ey = dy * L - 6;
       // Keep the name below the header and the badge.
-      const top = (narrow ? 132 : 92) - p.y;
+      const top = (narrow ? 112 : 92) - p.y;
       if (ey < top) ey = top;
       const st = t.el.style;
       st.setProperty('--x', p.x.toFixed(1) + 'px');

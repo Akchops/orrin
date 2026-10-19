@@ -119,7 +119,7 @@ export function buildStory(gsap, S, layout) {
   to(16.5, 17.0, { az: 40, el: 14, frame: v(80, 74), tx: 0, ty: -4, tz: -40, sx: v(0.03, 0), sy: v(0.04, 0.08), iris: 1, focus: 0 }, 'power1.inOut');
   to(16.5, 17.2, { tlight: 1, light: 0 }, 'power1.inOut');   // no iris, no light through it
   to(17.0, 18.7, { tear: 1 }, 'none');
-  to(17.0, 18.7, { az: 58, el: 15, frame: v(172, 150), ty: 0, tz: -58, sx: v(-0.08, 0), sy: v(0.07, 0.12), oroll: v(0, -38) }, 'sine.inOut');
+  to(17.0, 18.7, { az: 58, el: 15, frame: v(172, 146), ty: 0, tz: -58, sx: v(-0.08, 0), sy: v(0.07, 0.05), oroll: v(0, -40) }, 'sine.inOut');
   to(18.7, 23.5, { az: 68, el: 13 }, 'none');
   to(23.5, 24.8, { tear: 0 }, 'none');
   to(23.5, 24.8, { az: 384, el: 8, frame: v(56, 62), tx: 0, ty: 0, tz: -40, sx: v(0.18, 0), sy: v(0, 0.16), oroll: 0, iris: 0.55 }, 'power1.inOut');

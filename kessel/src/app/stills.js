@@ -46,8 +46,9 @@ const POSES = {
   // One-page site: the hero (the film's first frame) and the teardown.
   'hero-wide': { s: 0 },
   'hero-tall': { s: 0, layout: 'narrow' },
-  'td-apart': { s: 21.1 },
-  'td-apart-tall': { s: 21.1, layout: 'narrow' },
+  // The stills have no rail or caption panel to make room for: centred.
+  'td-apart': { s: 21.1, sx: 0, sy: 0.02 },
+  'td-apart-tall': { s: 21.1, layout: 'narrow', sy: -0.04, frame: 126 },
   'exploded-wide': { s: 16.5, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
 };
 
