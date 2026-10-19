@@ -67,15 +67,21 @@ export function mount2D(container, { font }) {
     for (let i = 0; i < cnt; i++) { const a = (P.a0 + i * step) * DEG; L.cos[i] = Math.cos(a); L.sin[i] = Math.sin(a); }
     for (let i = 0; i < n; i++) { const a = (P.a0 + (i + 0.5) * step) * DEG; L.ccos[i] = Math.cos(a); L.csin[i] = Math.sin(a); }
     if (P.id === 'scale') {
-      // A tick every 4 degrees, on the facet that holds it (2 degrees clear
-      // of its edges). Throw position k/40 sits at -4k degrees: k <= 40 is
-      // the throw arc, every fifth longer; the rest of the ring fine ticks.
+      // One set of ticks, as on the 3D band: a short tick every 4 degrees
+      // all round, a long one exactly at each numeral (throw position p sits
+      // at -160p degrees), and no short tick beside a long one. Each tick
+      // goes on the facet that holds it.
       L.ticks = Array.from({ length: n }, () => []);
+      const longs = DISTANCES.map((d) => (((-throwPos(d.m) * THROW_DEG) % 360) + 360) % 360);
+      const put = (a, kind) => {
+        const i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step) % n;
+        L.ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind });
+      };
       for (let m = 0; m < 90; m++) {
-        const a = m * 4, i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step);
-        const kq = (90 - m) % 90;
-        L.ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind: kq <= 40 ? (kq % 5 === 0 ? 2 : 1) : 0 });
+        const a = m * 4;
+        if (!longs.some((b) => Math.abs((((a - b) % 360) + 540) % 360 - 180) < 1.6)) put(a, 1);
       }
+      for (const b of longs) put(b, 2);
     }
     return L;
   }
@@ -426,8 +432,8 @@ export function mount2D(container, { font }) {
     putNumeral('ft', 1.13, SC_FT, FONT_FL, AMBER);
   }
 
-  // The fixed index mark on the iris barrel, on the +X side: a line along
-  // the axis and a small pointer toward the scale.
+  // The fixed index mark on the iris barrel, on the +X side: a fine engraved
+  // line along the axis, flush with the barrel.
   function indexMark() {
     const poly = (pts) => {
       let n = 0, cx = 0, cy = 0, cz = 0;
@@ -445,8 +451,7 @@ export function mount2D(container, { font }) {
       sh.emph(TMP, 0, 'barrel');
       it.c0 = css(TMP[0], TMP[1], TMP[2]); it.a = smooth(0.05, 0.25, nd);
     };
-    poly([[39.66, -0.35, -43.2], [39.66, 0.35, -43.2], [39.66, 0.35, -39.7], [39.66, -0.35, -39.7]]);
-    poly([[39.66, -0.9, -39.5], [39.66, 0.9, -39.5], [39.66, 0, -38.5]]);
+    poly([[39.62, -0.11, -42.5], [39.62, 0.11, -42.5], [39.62, 0.11, -38.3], [39.62, -0.11, -38.3]]);
   }
 
   // The maker's mark and signature on the plate, laid out as the rear

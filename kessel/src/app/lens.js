@@ -168,17 +168,13 @@ export function buildLens(T, L, { quality = 'high', textures }) {
 
   // ------------------------------------------------- index + aperture + iris
   pBarrelIris.add(mesh(lathe([[39.6, -44.5], [39.6, -38.2], [40.2, -37.8]]), anodise));
-  // Index mark: a filled line at 12 o'clock, fixed while the scale turns.
+  // Index mark: a fine engraved line, filled and flush with the barrel,
+  // fixed while the scale turns. On the +X side, the side the focus puller
+  // (and the camera) faces.
   {
-    // On the +X side, the side the focus puller (and the camera) faces.
-    const m = mesh(new T.BoxGeometry(0.25, 0.7, 4.6), white);
-    m.position.set(39.68, 0, -40.6);
+    const m = mesh(new T.BoxGeometry(0.04, 0.22, 4.2), white);
+    m.position.set(39.61, 0, -40.4);
     pBarrelIris.add(m);
-    const tri = mesh(new T.ConeGeometry(0.9, 1.4, 3), white);
-    tri.rotation.set(Math.PI / 2, 0, -Math.PI / 2);
-    tri.position.set(39.75, 0, -38.4);
-    tri.scale.set(1, 0.25, 1);
-    pBarrelIris.add(tri);
   }
   // Aperture ring: coarse ridges that turn as the iris opens.
   const apRing = new T.Group();

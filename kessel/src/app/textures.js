@@ -49,16 +49,18 @@ export function scaleTexture(T, font) {
   // Metres, nearer the front of the ring (canvas top = front).
   for (const d of DISTANCES) stamp(d.label, uOf(throwPos(d.m)) * W, 46, 50, '#f1efe9');
   stamp('m', uOf(1.13) * W, 46, 34, '#f1efe9');
-  // Fine ticks all the way round, so the band reads as one ring from any
-  // side and visibly turns as a whole with the focus ring.
-  g.fillStyle = 'rgba(241,239,233,0.45)';
-  for (let i = 0; i < 144; i++) g.fillRect((i / 144) * W - 1.5, 84, 3, 8);
-  // Throw ticks, running along the axis between the two rows.
+  // One set of ticks, all the way round so the band reads as one ring from
+  // any side and visibly turns as a whole: a short tick every 4 degrees,
+  // and a long one exactly at each numeral. Short ticks that would sit
+  // beside a long one are left out, so no tick ever looks doubled.
+  const marks = DISTANCES.map((d) => throwPos(d.m));
   g.fillStyle = 'rgba(241,239,233,0.85)';
-  for (let i = 0; i <= 40; i++) {
-    const x = uOf(i / 40) * W;
-    g.fillRect(x - 2, 78, 4, i % 5 === 0 ? 20 : 11);
+  for (let k = 0; k < 90; k++) {
+    const p = k * (4 / THROW_DEG);
+    if (marks.some((q) => Math.abs(p - q) * THROW_DEG < 1.6)) continue;
+    g.fillRect(uOf(p) * W - 2, 78, 4, 11);
   }
+  for (const p of marks) g.fillRect(uOf(p) * W - 2, 78, 4, 20);
   // Feet, behind.
   for (const [ft, label] of [[Infinity, '\u221e'], [30, '30'], [15, '15'], [10, '10'], [6, '6'], [4, '4'], [3, '3']]) {
     const m = ft === Infinity ? Infinity : ft * 0.3048;

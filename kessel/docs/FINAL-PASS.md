@@ -66,3 +66,16 @@ others dim. Key, rim and a second warm rim light every part in the
 teardown; the iris blades are brushed steel with bent normals so they
 catch the light. Check: software-WebGL shot at story 19.6 and the smoke
 test's teardown select on both tiers.
+
+### 5. Distance scale — done
+
+One set of ticks, all the way round, in both tiers: a short tick every 4
+degrees and a long tick exactly at each metre numeral, with no short tick
+within 1.6 degrees of a long one (the doubled look came from a fine
+all-round set drawn on top of the throw ticks). The band was already a
+full ring that turns with the focus ring. The chunky index wedge (a box
+and a cone) is now a fine engraved line, 0.22 mm wide, flush with the
+barrel. The stills that show the scale (focus, d-scale, d-knurl) still
+show the old ticks until the stills are re-rendered after step 8.
+Check: software-WebGL focus stage and scale close-up, 2D the same; smoke
+test passed.
