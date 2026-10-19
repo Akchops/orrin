@@ -141,20 +141,23 @@ for (const btn of $$('[data-copy]')) {
 }
 
 // ------------------------------------------------- badge pill on phones
-// On narrow screens the badge is a pill in the header band; tapping it
-// shows the reason underneath. The badge's own logic is untouched.
+// On phones the badge is a small pill under the header reading 3D, 2D or
+// STILLS; tapping it opens the full name and the reason, a second tap, a
+// tap outside or Escape closes it. The button's name says which version is
+// running, since the pill only shows the short form. The badge's own logic
+// (src/app/main.js) is untouched.
 const badge = document.getElementById('tier');
 const toggle = badge && $('.tier__toggle', badge);
 if (toggle) {
+  const kind = $('.tier__kind', badge);
+  const setOpen = (open) => { badge.classList.toggle('is-open', open); toggle.setAttribute('aria-expanded', String(open)); };
+  const name = () => toggle.setAttribute('aria-label', `${kind.textContent.trim() || 'Version'}: why this version`);
   toggle.hidden = false;
-  toggle.addEventListener('click', () => {
-    const open = !badge.classList.contains('is-open');
-    badge.classList.toggle('is-open', open);
-    toggle.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', (e) => {
-    if (badge.classList.contains('is-open') && !badge.contains(e.target)) { badge.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); }
-  });
+  name();
+  new MutationObserver(name).observe(kind, { childList: true, characterData: true, subtree: true });
+  toggle.addEventListener('click', () => setOpen(!badge.classList.contains('is-open')));
+  document.addEventListener('click', (e) => { if (badge.classList.contains('is-open') && !badge.contains(e.target)) setOpen(false); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && badge.classList.contains('is-open')) { setOpen(false); if (badge.contains(document.activeElement)) toggle.focus(); } });
 }
 
 // ------------------------------------------------ past the film (home)

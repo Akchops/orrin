@@ -19,7 +19,8 @@ const anchorsOf = (name) => {
 
 // The teardown section: live, a pinned stage with one caption at a time and
 // labels that follow the parts (src/app/live.js places them); as stills,
-// a labelled exploded view with every caption.
+// a labelled exploded view with every caption. Each caption carries a short
+// line (phones, live) next to the full text (desktop and the stills).
 function teardownHTML() {
   const D = teardown;
   const tags = D.parts.map((p) => `<div class="td-tag" data-part="${p.id}"><span class="td-tag__dot"></span><span class="td-tag__line"></span><span class="td-tag__text">${esc(p.label)}</span></div>`).join('');
@@ -27,7 +28,8 @@ function teardownHTML() {
       <li class="td-cap" data-part="${p.id}">
         <p class="td-cap__no">${String(i + 1).padStart(2, '0')}</p>
         <h3>${esc(p.label)}</h3>
-        <p>${esc(p.body)}</p>
+        <p class="td-cap__short">${esc(p.short)}</p>
+        <p class="td-cap__long">${esc(p.body)}</p>
       </li>`).join('');
   const marks = (name) => {
     const a = anchorsOf(name);
@@ -45,13 +47,15 @@ function teardownHTML() {
       <header class="td-intro">
         <p class="cap__num">${esc(D.num)}</p>
         <h2 id="teardown-title">${esc(D.title)}</h2>
-        <p>${esc(D.lead)}</p>
+        <p class="td-cap__short">${esc(D.leadShort)}</p>
+        <p class="td-cap__long">${esc(D.lead)}</p>
       </header>
       <ol class="td-caps">${caps}
       </ol>
       <div class="td-outro">
         <h3>${esc(D.outro.title)}</h3>
-        <p>${esc(D.outro.body)}</p>
+        <p class="td-cap__short">${esc(D.outro.short)}</p>
+        <p class="td-cap__long">${esc(D.outro.body)}</p>
       </div>
     </div>
   </section>`;
@@ -65,14 +69,16 @@ export function filmHTML() {
     <div class="cap">
       <p class="cap__num">${esc(s.num)}</p>
       <h2 id="${s.id}-cap">${esc(s.title)}</h2>
-      <p>${esc(s.body)}</p>
+      <p class="cap__short">${esc(s.short)}</p>
+      <p class="cap__long">${esc(s.body)}</p>
     </div>
   </section>`).join('');
   const models = M.list.map((m, i) => `
       <li class="model" data-model="${i}">
         <figure class="still">${img(m.still, { alt: m.alt })}<figcaption>Still frame</figcaption></figure>
         <h3>${esc(m.name)} <span>proposal</span></h3>
-        <p>${esc(m.body)}</p>
+        <p class="cap__short">${esc(m.short)}</p>
+        <p class="cap__long">${esc(m.body)}</p>
       </li>`).join('');
   return `<div class="film" id="film">
   <section class="hero" id="top" aria-labelledby="home-title">

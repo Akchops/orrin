@@ -28,6 +28,9 @@
 .film .td-outro { display: grid; gap: 0.5rem; }
 .film .td-outro h3 { font-size: 1.35rem; font-weight: 400; }
 .film .td-outro p { color: var(--dim); font-size: 1rem; }
+/* Short and full caption text: phones in the live teardown read the short
+   line, desktop and the stills read the full text. */
+.film .td-cap__short { display: none; }
 @media (min-width: 800px) {
   .film .teardown { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; gap: 2rem 3rem; }
   .film .td-still--wide { grid-column: 1 / -1; }
@@ -60,12 +63,26 @@
     background: radial-gradient(120% 90% at 0% 100%, rgba(6, 7, 10, 0.9), rgba(6, 7, 10, 0.55) 55%, rgba(6, 7, 10, 0) 80%);
   }
 }
+/* Phones: the same compact panel as the film's captions (a small number
+   line, a short title, the short line) over a soft shade that belongs to the
+   caption, so it fades in and out with it. 56 px under the text are kept
+   clear for the parts rail along the bottom. */
 @media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
-  .live .film .td-copy { right: 0; width: auto; bottom: 5.2rem; }
-  .live .film .teardown::after {
-    content: ""; position: absolute; z-index: 1; pointer-events: none; left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); bottom: 0; height: 42%;
-    background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.86) 40%, var(--void));
+  .live .film .td-copy { right: 0; width: auto; bottom: env(safe-area-inset-bottom, 0px); }
+  .live .film .td-intro, .live .film .td-cap, .live .film .td-outro { gap: 0.3rem; padding-bottom: 56px; z-index: 0; }
+  .live .film .td-intro::before, .live .film .td-cap::before, .live .film .td-outro::before {
+    content: ""; position: absolute; z-index: -1; pointer-events: none;
+    left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); top: -1.5rem; bottom: calc(env(safe-area-inset-bottom, 0px) * -1);
+    background: linear-gradient(rgba(6, 7, 10, 0), rgba(6, 7, 10, 0.62) 38%, rgba(6, 7, 10, 0.85));
   }
+  .live .film .td-cap__short { display: block; }
+  .live .film .td-cap__long { display: none; }
+  .live .film .td-cap__no, .live .film .td-intro .cap__num { font-size: 0.68rem; line-height: 1.3; }
+  /* The part number sits on the title's line, like an index. */
+  .live .film .td-cap { grid-template-columns: auto minmax(0, 1fr); column-gap: 0.6rem; align-items: baseline; }
+  .live .film .td-cap > .td-cap__short { grid-column: 1 / -1; }
+  .live .film .td-intro h2, .live .film .td-cap h3, .live .film .td-outro h3 { font-size: 1.5rem; font-weight: 300; }
+  .live .film .td-copy p.td-cap__short { font-size: 1rem; line-height: 1.4; color: var(--dim); }
 }
 
 /* Labels that follow the parts: a dot on the part, a leader line, the name.
