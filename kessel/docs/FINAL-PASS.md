@@ -55,3 +55,14 @@ soft rim light through the whole film. The 2D tier got the same lift. All
 stills were re-rendered with transparent backgrounds so they sit on the
 new page like the live canvas (they used to be flattened onto black).
 Check: smoke test passed; reduced-motion stills checked at 390 and 1440.
+
+### 4. Teardown clarity — done (built in the previous round, re-checked on the brighter build)
+
+Parts rail listing the eight parts (vertical on the right on desktop, a
+horizontal strip at the bottom on phones). The parts land in one
+left-to-right line in rail order. While scrolling, the part being
+explained is brightest (a light multiplier plus a soft violet rim) and the
+others dim. Key, rim and a second warm rim light every part in the
+teardown; the iris blades are brushed steel with bent normals so they
+catch the light. Check: software-WebGL shot at story 19.6 and the smoke
+test's teardown select on both tiers.
