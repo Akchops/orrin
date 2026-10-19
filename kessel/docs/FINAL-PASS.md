@@ -43,3 +43,15 @@ motion, no JS) all passed; the watchdog simulation (`wdsim.mjs`) keeps a
 Phone captions are a compact gradient panel at the bottom with a one-line
 short text: 14–25% of the screen at 390x844 and 390x664. The badge on
 phones is a 26 px pill top right (3D / 2D / STILLS) that expands on tap.
+
+### 3. Brighter — done
+
+The page moved from near black (#06070a) to a deep charcoal gradient
+(#272b33 at the top, #15171c, #101216 at the edges); every dark literal in
+the styles follows it, and secondary text was lifted to keep about 7:1
+contrast. 3D: tone-mapping exposure 1.22, a brighter studio shell in the
+environment map, environment intensity 1.3, a stronger key light and a
+soft rim light through the whole film. The 2D tier got the same lift. All
+stills were re-rendered with transparent backgrounds so they sit on the
+new page like the live canvas (they used to be flattened onto black).
+Check: smoke test passed; reduced-motion stills checked at 390 and 1440.
