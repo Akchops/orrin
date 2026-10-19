@@ -32,13 +32,13 @@
 /* Shade the left side so the headline reads over the knurled grip. */
 #workshop .ws-hero__fig::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0.2) 38%, rgba(6, 7, 10, 0) 60%, rgba(6, 7, 10, 0) 78%, rgba(6, 7, 10, 0.6));
+  background: linear-gradient(90deg, rgba(21, 23, 28, 0.72), rgba(21, 23, 28, 0.2) 38%, rgba(21, 23, 28, 0) 60%, rgba(21, 23, 28, 0) 78%, rgba(21, 23, 28, 0.6));
 }
 #workshop .ws-hero__copy { position: relative; display: grid; gap: 1.2rem 0; grid-template-columns: minmax(0, 1fr); }
 #workshop .ws-hero h1 {
   font-size: var(--ws-h1); font-stretch: 125%; font-weight: 200;
   line-height: 0.88; letter-spacing: -0.025em; max-width: none; text-wrap: initial;
-  text-shadow: 0 0 2.5rem rgba(6, 7, 10, 0.6);
+  text-shadow: 0 0 2.5rem rgba(21, 23, 28, 0.6);
 }
 #workshop .ws-hero { --ws-h1: clamp(3.3rem, 0.9rem + 8.2vw, 10.4rem); }
 #workshop .ws-hero__l { display: block; }
@@ -133,7 +133,7 @@
   #workshop .ws-sec--range .ws-sec__fig img { object-position: 64% 50%; transform-origin: 74% 50%; }
   #workshop .ws-sec--range .ws-sec__in { margin-top: 0; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); column-gap: 3rem; }
   #workshop .ws-sec--range .ws-sec__in > * { grid-column: 1; }
-  #workshop .ws-sec--range h2 { max-width: none; text-shadow: 0 0 2rem rgba(6, 7, 10, 0.8); }
+  #workshop .ws-sec--range h2 { max-width: none; text-shadow: 0 0 2rem rgba(21, 23, 28, 0.8); }
   #workshop .ws-sec--range .ws-line, #workshop .ws-sec--range .ws-body { max-width: 30rem; }
 }
 
@@ -150,7 +150,7 @@
   #workshop .ws-sec--hands .ws-sec__fig { position: absolute; top: 50%; left: -14vw; width: min(64vw, 60rem); margin: 0; translate: 0 -50%; }
   #workshop .ws-sec--hands .ws-sec__in { margin-top: 0; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 3rem; }
   #workshop .ws-sec--hands .ws-sec__in > * { grid-column: 2; }
-  #workshop .ws-sec--hands .ws-line { margin-left: -12vw; max-width: 19ch; font-size: clamp(2.2rem, 0.8rem + 3.2vw, 4.4rem); text-shadow: 0 0 2rem rgba(6, 7, 10, 0.7); }
+  #workshop .ws-sec--hands .ws-line { margin-left: -12vw; max-width: 19ch; font-size: clamp(2.2rem, 0.8rem + 3.2vw, 4.4rem); text-shadow: 0 0 2rem rgba(21, 23, 28, 0.7); }
 }
 
 /* -------------------------------------- 03 · signed on the barrel (sign) */
@@ -169,7 +169,7 @@
    or the studio light at the edges. */
 #workshop .ws-sec--signed .ws-sec__fig::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(6, 7, 10, 0.8), rgba(6, 7, 10, 0) 12%, rgba(6, 7, 10, 0) 88%, rgba(6, 7, 10, 0.8));
+  background: linear-gradient(90deg, rgba(21, 23, 28, 0.8), rgba(21, 23, 28, 0) 12%, rgba(21, 23, 28, 0) 88%, rgba(21, 23, 28, 0.8));
 }
 #workshop .ws-sec--signed .ws-sec__in { margin-top: -4.5rem; justify-items: center; }
 #workshop .ws-sec--signed .ws-sec__head { justify-items: center; }
@@ -188,7 +188,7 @@
   }
   #workshop .ws-sec--signed .ws-sec__fig img { object-position: 51% 0%; transform-origin: 51% 0%; scale: 2.7; }
   /* Put out the studio light that glows just right of the "L". */
-  #workshop .ws-sec--signed .ws-sec__fig::after { background: radial-gradient(ellipse 14% 34% at 97% 8%, rgba(6, 7, 10, 0.94), rgba(6, 7, 10, 0)); }
+  #workshop .ws-sec--signed .ws-sec__fig::after { background: radial-gradient(ellipse 14% 34% at 97% 8%, rgba(21, 23, 28, 0.94), rgba(21, 23, 28, 0)); }
   #workshop .ws-sec--signed .ws-sec__in { margin-top: clamp(-9rem, -8vw, -5rem); }
   #workshop .ws-sec--signed .ws-line { font-size: clamp(2.6rem, 0.8rem + 4.2vw, 6rem); max-width: 22ch; margin-top: 1rem; }
 }

@@ -96,7 +96,7 @@
 .route--lens .enquire[open] > summary::after { content: "\2212"; }
 .route--lens .enquire__body {
   display: grid; gap: 0.9rem; margin-top: 1rem; padding: 0.4rem 0 0.2rem 1.1rem;
-  border-left: 2px solid var(--band); background: linear-gradient(90deg, rgba(6, 7, 10, 0.92), rgba(6, 7, 10, 0.6));
+  border-left: 2px solid var(--band); background: linear-gradient(90deg, rgba(21, 23, 28, 0.92), rgba(21, 23, 28, 0.6));
 }
 .route--lens .enquire__body > p { color: var(--dim); font-size: 1rem; }
 .route--lens .enquire__body .clist { border-top: 0; }
@@ -125,9 +125,9 @@
 .route--lens .lens__tile--mount { --lz-op: 45% 42%; --lz-to: 45% 50%; --lz-z: 1.9; }
 .route--lens .lens__tile::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to top, rgba(6, 7, 10, 0.72), rgba(6, 7, 10, 0) 55%);
+  background: linear-gradient(to top, rgba(21, 23, 28, 0.72), rgba(21, 23, 28, 0) 55%);
 }
-.route--lens .lens__tile--scale::after { background: linear-gradient(to top, rgba(6, 7, 10, 0.9), rgba(6, 7, 10, 0.35) 45%, rgba(6, 7, 10, 0) 70%); }
+.route--lens .lens__tile--scale::after { background: linear-gradient(to top, rgba(21, 23, 28, 0.9), rgba(21, 23, 28, 0.35) 45%, rgba(21, 23, 28, 0) 70%); }
 @media (hover: hover) {
   .route--lens .lens__tile:hover img { transform: scale(calc(var(--lz-z, 1.1) * 1.07)); filter: brightness(1.12); }
 }

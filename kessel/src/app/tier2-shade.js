@@ -15,15 +15,15 @@
 export const len3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
 export const len2 = (x, y) => Math.sqrt(x * x + y * y);
 
-export const BG = [6 / 255, 7 / 255, 10 / 255];          // the page (#06070a)
+export const BG = [21 / 255, 23 / 255, 28 / 255];        // the page (#15171c)
 export const COAT = [0xab / 255, 0x9b / 255, 0xff / 255]; // emphasis glow
 const KEY = [1, 0.96, 0.91], RIM = [0.86, 0.9, 1];
-const AMB = 0.2;
+const AMB = 0.3;
 
 // d: diffuse albedo; env, t: reflection strength and tint; sp, sh: key
 // highlight strength and sharpness; fl: a floor, so bare metal always reads
 // as a bright edge.
-const anod = { d: [0.1, 0.105, 0.12], env: 0.6, t: [1, 1, 1.05], sp: 0.7, sh: 36, fl: 0 };
+const anod = { d: [0.13, 0.137, 0.155], env: 0.75, t: [1, 1, 1.05], sp: 0.8, sh: 36, fl: 0 };
 export const MATS = {
   A: anod, K: anod, S: anod, R: anod,
   B: { d: [0.4, 0.42, 0.45], env: 1.2, t: [1, 1, 1], sp: 1, sh: 60, fl: 0.24 },

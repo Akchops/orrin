@@ -110,7 +110,7 @@
 #lenses .lx-lens__name {
   font-size: clamp(3.3rem, 0.6rem + 11.4vw, 12.5rem); font-weight: 200; font-stretch: 125%;
   line-height: 0.86; letter-spacing: -0.012em; text-wrap: nowrap; transition: color 0.5s ease;
-  text-shadow: 0 0.04em 0.4em rgba(6, 7, 10, 0.55);
+  text-shadow: 0 0.04em 0.4em rgba(21, 23, 28, 0.55);
 }
 #lenses .lx-lens__line {
   font-family: var(--body); font-style: italic; font-weight: 400;

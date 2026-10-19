@@ -31,6 +31,8 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.NeutralToneMapping;
+  // A brighter studio than the first cut, which read as too dark.
+  renderer.toneMappingExposure = 1.22;
   const canvas = renderer.domElement;
   canvas.setAttribute('aria-hidden', 'true');
 
@@ -93,11 +95,13 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     scene.environmentRotation.set(pointer.y * 0.3, pointer.x * 0.7 + pointer.spin * 0.5, 0);
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
     const tl = S.tlight || 0;
-    key.intensity = 1.4 + 1.6 * tl;
-    rim.intensity = 3.2 * tl;
-    rim2.intensity = 1.4 * tl;
+    // A soft rim stays on through the film so the barrel's edges separate
+    // from the charcoal page; the teardown light strengthens all three.
+    key.intensity = 2.0 + 1.5 * tl;
+    rim.intensity = 0.9 + 2.6 * tl;
+    rim2.intensity = 0.35 + 1.2 * tl;
     // The studio reflections come up too, so no part sinks into the page.
-    scene.environmentIntensity = 1 + 0.45 * tl;
+    scene.environmentIntensity = 1.3 + 0.4 * tl;
 
     // Orbit camera: `frame` is the half-size in mm that must fit the smaller
     // viewport side, so phone and desktop show the same composition.

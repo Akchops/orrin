@@ -15,8 +15,8 @@ export function buildEnvironment(T, renderer, size = 256) {
       void main() {
         // h: 0 at the floor, 1 at the ceiling.
         float h = vDir.y * 0.5 + 0.5;
-        vec3 c = mix(vec3(0.008, 0.009, 0.011), vec3(0.04, 0.042, 0.05), smoothstep(0.0, 0.6, h));
-        c = mix(c, vec3(0.075, 0.072, 0.07), smoothstep(0.6, 1.0, h));
+        vec3 c = mix(vec3(0.016, 0.018, 0.022), vec3(0.07, 0.074, 0.085), smoothstep(0.0, 0.6, h));
+        c = mix(c, vec3(0.13, 0.125, 0.12), smoothstep(0.6, 1.0, h));
         gl_FragColor = vec4(c, 1.0);
       }`,
   }));

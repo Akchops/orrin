@@ -13,7 +13,7 @@
 .td-rail ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.35rem; }
 .td-chip {
   appearance: none; display: flex; align-items: center; gap: 0.55rem; width: 100%;
-  border: 1px solid transparent; background: rgba(10, 11, 14, 0.62); color: var(--dim);
+  border: 1px solid transparent; background: rgba(27, 30, 36, 0.62); color: var(--dim);
   padding: 0.45rem 0.7rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
   font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: left;
   transition: color 0.25s, border-color 0.25s, background-color 0.25s;
@@ -37,14 +37,14 @@
     padding: 0 var(--gutter-r) 0 var(--gutter-l); scroll-padding: 0 var(--gutter-l);
   }
   .td-rail ol::-webkit-scrollbar { display: none; }
-  .td-chip { min-height: 40px; padding: 0.4rem 0.8rem; font-size: 0.66rem; background: rgba(10, 11, 14, 0.8); }
+  .td-chip { min-height: 40px; padding: 0.4rem 0.8rem; font-size: 0.66rem; background: rgba(27, 30, 36, 0.8); }
 }
 
 /* Back to all parts. */
 .td-back {
   appearance: none; justify-self: start; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem;
   min-height: 40px; padding: 0.45rem 0.9rem; border: 1px solid var(--line); border-radius: 999px;
-  background: rgba(10, 11, 14, 0.7); color: var(--engrave); cursor: pointer;
+  background: rgba(27, 30, 36, 0.7); color: var(--engrave); cursor: pointer;
   font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
 }
 .td-back:hover { border-color: var(--coat); }
@@ -57,7 +57,7 @@
     position: fixed; z-index: 5; left: var(--card-x, 55vw); top: var(--card-y, 50vh); bottom: auto;
     width: var(--card-w, 22rem); transform: translateY(-50%);
     padding: 1.3rem 1.4rem 1.2rem; border: 1px solid rgba(171, 155, 255, 0.3); border-radius: 4px;
-    background: rgba(10, 11, 14, 0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); text-shadow: none;
+    background: rgba(27, 30, 36, 0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); text-shadow: none;
   }
   .live .film .td-cap.is-selected h3 { font-size: clamp(1.6rem, 1rem + 1.3vw, 2.3rem); }
   .live .film .teardown::before { transition: opacity 0.4s ease; }

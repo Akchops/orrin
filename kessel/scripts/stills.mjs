@@ -18,9 +18,9 @@ const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600],
   'd-iris': [1600, 1600], 'd-glass': [1600, 1600], 'd-knurl': [2000, 1000], 'd-scale': [1600, 1000], 'd-sign': [1600, 1000],
   'd-mount': [1400, 1400], 'exploded-wide': [2400, 1100],
   'hero-wide': [1600, 1000], 'hero-tall': [900, 1600], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
-// Site imagery keeps its transparent background; the film's still frames
-// are flattened onto black as before.
-const site = ['hero-lens', 'lens-1', 'lens-2', 'lens-3', 'lineup-1', 'lineup-2', 'lineup-3', 'd-iris', 'd-glass', 'd-knurl', 'd-scale', 'd-sign', 'd-mount', 'exploded-wide'];
+// Every still keeps its transparent background, so it sits on the page's
+// charcoal gradient like the live canvas does (the film's frames used to be
+// flattened onto black, which showed as dark boxes on the lighter page).
 const argv = process.argv.slice(2);
 const FILE = (argv.find((a) => a.startsWith('--file=')) || '--file=kessel/index.html').slice(7);
 const picked = argv.filter((a) => !a.startsWith('--'));
@@ -37,7 +37,7 @@ for (const n of names) {
   if (marks && n.startsWith('td-')) writeFileSync(`kessel/stills/${n}.json`, JSON.stringify(marks));
   const png = `kessel/stills/${n}.png`;
   writeFileSync(png, Buffer.from((await page.evaluate(() => window.__still)).split(',')[1], 'base64'));
-  const mode = site.includes(n) ? 'RGBA' : 'RGB';
+  const mode = 'RGBA';
   execFileSync('python3', ['-c', `from PIL import Image; import os; im=Image.open('${png}').convert('${mode}').resize((${ow},${oh}), Image.LANCZOS); im.save('${png.replace('.png', '.webp')}', 'WEBP', quality=84, method=6); os.remove('${png}')`]);
   console.log('still', n);
 }

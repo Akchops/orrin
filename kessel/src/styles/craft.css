@@ -18,7 +18,7 @@
 #craft .craft-head h1 {
   font-size: clamp(3.1rem, 0.6rem + 9vw, 9.8rem); font-stretch: 125%; font-weight: 250;
   line-height: 0.9; letter-spacing: -0.012em; max-width: none;
-  text-shadow: 0 0 2.5rem rgba(6, 7, 10, 0.55);
+  text-shadow: 0 0 2.5rem rgba(21, 23, 28, 0.55);
 }
 #craft .craft-head__side { display: grid; gap: clamp(2rem, 3vw, 2.8rem); align-content: start; margin-top: 0.6rem; }
 #craft .craft-head .lead { color: var(--dim); font-style: italic; max-width: 38ch; }
@@ -147,7 +147,7 @@
 #craft .cstep--parts .cstep__stage { position: relative; display: grid; margin-inline: var(--c-bleed); padding-inline: var(--gutter-l) var(--gutter-r); overflow-x: clip; }
 #craft .cstep--parts .cstep__head { order: -1; z-index: 2; pointer-events: none; }
 #craft .cstep__line { display: block; }
-#craft .cstep--parts .cstep__title { font-size: clamp(3.3rem, 0.8rem + 9.4vw, 11.5rem); font-weight: 250; line-height: 0.86; letter-spacing: -0.015em; text-shadow: 0 0.1em 1.6rem rgba(6, 7, 10, 0.75); }
+#craft .cstep--parts .cstep__title { font-size: clamp(3.3rem, 0.8rem + 9.4vw, 11.5rem); font-weight: 250; line-height: 0.86; letter-spacing: -0.015em; text-shadow: 0 0.1em 1.6rem rgba(21, 23, 28, 0.75); }
 #craft .cstep--parts .cstep__no { order: -2; justify-self: end; margin: 0 -0.04em -2.2rem 0; font-size: clamp(6rem, 2rem + 14vw, 19rem); }
 #craft .cstep--parts .cstep__fig { z-index: 1; margin-inline: var(--c-bleed); }
 #craft .cstep--parts .cstep__fig img { max-width: none; object-fit: fill; transition: transform 0.9s var(--c-ease), scale 0.9s var(--c-ease); }
