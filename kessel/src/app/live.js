@@ -453,6 +453,8 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
 
     const apart = s > 18.45 && s < 23.75;
     const center = view.project('__target');
+    // Names flip to the left before they would run into the rail.
+    const rightEdge = !narrow && railOn ? rail.getBoundingClientRect().left - 12 : innerWidth - 8;
     for (const t of tdTags) {
       const featured = sel ? t.id === sel : !!cap && cap.id === t.id;
       const want = apart && (sel ? featured && td.f > 0.85 : featured || !narrow);
@@ -483,7 +485,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       st.setProperty('--ang', Math.atan2(ey, ex).toFixed(3) + 'rad');
       if (!t.w) t.w = t.el.querySelector('.td-tag__text').offsetWidth || 110;
       let left = dx < 0;
-      if (!left && p.x + ex + t.w > innerWidth - 8) left = true;
+      if (!left && p.x + ex + t.w > rightEdge) left = true;
       else if (left && p.x + ex - t.w < 8) left = false;
       st.setProperty('--tx', left ? '-100%' : '0%');
     }

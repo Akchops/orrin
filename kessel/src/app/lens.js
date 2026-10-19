@@ -331,7 +331,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       if (!m) {
         m = keep(o.material.clone());
         copies.set(o.material, m);
-        EMPH.push({ rid, m, base: m.color.clone(), env: m.envMapIntensity ?? 1, isBand: o.material === band, isBlade: o.material === bladeMat });
+        EMPH.push({ rid, m, base: m.color.clone(), env: m.envMapIntensity ?? 1, cc: m.clearcoat || 0, isBand: o.material === band, isBlade: o.material === bladeMat });
       }
       o.material = m;
     });
@@ -521,7 +521,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   // others dim by S.dim. In the teardown light (S.tlight) the iris blades
   // turn from dark to machined steel, so they read as metal on their own.
   let emSig = '';
-  const BLADE_DARK = new T.Color(0x15161a), BLADE_STEEL = new T.Color(0x5b606a), bladeBase = new T.Color();
+  const BLADE_DARK = new T.Color(0x15161a), BLADE_STEEL = new T.Color(0x8d929c), bladeBase = new T.Color();
   function emphasis(S) {
     const hl = S.hl || '', dim = hl ? S.dim || 0 : 0, st = S.tlight || 0;
     const sig = hl + '|' + dim.toFixed(3) + '|' + st.toFixed(3);
@@ -529,10 +529,16 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     emSig = sig;
     bladeBase.lerpColors(BLADE_DARK, BLADE_STEEL, st);
     for (const e of EMPH) {
-      const on = e.rid === hl, k = on ? 1 + 0.25 * dim : 1 - dim;
+      // A steep curve: the teardown key light is strong, so a linear dim
+      // leaves the other parts looking nearly as bright.
+      const on = e.rid === hl, k = on ? 1 + 0.25 * dim : Math.pow(1 - dim, 1.6);
       e.m.color.copy(e.isBlade ? bladeBase : e.isBand ? band.color : e.base).multiplyScalar(k);
       if ('envMapIntensity' in e.m) e.m.envMapIntensity = e.env * (on ? 1 + 0.6 * dim : k);
-      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 - 0.14 * st; }
+      // The clear coat reflects light whatever the base colour: it dims too
+      // (kept above zero, so the shader does not change).
+      if (e.cc) e.m.clearcoat = e.cc * Math.max(0.05, on ? 1 : k);
+      // Brushed steel: a broad sheen the key light can always catch.
+      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 + 0.06 * st; }
     }
   }
 
