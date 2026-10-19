@@ -30,7 +30,11 @@ Home is one continuous scroll. The hero is the film's first frame (the
 lens cropped by the screen edges, iris closed to a pinhole); the first
 scroll opens the iris and the film runs in full. When its Contact stage
 fills the screen, the same move carries straight on into the teardown:
-the lens comes apart under scroll, each part labelled, and goes back
+the lens comes apart under scroll and lands in one left-to-right line, in
+the order of a parts rail (vertical on desktop, a strip along the bottom on
+phones). The part being explained is lit and the others dim. Tapping a part,
+its label or its chip flies the camera to a close-up with its caption beside
+it; Back, Escape, a second tap or scrolling returns. Then it goes back
 together. The header jumps to Teardown, Company and Contact on this page;
 the earlier pages (Lenses, Craft, Workshop and the lens details) are linked
 from the footer. They are plain HTML with stills: the lens code does not
@@ -70,9 +74,16 @@ Uses the repo's `node_modules` (three, gsap, lenis, esbuild, the two
 
 The badge (home only) always says which version is running:
 
-- **LIVE 3D**: Three.js lens, scroll-driven camera move.
-- **2D FALLBACK**: Canvas 2D drawing of the same move, with the reason
-  (no WebGL, software-only WebGL, too slow, or context lost).
+- **LIVE 3D**: Three.js lens, scroll-driven camera move. A watchdog
+  (`src/app/watchdog.js`) judges drawn frames against the display's own
+  cadence (learnt from idle ticks, so Safari's 30 fps clock in Low Power
+  Mode or an embedded page is not mistaken for a slow GPU). Missed frames
+  step the quality down a ladder: resolution first, then the clear coat and
+  thin film; the badge then says it is running at reduced quality. A lost
+  WebGL context restarts once at low quality.
+- **2D FALLBACK**: Canvas 2D drawing of the same move as solid, shaded
+  parts (`src/app/tier2*.js`), with the reason: no WebGL, software-only
+  WebGL, the lowest 3D quality still under 15 fps, or the context lost twice.
 - **STILLS**: still frames with captions, with the reason: JavaScript off,
   reduced motion (with a button to play the live version anyway), or the
   exact error if the live lens failed to start. A notice at the top of the
@@ -107,5 +118,6 @@ keep a transparent background so they sit on the page with no box.
 ## QA flags
 
 `?gl=force` accepts software WebGL (for GPU-less test machines) and disables
-the frame-rate watchdog; `?tier=2` forces the 2D version; `?static` forces
+the frame-rate watchdog (`&watchdog` keeps it on; `&slow=N` adds N ms of
+work to each drawn frame, to fake a slow phone); `?tier=2` forces the 2D version; `?static` forces
 stills; `?still=name` renders one still frame (build tool).

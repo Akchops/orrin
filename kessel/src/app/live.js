@@ -363,6 +363,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     }
     const had = !!td.sel;
     td.sel = id;
+    td.tok = (td.tok || 0) + 1;
     td.backPending = false;
     td.y0 = window.scrollY;
     try { history[had ? 'replaceState' : 'pushState']({ kTd: id }, ''); } catch { /* sandboxed */ }
@@ -384,7 +385,9 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       if (td.backPending) return;
       td.backPending = true;
       history.back();
-      setTimeout(() => { if (td.sel && !td.leaving) deselect(true); }, 350);
+      // The fallback only ever closes the part it was asked to close.
+      const tok = td.tok;
+      setTimeout(() => { if (td.tok === tok && td.sel && !td.leaving) deselect(true); }, 350);
       return;
     }
     td.backPending = false;
