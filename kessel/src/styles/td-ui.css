@@ -1,0 +1,70 @@
+/* ============================================================= TEARDOWN UI
+   Live only (src/app/live.js builds these): the parts rail, the open
+   part's caption beside it, its Back button and the tappable labels.
+   Vertical rail on the right on wide screens, a horizontal strip at the
+   bottom on phones, under the caption panel. */
+
+.td-rail { display: none; }
+.live .film .td-rail {
+  display: block; position: fixed; z-index: 4;
+  opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s;
+}
+.live .film .td-rail.is-on { opacity: 1; visibility: visible; }
+.td-rail ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.35rem; }
+.td-chip {
+  appearance: none; display: flex; align-items: center; gap: 0.55rem; width: 100%;
+  border: 1px solid transparent; background: rgba(10, 11, 14, 0.62); color: var(--dim);
+  padding: 0.45rem 0.7rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: left;
+  transition: color 0.25s, border-color 0.25s, background-color 0.25s;
+}
+.td-chip__no { color: var(--coat); font-size: 0.64rem; }
+.td-chip:hover { color: var(--engrave); border-color: var(--line); }
+.td-chip:focus-visible { color: var(--engrave); outline: 2px solid var(--coat); outline-offset: 2px; }
+.td-chip.is-current { color: var(--engrave); border-color: rgba(171, 155, 255, 0.55); background: rgba(24, 22, 40, 0.82); }
+.td-chip[aria-pressed="true"] { background: var(--engrave); color: var(--void); border-color: var(--engrave); }
+.td-chip[aria-pressed="true"] .td-chip__no { color: var(--void); }
+
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .live .film .td-rail { right: var(--gutter-r); top: 50%; transform: translateY(-50%); }
+  .td-rail ol { flex-direction: column; align-items: stretch; }
+  .td-chip { border-radius: 3px; padding: 0.5rem 0.8rem; }
+}
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .live .film .td-rail { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+  .td-rail ol {
+    overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+    padding: 0 var(--gutter-r) 0 var(--gutter-l); scroll-padding: 0 var(--gutter-l);
+  }
+  .td-rail ol::-webkit-scrollbar { display: none; }
+  .td-chip { min-height: 40px; padding: 0.4rem 0.8rem; font-size: 0.66rem; background: rgba(10, 11, 14, 0.8); }
+}
+
+/* Back to all parts. */
+.td-back {
+  appearance: none; justify-self: start; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem;
+  min-height: 40px; padding: 0.45rem 0.9rem; border: 1px solid var(--line); border-radius: 999px;
+  background: rgba(10, 11, 14, 0.7); color: var(--engrave); cursor: pointer;
+  font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.td-back:hover { border-color: var(--coat); }
+.td-back:focus-visible { outline: 2px solid var(--coat); outline-offset: 2px; }
+
+/* Wide screens: the open part's caption as a card beside the part. The
+   close-up puts the part left of centre; live.js sets --card-x/y/w. */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .live .film .td-cap.is-selected {
+    position: fixed; z-index: 5; left: var(--card-x, 55vw); top: var(--card-y, 50vh); bottom: auto;
+    width: var(--card-w, 22rem); transform: translateY(-50%);
+    padding: 1.3rem 1.4rem 1.2rem; border: 1px solid rgba(171, 155, 255, 0.3); border-radius: 4px;
+    background: rgba(10, 11, 14, 0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); text-shadow: none;
+  }
+  .live .film .td-cap.is-selected h3 { font-size: clamp(1.6rem, 1rem + 1.3vw, 2.3rem); }
+  .live .film .teardown::before { transition: opacity 0.4s ease; }
+  .live.td-picked .film .teardown::before { opacity: 0; }
+}
+
+/* Labels can be tapped to open their part; the scene shows a pointer over
+   a part. */
+.live .film .td-tag.is-on .td-tag__text { pointer-events: auto; cursor: pointer; }
+html.td-hover, html.td-hover body { cursor: pointer; }

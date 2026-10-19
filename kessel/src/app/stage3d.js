@@ -14,8 +14,19 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     antialias: quality !== 'low', alpha: true, powerPreference: 'high-performance',
     preserveDrawingBuffer: !!caps.preserve,
   });
-  let dprCap = quality === 'high' ? 2 : quality === 'medium' ? 1.5 : 1;
-  let dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+  // Quality ladder, best first. Desktops start on the first rung, phones
+  // (medium) on the second, a rebuilt context (low) on the fifth. When frames
+  // are missed the watchdog in live.js steps down one rung at a time: less
+  // resolution first, then the per-pixel extras; the 2D tier comes only
+  // after the last rung.
+  const LADDER = [
+    { dpr: 2, fx: true }, { dpr: 1.5, fx: true }, { dpr: 1.25, fx: true }, { dpr: 1, fx: true },
+    { dpr: 1, fx: false }, { dpr: 0.8, fx: false }, { dpr: 0.65, fx: false },
+  ];
+  const deviceDPR = window.devicePixelRatio || 1;
+  const dprOf = (r) => (r.dpr < 1 ? r.dpr : Math.min(deviceDPR, r.dpr));
+  let rung = quality === 'high' ? 0 : quality === 'medium' ? 1 : 4;
+  let dpr = dprOf(LADDER[rung]);
   renderer.setPixelRatio(dpr);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = T.SRGBColorSpace;
@@ -41,9 +52,16 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   rim.position.set(-140, 120, -160);
   scene.add(rim, rim.target);
 
-  const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font), rear: rearBarrelTexture(T, font) };
+  // Teardown fill: a warm rim from below on the other side, so the lower
+  // edges of the parts separate from the page as well as the upper ones.
+  const rim2 = new T.DirectionalLight(0xffe2c4, 0);
+  rim2.position.set(150, -90, -60);
+  scene.add(rim2, rim2.target);
+
+  const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font, quality === 'high' ? 2048 : 1024), rear: rearBarrelTexture(T, font) };
   const lens = buildLens(T, L, { quality, textures });
   scene.add(lens.root);
+  if (!LADDER[rung].fx) lens.setEffects(false);
 
   const camera = new T.PerspectiveCamera(26, 1, 0.5, 4000);
   let W = 1, H = 1;
@@ -72,8 +90,11 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     scene.environmentRotation.set(pointer.y * 0.3, pointer.x * 0.7 + pointer.spin * 0.5, 0);
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
     const tl = S.tlight || 0;
-    key.intensity = 1.4 + 1.3 * tl;
-    rim.intensity = 2.6 * tl;
+    key.intensity = 1.4 + 1.6 * tl;
+    rim.intensity = 3.2 * tl;
+    rim2.intensity = 1.4 * tl;
+    // The studio reflections come up too, so no part sinks into the page.
+    scene.environmentIntensity = 1 + 0.45 * tl;
 
     // Orbit camera: `frame` is the half-size in mm that must fit the smaller
     // viewport side, so phone and desktop show the same composition.
@@ -143,7 +164,34 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, visible: v.z > -1 && v.z < 1 };
   }
 
-  function setDPR(n) { dpr = Math.max(0.75, Math.min(n, dprCap)); renderer.setPixelRatio(dpr); resize(); return dpr; }
+  // One rung down the ladder, skipping rungs that change nothing on this
+  // screen. Returns a description of the new rung, or null at the bottom.
+  function stepDown() {
+    const cur = LADDER[rung];
+    for (let r = rung + 1; r < LADDER.length; r++) {
+      const n = LADDER[r];
+      if (dprOf(n) === dpr && n.fx === cur.fx) continue;
+      rung = r;
+      if (n.fx !== cur.fx) lens.setEffects(n.fx);
+      dpr = dprOf(n);
+      renderer.setPixelRatio(dpr);
+      resize();
+      return quality_();
+    }
+    return null;
+  }
+  const quality_ = () => ({ rung, dpr, fx: LADDER[rung].fx, reduced: rung > (quality === 'high' ? 0 : quality === 'medium' ? 1 : 4) });
+
+  // Which part is under a point on screen (CSS px), for tapping the
+  // teardown: the nearest hit wins.
+  const ray = new T.Raycaster(), ndc = new T.Vector2();
+  function pick(x, y) {
+    if (lost) return null;
+    ndc.set((x / W) * 2 - 1, -(y / H) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(lens.pickables, false)[0];
+    return hit ? hit.object.userData.part : null;
+  }
 
   async function warm(S) {
     lens.update(S, 0);
@@ -157,5 +205,5 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
 
-  return { canvas, kind: '3d', render, resize, project, setDPR, getDPR: () => dpr, warm, destroy };
+  return { canvas, kind: '3d', render, resize, project, pick, stepDown, quality: quality_, getDPR: () => dpr, warm, destroy };
 }

@@ -1,8 +1,11 @@
-// The live layer: pins, scroll -> story time, pointer, render loop and the
-// adaptive-quality watchdog. Called by main.js with the libraries already
-// started; it reports every tier change back through `report`.
+// The live layer: pins, scroll -> story time, pointer, render loop, the
+// adaptive-quality watchdog and the interactive teardown. Called by main.js
+// with the libraries already started; it reports every tier change back
+// through `report`.
 import { buildStory, createState, STORY_END, FILM_END, TEAR_CAPTIONS } from './story.js';
 import { distanceAt } from './textures.js';
+import { RAIL, TEAR_CLOSE, partCentre } from './teardown.js';
+import { createWatchdog } from './watchdog.js';
 
 const NARROW = '(max-width: 799px), (orientation: portrait) and (max-width: 1100px)';
 
@@ -14,11 +17,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const $$ = (s) => [...document.querySelectorAll(s)];
   const stage = $('#stage');
   const narrowMQ = matchMedia(NARROW);
+  const params = new URLSearchParams(location.search);
 
   // ------------------------------------------------------------ renderer
   let view, tier;
   if (caps.ok) {
-    view = mount3D(stage, () => degrade('the 3D context was lost'));
+    view = mount3D(stage, contextLost);
     tier = '3d';
   } else {
     view = mount2D(stage);
@@ -136,6 +140,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       pointer.tx = (e.clientX / innerWidth) * 2 - 1;
       pointer.ty = (e.clientY / innerHeight) * 2 - 1;
       lastInput = performance.now();
+      td.hoverAt = [e.clientX, e.clientY];
     } else if (drag && e.pointerId === drag.id) {
       pointer.tspin = drag.spin + ((e.clientX - drag.x) / innerWidth) * 2;
       lastInput = performance.now();
@@ -156,21 +161,37 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const tdCaps = new Map($$('.td-cap').map((el) => [el.dataset.part, el]));
   const tdIntro = $('.td-intro'), tdOutro = $('.td-outro');
   let tdState = '';
+  const tdSection = $('#teardown');
+  // Selection (tap a part or its name on the rail): the camera flies to a
+  // close-up blended over the scroll camera by td.f (0..1).
+  const td = { sel: null, f: 0, tween: null, y0: 0, hover: null, hoverAt: null, railKey: '', capKey: '' };
 
   // ------------------------------------------------------------ the loop
-  let sCur = 0, last = performance.now(), slow = 0, fast = 0, lastSig = '', resized = 0;
+  let sCur = 0, last = performance.now(), lastSig = '', resized = 0;
   const t0 = performance.now();
   const qa = !!caps.qa;
+  // Test hooks: ?watchdog keeps the watchdog on with forced software GL,
+  // ?slow=N adds N ms of work to every drawn frame (a slow phone, faked).
+  const wdOn = !qa || params.has('watchdog');
+  const fakeSlow = Number(params.get('slow')) || 0;
 
   function frame() {
     const now = performance.now();
-    const dt = Math.min(0.1, (now - last) / 1000);
+    const iv = now - last;
+    const dt = Math.min(0.1, iv / 1000);
     last = now;
+    watchTick(now, iv);
+    // The close-up camera is blended into S for one frame only: put the
+    // scroll camera back first (keys no tween covers here would otherwise
+    // keep the close-up after the part is closed).
+    if (camDirty) { Object.assign(S, camBase); camDirty = false; }
     const tSec = (now - t0) / 1000;
     const target = storyAt(window.scrollY);
     sCur += (target - sCur) * (1 - Math.exp(-dt / 0.09));
     if (Math.abs(target - sCur) < 1e-4) sCur = target;
     storyTl.time(Math.min(STORY_END, Math.max(0, sCur)));
+    if (td.sel && !td.leaving && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
+    teardownState();
 
     const k = 1 - Math.exp(-dt / 0.14);
     pointer.x += (pointer.tx - pointer.x) * k;
@@ -185,12 +206,15 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // Render only when something changed. Nothing in this scene moves on
     // its own, so a still page costs no GPU time at all: kinder to phone
     // batteries and to slow GPUs that would otherwise queue frames.
-    const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + resized;
+    const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + resized +
+      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4);
     const changed = sig !== lastSig;
     lastSig = sig;
-    window.__kessel && (window.__kessel.idle = !changed);
-    if (!changed) { slow = Math.max(0, slow - 1); return; }
+    window.__kessel && (window.__kessel.idle = !changed && !td.tween);
+    if (!changed) return;
     view.render(S, tSec, pointer);
+    if (fakeSlow) { const t = performance.now(); while (performance.now() - t < fakeSlow) { /* busy */ } }
+    wdPending = true;
 
     // Light coming through the iris also lifts the page behind the lens.
     const facing = Math.max(0, Math.cos((S.az * Math.PI) / 180)) * (1 - S.inside);
@@ -230,44 +254,218 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       if (am !== activeModel) { activeModel = am; models.forEach((m, i) => m.classList.toggle('is-on', i === am)); }
     } else if (activeModel !== -1) { activeModel = -1; models.forEach((m) => m.classList.remove('is-on')); }
 
-    // Watchdog (only counts frames that were actually drawn): sustained
-    // frames over 22 ms step the resolution down; still slow at DPR 1 drops
-    // to the 2D tier, which draws the same move.
-    if (!qa && tier === '3d') {
-      if (dt > 0.022) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
-      if (slow > 90) {
-        slow = 0;
-        const d = view.getDPR();
-        if (d > 1.01) view.setDPR(Math.max(1, d - 0.25)); else degrade('3D could not hold its frame rate here');
-      } else if (fast > 600) { fast = 0; view.setDPR(view.getDPR() + 0.25); }
-    }
   }
 
-  // Labels on the parts while they are apart: every label on wide screens
-  // (the featured one bright), only the featured one on phones. The leader
-  // points away from the centre of the exploded lens, as on the Orrin watch.
+  // ------------------------------------------------------------ watchdog
+  // See watchdog.js. Ticks while another tier is up, or while the tab is
+  // hidden, are not counted.
+  let wdPending = false;
+  const wd = createWatchdog({
+    now0: performance.now(),
+    stepDown: () => (view.stepDown ? view.stepDown() : null),
+    degrade: (why) => degrade(why),
+    report: (why) => report('3d', why),
+  });
+  function watchTick(now, iv) {
+    const drew = wdPending;
+    wdPending = false;
+    if (wdOn && tier === '3d' && !document.hidden) wd.tick(now, iv, drew);
+  }
+
+  // --------------------------------------------------------- teardown
+  // The parts are apart (and can be picked) between these story times.
+  const APART = [18.6, 23.6];
+  const isApart = () => sCur > APART[0] && sCur < APART[1];
+  const capAt = (s) => TEAR_CAPTIONS.find((c) => s >= c.from && s < c.to);
+
+  // Per frame, after the scroll timeline has set S: which part is bright
+  // (the one being explained, or the one picked), how much the others dim,
+  // and the close-up camera blended over the scroll camera.
+  const cen = [0, 0, 0];
+  const ease = (t) => t * t * (3 - 2 * t);
+  const CAM_KEYS = ['az', 'el', 'frame', 'tx', 'ty', 'tz', 'sx', 'sy', 'oroll'];
+  const camBase = {};
+  let camDirty = false;
+  function teardownState() {
+    let hl = '', dim = 0;
+    if (isApart()) {
+      const c = capAt(sCur);
+      if (c) {
+        hl = c.id;
+        dim = 0.5 * Math.min(1, (sCur - APART[0]) / 0.25, (APART[1] - sCur) / 0.25);
+      }
+    }
+    if (td.sel) {
+      hl = td.sel;
+      dim = Math.max(dim * (1 - td.f), 0.8 * td.f);
+      const k = ease(td.f), c = TEAR_CLOSE[td.sel], n = narrowMQ.matches;
+      partCentre(td.sel, S.tear, S.tspread || 1, cen);
+      for (const key of CAM_KEYS) camBase[key] = S[key];
+      camDirty = true;
+      const pose = {
+        az: c.az, el: c.el, frame: c.r * (n ? 1.55 : 1.3), tx: cen[0], ty: cen[1], tz: cen[2],
+        sx: n ? 0 : -0.17, sy: n ? 0.15 : 0.02, oroll: 0,
+      };
+      for (const key in pose) S[key] += (pose[key] - S[key]) * k;
+    }
+    S.hl = hl;
+    S.dim = dim;
+  }
+
+  // The parts rail, built here because it only exists while the lens is
+  // live: one button per part, named from the labels already in the page.
+  const rail = document.createElement('nav');
+  rail.className = 'td-rail';
+  rail.setAttribute('aria-label', 'Parts of the lens');
+  const names = new Map(tdTags.map((t) => [t.id, t.el.querySelector('.td-tag__text').textContent]));
+  rail.innerHTML = '<ol>' + RAIL.map((id, i) => `<li><button type="button" class="td-chip" data-part="${id}" aria-pressed="false">` +
+    `<span class="td-chip__no">${String(i + 1).padStart(2, '0')}</span><span class="td-chip__name">${names.get(id) || id}</span></button></li>`).join('') + '</ol>';
+  const chips = new Map([...rail.querySelectorAll('.td-chip')].map((b) => [b.dataset.part, b]));
+  tdSection && tdSection.appendChild(rail);
+  // One Back button, moved into whichever caption is open.
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'td-back';
+  back.innerHTML = '<span aria-hidden="true">←</span> All parts';
+  back.addEventListener('click', (e) => { e.stopPropagation(); deselect(); });
+
+  // Story time -> scroll position (the inverse of storyAt), for the rail.
+  function yFor(s) {
+    let lo = 0, hi = ScrollTrigger.maxScroll(window);
+    for (let i = 0; i < 32; i++) { const m = (lo + hi) / 2; if (storyAt(m) < s) lo = m; else hi = m; }
+    return hi;
+  }
+
+  function select(id) {
+    if (!id) return;
+    if (td.sel === id) { deselect(); return; }
+    if (!isApart()) {
+      // From the rail before the parts are out (or after they went back):
+      // go to that part's place in the teardown first.
+      const c = TEAR_CAPTIONS.find((x) => x.id === id);
+      lenis.scrollTo(yFor(c ? c.from + 0.3 : 19), { immediate: true, force: true });
+      sCur = storyAt(window.scrollY);
+    }
+    const had = !!td.sel;
+    td.sel = id;
+    td.y0 = window.scrollY;
+    try { history[had ? 'replaceState' : 'pushState']({ kTd: id }, ''); } catch { /* sandboxed */ }
+    td.tween && td.tween.kill();
+    td.tween = gsap.to(td, { f: 1, duration: had ? 0.6 : 0.9, ease: 'power2.inOut', onComplete: () => { td.tween = null; } });
+    root.classList.add('td-picked');
+    td.capKey = '';
+  }
+  function deselect(fromHistory = false) {
+    if (!td.sel || td.leaving) return;
+    if (!fromHistory && history.state && history.state.kTd) {
+      // Undo our history entry; popstate calls back here. If the browser
+      // does not answer (a sandboxed frame), close anyway.
+      history.back();
+      setTimeout(() => { if (td.sel && !td.leaving) deselect(true); }, 350);
+      return;
+    }
+    td.leaving = true;
+    td.tween && td.tween.kill();
+    root.classList.remove('td-picked');
+    td.tween = gsap.to(td, { f: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => { td.sel = null; td.leaving = false; td.tween = null; td.capKey = ''; } });
+    td.capKey = '';
+  }
+  addEventListener('popstate', () => { if (td.sel) deselect(true); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && td.sel) deselect(); });
+  rail.addEventListener('click', (e) => {
+    const b = e.target.closest('.td-chip');
+    if (b) { e.stopPropagation(); select(b.dataset.part); }
+  });
+  // Tapping the scene: the part under the finger (or pointer), if any.
+  // Tapping empty space while a part is open goes back.
+  document.addEventListener('click', (e) => {
+    if (root.dataset.route !== 'home' || !isApart()) return;
+    if (e.target.closest('a, button, input, textarea, select, label, .tier, .masthead, .td-rail, .td-copy')) return;
+    const tag = e.target.closest('.td-tag');
+    if (tag) { select(tag.dataset.part); return; }
+    const id = view.pick ? view.pick(e.clientX, e.clientY) : null;
+    if (id) select(id);
+    else if (td.sel) deselect();
+  });
+
+  // Labels, captions and the rail. Labels follow the parts while they are
+  // apart: every label on wide screens (the featured one bright), only the
+  // featured one on phones; the leader points away from the centre of the
+  // exploded lens, as on the Orrin watch. With a part open, only its label
+  // and its caption (beside it on wide screens, in the panel on phones).
   function placeTeardown() {
     const s = sCur;
-    const cap = TEAR_CAPTIONS.find((c) => s >= c.from && s < c.to);
-    const state = s < 18.55 ? (s > 16.9 ? 'intro' : '') : s < 23.55 ? 'cap:' + (cap ? cap.id : '') : s < STORY_END + 0.01 ? 'outro' : '';
+    const cap = capAt(s);
+    const sel = td.sel && !td.leaving ? td.sel : null;
+    const state = sel ? 'sel:' + sel : s < 18.55 ? (s > 16.9 ? 'intro' : '') : s < 23.55 ? 'cap:' + (cap ? cap.id : '') : s < STORY_END + 0.01 ? 'outro' : '';
     if (state !== tdState) {
       tdState = state;
       tdIntro && tdIntro.classList.toggle('is-on', state === 'intro');
       tdOutro && tdOutro.classList.toggle('is-on', state === 'outro');
-      for (const [id, el] of tdCaps) el.classList.toggle('is-on', !!cap && state === 'cap:' + id);
+      for (const [id, el] of tdCaps) {
+        const on = state === 'sel:' + id || state === 'cap:' + id;
+        el.classList.toggle('is-on', on);
+        el.classList.toggle('is-selected', state === 'sel:' + id);
+      }
+      if (sel) tdCaps.get(sel)?.appendChild(back); else back.remove();
     }
     const narrow = narrowMQ.matches;
+    // The rail: shown through the teardown; the part being explained or
+    // the open one is marked.
+    const railOn = s > 16.95 && s < 24.9;
+    const cur = sel || (isApart() && cap ? cap.id : '');
+    const rk = railOn + '|' + cur + '|' + (td.sel || '');
+    if (rk !== td.railKey) {
+      td.railKey = rk;
+      rail.classList.toggle('is-on', railOn);
+      for (const [id, b] of chips) {
+        b.classList.toggle('is-current', id === cur);
+        b.setAttribute('aria-pressed', String(id === td.sel));
+      }
+      const b = chips.get(cur);
+      if (b && narrow && railOn) {
+        const r = rail.querySelector('ol'), x = b.offsetLeft - (r.clientWidth - b.offsetWidth) / 2;
+        r.scrollTo({ left: x, behavior: 'smooth' });
+      }
+    }
+    // Hover (mouse): the part under the pointer gets a pointer cursor.
+    if (td.hoverAt && view.pick && isApart()) {
+      const h = view.pick(td.hoverAt[0], td.hoverAt[1]);
+      td.hoverAt = null;
+      if (h !== td.hover) { td.hover = h; root.classList.toggle('td-hover', !!h); }
+    } else if (!isApart() && td.hover) { td.hover = null; root.classList.remove('td-hover'); }
+    // Open caption beside the part on wide screens: the close-up puts the
+    // part's centre at a known place, left of centre, so the card goes to
+    // its right, clear of the rail.
+    if (sel && !narrow) {
+      const el = tdCaps.get(sel), W = innerWidth, H = innerHeight;
+      const cx = W / 2 - 0.17 * W, rpx = (Math.min(W, H) / 2) / 1.3;
+      const railL = rail.getBoundingClientRect().left || W;
+      const w = Math.min(352, railL - (cx + rpx * 0.75) - 40);
+      const key = W + 'x' + H + ':' + sel;
+      if (el && key !== td.capKey) {
+        td.capKey = key;
+        el.style.setProperty('--card-x', Math.max(cx + rpx * 0.75 + 24, W * 0.5) + 'px');
+        el.style.setProperty('--card-w', Math.max(260, w) + 'px');
+        el.style.setProperty('--card-y', (H / 2 - 0.02 * H) + 'px');
+      }
+    }
+
     const apart = s > 18.45 && s < 23.75;
     const center = view.project('__target');
     for (const t of tdTags) {
-      const featured = !!cap && cap.id === t.id;
-      const want = apart && (featured || !narrow);
-      const p = want ? view.project('td-' + t.id) : null;
+      const featured = sel ? t.id === sel : !!cap && cap.id === t.id;
+      const want = apart && (sel ? featured && td.f > 0.85 : featured || !narrow);
+      const below = !sel && !narrow && RAIL.indexOf(t.id) % 2 === 1;
+      const p = want ? view.project('td-' + t.id + (below ? '-b' : '')) || view.project('td-' + t.id) : null;
       const show = !!(p && p.visible);
       if (show !== t.on) { t.on = show; t.el.classList.toggle('is-on', show); }
       t.el.classList.toggle('is-featured', featured);
       if (!show) continue;
       let dx = p.x - (center ? center.x : innerWidth / 2), dy = p.y - (center ? center.y : innerHeight / 2);
+      // Close-up: straight up from the part. Wide screens: labels alternate
+      // above and below the line, so neighbours never collide.
+      if (sel) { dx = 0.5; dy = -1; } else if (!narrow) { dx = 0.3; dy = below ? 1 : -1; }
       const len = Math.hypot(dx, dy) || 1;
       dx /= len; dy /= len;
       const L = narrow ? 30 : 46;
@@ -300,7 +498,32 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     stage.prepend(view.canvas);
     tier = '2d';
     try { old.destroy(); } catch { /* context may already be gone */ }
+    lastSig = '';
     report('2d', why);
+  }
+  // A lost WebGL context (a phone reclaiming graphics memory) gets one
+  // fresh start at low quality, with smaller buffers; only a second loss,
+  // or a restart that fails, falls back to 2D.
+  let losses = 0;
+  function contextLost() {
+    if (tier !== '3d' || degrading) return;
+    if (++losses > 1) return degrade('the 3D view lost its graphics memory twice here');
+    setTimeout(async () => {
+      if (tier !== '3d' || degrading) return;
+      const old = view;
+      try { old.destroy(); } catch { /* already gone */ }
+      try {
+        view = mount3D(stage, contextLost, 'low');
+        stage.prepend(view.canvas);
+        if (view.warm) await view.warm(S);
+        view.render(S, 0, pointer);
+        lastSig = '';
+        report('3d', 'restarted at low quality after the phone reclaimed graphics memory');
+      } catch {
+        view = old;   // destroyed; degrade replaces it
+        degrade('the 3D view lost its graphics memory and could not restart');
+      }
+    }, 300);
   }
 
   new ResizeObserver(() => { view.resize(); resized++; }).observe(stage);
@@ -326,6 +549,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const land = window.__kesselSite && window.__kesselSite.anchor();
   if (land) { lenis.resize(); lenis.scrollTo(land, { immediate: true, force: true }); }
 
-  window.__kessel = { S, get s() { return sCur; }, storyAt, lenis, ScrollTrigger, get tier() { return tier; } };
+  window.__kessel = { S, get s() { return sCur; }, storyAt, lenis, ScrollTrigger, get tier() { return tier; }, get view() { return view; }, select, deselect, get selected() { return td.sel; },
+    get watchdog() { return { on: wdOn, ...wd.stats() }; } };
   return tier;
 }

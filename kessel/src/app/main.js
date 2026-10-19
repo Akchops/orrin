@@ -108,7 +108,7 @@ async function start({ force = false } = {}) {
       caps,
       font: FONT,
       report: (kind, why) => setTier(kind === '3d' ? 'live' : kind, why),
-      mount3D: (stage, onLost) => mountWebGL(L.THREE, L, stage, caps, { font: FONT, onContextLost: onLost }),
+      mount3D: (stage, onLost, quality) => mountWebGL(L.THREE, L, stage, quality ? { ...caps, tier: quality } : caps, { font: FONT, onContextLost: onLost }),
       mount2D: (stage) => mount2D(stage, { font: FONT }),
     });
     clearTimeout(timer);

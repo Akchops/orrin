@@ -16,8 +16,10 @@
 //  15.2 - 16.5  contact: front three-quarters, iris half open
 //  ---- teardown (the About section), continuing the same move ----
 //  16.5 - 17.0  the film's last frame eases to a three-quarter view
-//  17.0 - 18.7  the parts leave, each on its own path; the camera orbits
-//  18.7 - 23.5  held apart: labels on every part, one caption at a time
+//  17.0 - 18.7  the parts leave, each on its own path, and land in one line;
+//               the camera orbits
+//  18.7 - 23.5  held apart: labels on every part, one caption at a time, the
+//               part being explained bright and the others dimmed (live.js)
 //  23.5 - 24.8  back together while the camera comes round to the front
 //  24.8 - 25.3  hold on the whole lens
 export const FILM_END = 16.5;
@@ -31,6 +33,9 @@ export function createState() {
     az: 0, el: 0, frame: 46, tx: 0, ty: 0, tz: -10, sx: 0, sy: 0, fov: 26,
     inside: 0, cz: 160, yaw: 0, roll: 0, rx: 0, ry: 0,
     iris: 0, spread: 0, focus: 0, model: 1, light: 1, sensor: 0, throat: 0, tear: 0, oroll: 0, tlight: 0, tspread: 1,
+    // Set by live.js, not by the timeline: the part to emphasise and how
+    // much the others dim.
+    hl: '', dim: 0,
   };
 }
 
@@ -40,7 +45,7 @@ export function buildStory(gsap, S, layout) {
   // The first frame is the hero: the lens large and cropped by the edges,
   // the iris closed to a pinhole, pushed right (wide) or up (phones) so the
   // headline never covers the bright centre.
-  Object.assign(S, createState(), { frame: v(35, 34), sx: v(0.22, 0), sy: v(0, 0.14), tspread: v(1, 0.78) });
+  Object.assign(S, createState(), { frame: v(35, 34), sx: v(0.22, 0), sy: v(0, 0.14), tspread: v(1, 0.8) });
   const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
   const to = (a, b, vals, ease = 'power1.inOut') => tl.to(S, { ...vals, duration: b - a, ease }, a);
 
@@ -103,16 +108,19 @@ export function buildStory(gsap, S, layout) {
   to(15.2, 16.5, { az: 24, el: 8, frame: v(56, 62), tx: 0, ty: 0, tz: -40, sx: v(0.18, 0), sy: v(0, 0.16), iris: 0.55 }, 'power1.inOut');
 
   // ---- Teardown. The camera eases from the film's last frame into a
-  // three-quarter view and orbits while the parts leave (on phones it also
-  // rolls a quarter turn, so the lens comes apart down the screen).
+  // three-quarter view and orbits while the parts leave and land in one
+  // line along the axis: front of the lens on the left, mount and signature
+  // plate on the right, the order of the parts rail. On phones the camera
+  // also rolls, so the line runs corner to corner down the portrait screen,
+  // still left to right, above the caption panel.
   // The parts are discs and rings, so the camera stays in front
   // three-quarter (never side-on, where they would turn edge-on), a little
   // above, and a teardown light comes up to separate them from the dark.
-  to(16.5, 17.0, { az: 40, el: 16, frame: v(80, 70), tx: 0, ty: -10, tz: -34, sx: v(0.03, 0), sy: v(0.04, 0.06), iris: 1, focus: 0 }, 'power1.inOut');
+  to(16.5, 17.0, { az: 40, el: 14, frame: v(80, 74), tx: 0, ty: -4, tz: -40, sx: v(0.03, 0), sy: v(0.04, 0.08), iris: 1, focus: 0 }, 'power1.inOut');
   to(16.5, 17.2, { tlight: 1, light: 0 }, 'power1.inOut');   // no iris, no light through it
   to(17.0, 18.7, { tear: 1 }, 'none');
-  to(17.0, 18.7, { az: 54, el: 22, frame: v(142, 120), ty: -10, tz: -36, sx: v(0.07, 0), sy: v(0.03, 0.12), oroll: v(0, 90) }, 'sine.inOut');
-  to(18.7, 23.5, { az: 76, el: 17 }, 'none');
+  to(17.0, 18.7, { az: 58, el: 15, frame: v(172, 150), ty: 0, tz: -58, sx: v(-0.08, 0), sy: v(0.07, 0.12), oroll: v(0, -38) }, 'sine.inOut');
+  to(18.7, 23.5, { az: 68, el: 13 }, 'none');
   to(23.5, 24.8, { tear: 0 }, 'none');
   to(23.5, 24.8, { az: 384, el: 8, frame: v(56, 62), tx: 0, ty: 0, tz: -40, sx: v(0.18, 0), sy: v(0, 0.16), oroll: 0, iris: 0.55 }, 'power1.inOut');
   to(24.3, 25.1, { tlight: 0, light: 1 }, 'power1.inOut');

@@ -49,7 +49,11 @@ export function scaleTexture(T, font) {
   // Metres, nearer the front of the ring (canvas top = front).
   for (const d of DISTANCES) stamp(d.label, uOf(throwPos(d.m)) * W, 46, 50, '#f1efe9');
   stamp('m', uOf(1.13) * W, 46, 34, '#f1efe9');
-  // Ticks, running along the axis between the two rows.
+  // Fine ticks all the way round, so the band reads as one ring from any
+  // side and visibly turns as a whole with the focus ring.
+  g.fillStyle = 'rgba(241,239,233,0.45)';
+  for (let i = 0; i < 144; i++) g.fillRect((i / 144) * W - 1.5, 84, 3, 8);
+  // Throw ticks, running along the axis between the two rows.
   g.fillStyle = 'rgba(241,239,233,0.85)';
   for (let i = 0; i <= 40; i++) {
     const x = uOf(i / 40) * W;
@@ -65,8 +69,9 @@ export function scaleTexture(T, font) {
 }
 
 // Front ring: maker's line set round the annulus face.
-export function frontRingTexture(T, font) {
-  const S = 2048, c = canvas(S, S), g = c.getContext('2d');
+// size: 2048 px on desktop; phones get 1024 (a quarter of the memory).
+export function frontRingTexture(T, font, S = 2048) {
+  const c = canvas(S, S), g = c.getContext('2d');
   const s = S / 80;                    // px per mm across an 80 mm square
   g.clearRect(0, 0, S, S);
   g.fillStyle = '#f1efe9';

@@ -4,7 +4,7 @@
 // Every channel the scroll timeline animates is applied in update(), and
 // nothing else moves the parts.
 
-import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset } from './teardown.js';
+import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, railId } from './teardown.js';
 
 const TAU = Math.PI * 2;
 
@@ -253,7 +253,12 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   pBarrelRear.add(mesh(lathe([[34.2, -86], [36.4, -82], [38.6, -78.4], [38.6, -58.4], [38.2, -58]]), anodise));
   pBarrelRear.add(mesh(lathe([[38.2, -58], [37.6, -57.6]]), bare));
   {
-    const d = mesh(lathe([[38.66, -77.8], [38.66, -58.8]]), decal(textures.rear));
+    // The signature plate: a thin anodised band over the rear barrel that
+    // carries the maker's mark, so taken apart it is a part, not loose ink.
+    pSignature.add(mesh(lathe([[38.9, -78.2], [38.9, -58.4]]), anodise));
+    pSignature.add(mesh(lathe([[38.9, -58.4], [38.75, -58.2]]), bare));
+    pSignature.add(mesh(lathe([[38.75, -78.4], [38.9, -78.2]]), bare));
+    const d = mesh(lathe([[38.96, -77.8], [38.96, -58.8]]), decal(textures.rear));
     pSignature.add(d);
   }
   // Model band: a coloured ring, the way cine sets mark one lens from another.
@@ -306,8 +311,30 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   });
   for (const [id, pos] of Object.entries(TEAR_ANCHORS)) {
     const a = new T.Object3D(); a.position.set(...pos);
-    parts[id][0].add(a);
+    const b = new T.Object3D(); b.position.set(pos[0], -pos[1], pos[2]);
+    parts[id][0].add(a, b);
     anchors['td-' + id] = a;
+    anchors['td-' + id + '-b'] = b;
+  }
+  // Emphasis: every part gets its own copies of its materials, so the part
+  // being explained can stay bright while the others dim. Copies with the
+  // same settings share one shader program, so this costs no compiles.
+  // Every mesh also learns which rail part it belongs to, for picking.
+  const EMPH = [], pickables = [];
+  for (const [pid, list] of Object.entries(parts)) {
+    const rid = railId(pid), copies = new Map();
+    for (const g of list) g.traverse((o) => {
+      if (!o.isMesh) return;
+      o.userData.part = rid;
+      pickables.push(o);
+      let m = copies.get(o.material);
+      if (!m) {
+        m = keep(o.material.clone());
+        copies.set(o.material, m);
+        EMPH.push({ rid, m, base: m.color.clone(), env: m.envMapIntensity ?? 1, isBand: o.material === band, isBlade: o.material === bladeMat });
+      }
+      o.material = m;
+    });
   }
   anchors.front = new T.Object3D(); anchors.front.position.set(0, 0, 0); gFront.add(anchors.front);
   anchors.ringEdge = new T.Object3D(); anchors.ringEdge.position.set(43, 0, 0); gFront.add(anchors.ringEdge);
@@ -485,11 +512,45 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       const fr = front[i] + (front[i + 1] - front[i]) * f;
       lens.scale.set(fr, fr, lz);
       band.color.copy(ca.set(bandColours[i])).lerp(cb.set(bandColours[i + 1]), f);
+      emSig = '';
+    }
+    emphasis(S);
+  }
+
+  // The part in S.hl keeps (a little more than) its full brightness; the
+  // others dim by S.dim. In the teardown light (S.tlight) the iris blades
+  // turn from dark to machined steel, so they read as metal on their own.
+  let emSig = '';
+  const BLADE_DARK = new T.Color(0x15161a), BLADE_STEEL = new T.Color(0x5b606a), bladeBase = new T.Color();
+  function emphasis(S) {
+    const hl = S.hl || '', dim = hl ? S.dim || 0 : 0, st = S.tlight || 0;
+    const sig = hl + '|' + dim.toFixed(3) + '|' + st.toFixed(3);
+    if (sig === emSig) return;
+    emSig = sig;
+    bladeBase.lerpColors(BLADE_DARK, BLADE_STEEL, st);
+    for (const e of EMPH) {
+      const on = e.rid === hl, k = on ? 1 + 0.25 * dim : 1 - dim;
+      e.m.color.copy(e.isBlade ? bladeBase : e.isBand ? band.color : e.base).multiplyScalar(k);
+      if ('envMapIntensity' in e.m) e.m.envMapIntensity = e.env * (on ? 1 + 0.6 * dim : k);
+      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 - 0.14 * st; }
     }
   }
 
+  // Quality steps (stage3d): on the lowest ones the clear coat on the
+  // anodising and the thin film on the glass go, each a per-pixel shader
+  // branch. three.js recompiles the affected materials once.
+  function setEffects(full) {
+    root.traverse((o) => {
+      const m = o.material;
+      if (!m || !m.isMeshPhysicalMaterial) return;
+      if (m.userData.cc === undefined) { m.userData.cc = m.clearcoat; m.userData.ir = m.iridescence; }
+      m.clearcoat = full ? m.userData.cc : 0;
+      m.iridescence = full ? m.userData.ir : 0;
+    });
+  }
+
   function dispose() { own.forEach((x) => x.dispose && x.dispose()); }
-  return { root, lens, update, anchors, dispose, glow, lightDisc, sensor, sensorGrid: gridMat };
+  return { root, lens, update, anchors, dispose, glow, lightDisc, sensor, sensorGrid: gridMat, pickables, setEffects };
 }
 
 const THROW_RAD = (160 / 180) * Math.PI;
