@@ -75,3 +75,9 @@ html.td-hover, html.td-hover body { cursor: pointer; }
   .live .film .td-cap:has(> .td-back) { grid-template-columns: auto minmax(0, 1fr) auto; }
   .live .film .td-cap > .td-back { grid-column: 3; grid-row: 1; align-self: center; margin: 0; min-height: 36px; padding: 0.3rem 0.7rem; font-size: 0.64rem; }
 }
+/* Phones: Back is the arrow alone (its name stays for screen readers), so
+   the longest part name still fits on the title line. */
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .live .film .td-cap > .td-back { min-width: 40px; justify-content: center; padding: 0.3rem 0.85rem; gap: 0; }
+  .td-back__txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

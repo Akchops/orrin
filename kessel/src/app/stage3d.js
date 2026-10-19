@@ -86,7 +86,10 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     // Pointer: a small tilt of the lens and a larger turn of the environment,
     // so reflections slide over the metal and across the coated glass.
     const inside = S.inside;
-    lens.root.rotation.set(pointer.y * 0.12 * (1 - inside), (pointer.x * 0.18 + pointer.spin) * (1 - inside), 0);
+    // The tilt fades out in a teardown close-up (pointer.tilt), so the part
+    // stays where the camera aims and its caption card beside it.
+    const tilt = (1 - inside) * (pointer.tilt ?? 1);
+    lens.root.rotation.set(pointer.y * 0.12 * tilt, (pointer.x * 0.18 + pointer.spin) * tilt, 0);
     scene.environmentRotation.set(pointer.y * 0.3, pointer.x * 0.7 + pointer.spin * 0.5, 0);
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
     const tl = S.tlight || 0;

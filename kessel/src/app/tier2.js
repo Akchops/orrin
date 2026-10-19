@@ -121,7 +121,8 @@ export function mount2D(container, { font }) {
   // normals (inverse scale).
   const M = new Float64Array(9), NM = new Float64Array(9);
   function setPose(S, pointer, fr, lz) {
-    const tiltX = pointer.y * 0.12 * (1 - S.inside), tiltY = (pointer.x * 0.18 + pointer.spin) * (1 - S.inside);
+    const tl = (1 - S.inside) * (pointer.tilt ?? 1);   // fades out in a teardown close-up
+    const tiltX = pointer.y * 0.12 * tl, tiltY = (pointer.x * 0.18 + pointer.spin) * tl;
     const R = mul3(mul3(rotX(tiltX), rotY(tiltY)), mul3(rotX(S.rx), rotY(S.ry)));
     for (let r = 0; r < 3; r++) {
       M[r * 3] = R[r * 3] * fr; M[r * 3 + 1] = R[r * 3 + 1] * fr; M[r * 3 + 2] = R[r * 3 + 2] * lz;

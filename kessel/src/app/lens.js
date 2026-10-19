@@ -217,6 +217,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   // aperture closes as a curved-sided polygon, as on a real iris.
   const N_BLADES = 11;
   const blades = [];
+  let bladeFlat, bladeBent;
   {
     // Solved numerically: these close with full overlap (no light between
     // blades) to a ~1 mm pinhole at 0.7 rad, and open to the 21.5 mm aperture.
@@ -234,6 +235,21 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     }
     s.closePath();
     const g = keep(new T.ShapeGeometry(s, 2));
+    // The teardown's copy of the blade: normals bent across its width, so
+    // each blade is a shallow curved sheet that catches the key and rim
+    // lights as a sheen and the eleven read apart. The film keeps the flat
+    // blade, so the hero's iris is unchanged.
+    bladeBent = keep(g.clone());
+    {
+      const pos = bladeBent.attributes.position, nor = bladeBent.attributes.normal, tilt = Math.tan((22 * Math.PI) / 180), n = new T.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        const X = pos.getX(i) + pivot.x, Y = pos.getY(i), r = Math.hypot(X, Y);
+        const t = tilt * (2 * Math.min(1, Math.max(0, (r - rIn) / (rOut - rIn))) - 1);
+        n.set((-X / r) * t, (-Y / r) * t, 1).normalize();
+        nor.setXYZ(i, n.x, n.y, n.z);
+      }
+      bladeFlat = g;
+    }
     for (let i = 0; i < N_BLADES; i++) {
       const phi = (i / N_BLADES) * TAU;
       const holder = new T.Group();           // placed at the pivot, round the axis
@@ -320,7 +336,23 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   // being explained can stay bright while the others dim. Copies with the
   // same settings share one shader program, so this costs no compiles.
   // Every mesh also learns which rail part it belongs to, for picking.
+  // Brightness goes through one multiplier on each copy's final light
+  // (uDim), so it reaches every term: direct light, reflections, clear coat
+  // and the thin film on the glass. The highlighted part also gets a soft
+  // rim of the page's violet (uGlow), as on the 2D tier.
   const EMPH = [], pickables = [];
+  const emphShader = (m, e) => {
+    const std = !!m.isMeshStandardMaterial;
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uDim = e.dim;
+      sh.uniforms.uGlow = e.glow;
+      sh.fragmentShader = 'uniform float uDim;\nuniform float uGlow;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
+        'outgoingLight *= uDim;\n' +
+        (std ? 'outgoingLight += uGlow * pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 2.5) * vec3(0.41, 0.33, 1.0);\n' : '') +
+        '#include <opaque_fragment>');
+    };
+    m.customProgramCacheKey = () => 'emph';
+  };
   for (const [pid, list] of Object.entries(parts)) {
     const rid = railId(pid), copies = new Map();
     for (const g of list) g.traverse((o) => {
@@ -331,7 +363,9 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       if (!m) {
         m = keep(o.material.clone());
         copies.set(o.material, m);
-        EMPH.push({ rid, m, base: m.color.clone(), env: m.envMapIntensity ?? 1, cc: m.clearcoat || 0, isBand: o.material === band, isBlade: o.material === bladeMat });
+        const e = { rid, m, base: m.color.clone(), isBand: o.material === band, isBlade: o.material === bladeMat, dim: { value: 1 }, glow: { value: 0 } };
+        emphShader(m, e);
+        EMPH.push(e);
       }
       o.material = m;
     });
@@ -529,17 +563,16 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     emSig = sig;
     bladeBase.lerpColors(BLADE_DARK, BLADE_STEEL, st);
     for (const e of EMPH) {
-      // A steep curve: the teardown key light is strong, so a linear dim
-      // leaves the other parts looking nearly as bright.
-      const on = e.rid === hl, k = on ? 1 + 0.25 * dim : Math.pow(1 - dim, 1.6);
-      e.m.color.copy(e.isBlade ? bladeBase : e.isBand ? band.color : e.base).multiplyScalar(k);
-      if ('envMapIntensity' in e.m) e.m.envMapIntensity = e.env * (on ? 1 + 0.6 * dim : k);
-      // The clear coat reflects light whatever the base colour: it dims too
-      // (kept above zero, so the shader does not change).
-      if (e.cc) e.m.clearcoat = e.cc * Math.max(0.05, on ? 1 : k);
+      // A steep curve for the others: the teardown key light is strong, so
+      // a linear dim leaves them looking nearly as bright.
+      const on = e.rid === hl;
+      e.dim.value = on ? 1 + 0.7 * dim : Math.pow(1 - dim, 1.6);
+      e.glow.value = on ? 0.3 * dim : 0;
+      if (e.isBlade || e.isBand) e.m.color.copy(e.isBlade ? bladeBase : band.color);
       // Brushed steel: a broad sheen the key light can always catch.
-      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 + 0.06 * st; }
+      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 - 0.06 * st; }
     }
+    for (const b of blades) b.geometry = st > 0.01 ? bladeBent : bladeFlat;
   }
 
   // Quality steps (stage3d): on the lowest ones the clear coat on the

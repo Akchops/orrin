@@ -15,8 +15,9 @@ export function createWatchdog({ stepDown, degrade, report, now0 = 0 }) {
   // now: tick time (ms); iv: time since the previous tick; drew: whether the
   // previous tick drew a frame.
   function tick(now, iv, drew) {
-    // A gap over a second is a hidden tab or a stall, not a frame.
-    if (iv > 1000) return;
+    // A gap over a second between idle ticks is a stall, not the display's
+    // clock; after a drawn frame it is a very slow frame and counts.
+    if (iv > 1000 && !drew) return;
     if (!drew) {
       wd.idle.push(iv);
       if (wd.idle.length > 40) wd.idle.shift();

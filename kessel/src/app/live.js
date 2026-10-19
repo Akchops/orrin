@@ -162,6 +162,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const tdIntro = $('.td-intro'), tdOutro = $('.td-outro');
   let tdState = '';
   const tdSection = $('#teardown');
+  const tagsLayer = $('.td-tags'), tierEl = $('#tier');
   // Selection (tap a part or its name on the rail): the camera flies to a
   // close-up blended over the scroll camera by td.f (0..1).
   // td.e (0..1) is the picked part's emphasis, which comes up first; td.f
@@ -192,7 +193,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     sCur += (target - sCur) * (1 - Math.exp(-dt / 0.09));
     if (Math.abs(target - sCur) < 1e-4) sCur = target;
     storyTl.time(Math.min(STORY_END, Math.max(0, sCur)));
-    if (td.sel && !td.leaving && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
+    if (td.sel && !td.leaving && !td.backPending && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
     teardownState();
 
     const k = 1 - Math.exp(-dt / 0.14);
@@ -209,11 +210,13 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // its own, so a still page costs no GPU time at all: kinder to phone
     // batteries and to slow GPUs that would otherwise queue frames.
     const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + resized +
-      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4) + ',' + td.e.toFixed(3);
+      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4) + ',' + td.e.toFixed(3) + ',' + (td.sel || '');
     const changed = sig !== lastSig;
     lastSig = sig;
     window.__kessel && (window.__kessel.idle = !changed && !td.tween);
     if (!changed) return;
+    // The lens holds still under the pointer in a close-up.
+    pointer.tilt = 1 - ease(td.f);
     view.render(S, tSec, pointer);
     if (fakeSlow) { const t = performance.now(); while (performance.now() - t < fakeSlow) { /* busy */ } }
     wdPending = true;
@@ -268,9 +271,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     degrade: (why) => degrade(why),
     report: (why) => report('3d', why),
   });
+  let wdSkip = false;
+  document.addEventListener('visibilitychange', () => { wdSkip = true; });
   function watchTick(now, iv) {
     const drew = wdPending;
     wdPending = false;
+    if (wdSkip) { wdSkip = false; return; }   // the gap while the tab was hidden
     if (wdOn && tier === '3d' && !document.hidden) wd.tick(now, iv, drew);
   }
 
@@ -297,15 +303,21 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
         dim = 0.5 * Math.min(1, (sCur - APART[0]) / 0.25, (APART[1] - sCur) / 0.25);
       }
     }
+    // Short phones (Safari's visible area is ~664 px tall at 390 wide): the
+    // exploded line is framed a little smaller, so its ends clear the badge
+    // and the caption panel. Eased in and out with the teardown.
+    const n = narrowMQ.matches;
+    const short = n ? Math.min(1.3, Math.max(1, 2.16 / (innerHeight / innerWidth))) : 1;
+    const shrink = 1 + (short - 1) * Math.min(1, Math.max(0, (sCur - 16.5) / 0.5), Math.max(0, (24.8 - sCur) / 1.3));
+    if (td.sel || shrink > 1) { for (const key of CAM_KEYS) camBase[key] = S[key]; camDirty = true; }
+    S.frame *= shrink;
     if (td.sel) {
       hl = td.sel;
       dim = Math.max(dim * (1 - td.e), 0.8 * td.e);
-      const k = ease(td.f), c = TEAR_CLOSE[td.sel], n = narrowMQ.matches;
+      const k = ease(td.f), c = TEAR_CLOSE[td.sel];
       partCentre(td.sel, S.tear, S.tspread || 1, cen);
-      for (const key of CAM_KEYS) camBase[key] = S[key];
-      camDirty = true;
       const pose = {
-        az: c.az, el: c.el, frame: c.r * (n ? 1.55 : 1.3), tx: cen[0], ty: cen[1], tz: cen[2],
+        az: c.az, el: c.el, frame: c.r * (n ? 1.55 : 1.3) * short, tx: cen[0], ty: cen[1], tz: cen[2],
         sx: n ? 0 : -0.17, sy: n ? 0.15 : 0.02, oroll: 0,
       };
       for (const key in pose) S[key] += (pose[key] - S[key]) * k;
@@ -328,7 +340,8 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const back = document.createElement('button');
   back.type = 'button';
   back.className = 'td-back';
-  back.innerHTML = '<span aria-hidden="true">←</span> All parts';
+  back.innerHTML = '<span aria-hidden="true">←</span><span class="td-back__txt"> All parts</span>';
+  back.setAttribute('aria-label', 'Back to all parts');
   back.addEventListener('click', (e) => { e.stopPropagation(); deselect(); });
 
   // Story time -> scroll position (the inverse of storyAt), for the rail.
@@ -350,6 +363,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     }
     const had = !!td.sel;
     td.sel = id;
+    td.backPending = false;
     td.y0 = window.scrollY;
     try { history[had ? 'replaceState' : 'pushState']({ kTd: id }, ''); } catch { /* sandboxed */ }
     td.tween && td.tween.kill();
@@ -365,12 +379,15 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   function deselect(fromHistory = false) {
     if (!td.sel || td.leaving) return;
     if (!fromHistory && history.state && history.state.kTd) {
-      // Undo our history entry; popstate calls back here. If the browser
-      // does not answer (a sandboxed frame), close anyway.
+      // Undo our history entry, once; popstate calls back here. If the
+      // browser does not answer (a sandboxed frame), close anyway.
+      if (td.backPending) return;
+      td.backPending = true;
       history.back();
       setTimeout(() => { if (td.sel && !td.leaving) deselect(true); }, 350);
       return;
     }
+    td.backPending = false;
     td.leaving = true;
     td.tween && td.tween.kill();
     root.classList.remove('td-picked');
@@ -385,8 +402,11 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   });
   // Tapping the scene: the part under the finger (or pointer), if any.
   // Tapping empty space while a part is open goes back.
+  // A tap that closes the open badge does only that.
+  let badgeWasOpen = false;
+  document.addEventListener('pointerdown', () => { badgeWasOpen = !!document.querySelector('.tier.is-open'); }, true);
   document.addEventListener('click', (e) => {
-    if (root.dataset.route !== 'home' || !isApart()) return;
+    if (root.dataset.route !== 'home' || !isApart() || badgeWasOpen) return;
     if (e.target.closest('a, button, input, textarea, select, label, .tier, .masthead, .td-rail, .td-copy')) return;
     const tag = e.target.closest('.td-tag');
     if (tag) { select(tag.dataset.part); return; }
@@ -423,7 +443,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const narrow = narrowMQ.matches;
     // The rail: shown through the teardown; the part being explained or
     // the open one is marked.
-    const railOn = s > 16.95 && s < 24.9;
+    const railOn = s > 16.95 && s < 23.9;
     const cur = sel || (isApart() && cap ? cap.id : '');
     const rk = railOn + '|' + cur + '|' + (td.sel || '');
     if (rk !== td.railKey) {
@@ -445,6 +465,10 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       td.hoverAt = null;
       if (h !== td.hover) { td.hover = h; root.classList.toggle('td-hover', !!h); }
     } else if (!isApart() && td.hover) { td.hover = null; root.classList.remove('td-hover'); }
+    // The labels and the open card are fixed inside the pinned section,
+    // which makes the section their containing block: viewport points are
+    // shifted by its offset (the page gutter).
+    const lo = tagsLayer ? tagsLayer.getBoundingClientRect() : { left: 0, top: 0 };
     // Open caption beside the part on wide screens: the close-up puts the
     // part's centre at a known place, left of centre, so the card goes to
     // its right, clear of the rail.
@@ -456,9 +480,9 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       const key = W + 'x' + H + ':' + sel;
       if (el && key !== td.capKey) {
         td.capKey = key;
-        el.style.setProperty('--card-x', Math.max(cx + rpx * 0.75 + 24, W * 0.5) + 'px');
+        el.style.setProperty('--card-x', Math.max(cx + rpx * 0.75 + 24, W * 0.5) - lo.left + 'px');
         el.style.setProperty('--card-w', Math.max(260, w) + 'px');
-        el.style.setProperty('--card-y', (H / 2 - 0.02 * H) + 'px');
+        el.style.setProperty('--card-y', (H / 2 - 0.02 * H) - lo.top + 'px');
       }
     }
 
@@ -466,6 +490,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const center = view.project('__target');
     // Names flip to the left before they would run into the rail.
     const rightEdge = !narrow && railOn ? rail.getBoundingClientRect().left - 12 : innerWidth - 8;
+    const pill = narrow && tierEl && tierEl.offsetParent ? tierEl.getBoundingClientRect() : null;
     for (const t of tdTags) {
       const featured = sel ? t.id === sel : !!cap && cap.id === t.id;
       // In the close-up only the open part's label, straight above it;
@@ -485,22 +510,31 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       const len = Math.hypot(dx, dy) || 1;
       dx /= len; dy /= len;
       const L = narrow ? 30 : 46;
-      const ex = dx * L;
+      let ex = dx * L;
       let ey = dy * L - 6;
-      // Keep the name below the header and the badge.
-      const top = (narrow ? 112 : 92) - p.y;
-      if (ey < top) ey = top;
+      // Keep the name below the header (and, on phones, below the badge's
+      // tap area); a name pushed down beside the badge goes to the left of
+      // its part instead, so it covers neither the part's dot nor the pill.
+      const top = (pill ? pill.bottom + 22 : narrow ? 112 : 92) - p.y;
+      let forceLeft = false;
+      if (ey < top) {
+        ey = top;
+        if (pill && p.x + ex + (t.w || 110) > pill.left - 8) { ex = -L; forceLeft = true; }
+      }
+      if (!t.w) t.w = t.el.querySelector('.td-tag__text').offsetWidth || 110;
+      let left = dx < 0 || forceLeft;
+      if (!left && p.x + ex + t.w > rightEdge) left = true;
+      else if (left && p.x + ex - t.w < 8) left = false;
+      // A name level with its dot sits on the side it reads towards, so a
+      // name flipped for room never covers its own dot.
+      if (Math.abs(ey) < 16) ex = left ? -Math.abs(ex) : Math.abs(ex);
       const st = t.el.style;
-      st.setProperty('--x', p.x.toFixed(1) + 'px');
-      st.setProperty('--y', p.y.toFixed(1) + 'px');
+      st.setProperty('--x', (p.x - lo.left).toFixed(1) + 'px');
+      st.setProperty('--y', (p.y - lo.top).toFixed(1) + 'px');
       st.setProperty('--dx', ex.toFixed(1) + 'px');
       st.setProperty('--dy', ey.toFixed(1) + 'px');
       st.setProperty('--len', Math.hypot(ex, ey).toFixed(1) + 'px');
       st.setProperty('--ang', Math.atan2(ey, ex).toFixed(3) + 'rad');
-      if (!t.w) t.w = t.el.querySelector('.td-tag__text').offsetWidth || 110;
-      let left = dx < 0;
-      if (!left && p.x + ex + t.w > rightEdge) left = true;
-      else if (left && p.x + ex - t.w < 8) left = false;
       st.setProperty('--tx', left ? '-100%' : '0%');
     }
   }

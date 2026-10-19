@@ -32,7 +32,9 @@ const land = (id) => LINE[id][1] - LINE[id][0];
 export const TEAR_PARTS = [
   { id: 'front-element', order: 0, ex: [0, 0, land('front-element')] },
   { id: 'mount', order: 0, ex: [0, 0, land('mount')], spin: -0.12 },
-  { id: 'signature', order: 0.6, ex: [0, 0, land('signature')], spin: 0.08 },
+  // The signature plate does not turn as it leaves: its mark stays on the
+  // +X side, facing the teardown camera.
+  { id: 'signature', order: 0.6, ex: [0, 0, land('signature')] },
   { id: 'glass-1', order: 1, ex: [0, 0, land('glass-1')] },
   { id: 'blades', order: 1.5, ax: land('blades'), fan: 12 },
   { id: 'glass-2', order: 2, ex: [0, 0, land('glass-2')] },
@@ -56,12 +58,12 @@ export const railId = (id) => (/^glass-/.test(id) ? 'glass-1' : id === 'barrel-f
 export const TEAR_ANCHORS = {
   'front-element': [0, 33, -5],
   'glass-1': [0, 30, -20],
-  blades: [0, 50, -48],
+  blades: [0, 30, -48],        // on the housing ring, between the fanned blades' roots
   'focus-ring': [0, 41.5, -18],
   scale: [0, 40.6, -32],
   barrel: [0, 40, -43],
   mount: [0, 34, -92],
-  signature: [0, 39.4, -68],
+  signature: [39.4, 0, -68],   // on the plate, which faces +X
 };
 
 // Close-up of one part, chosen from the rail or by tapping it: the camera
