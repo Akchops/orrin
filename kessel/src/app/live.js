@@ -132,24 +132,68 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   });
 
   // ------------------------------------------------------------ pointer
-  const pointer = { x: 0, y: 0, spin: 0, tx: 0, ty: 0, tspin: 0 };
-  const fine = matchMedia('(pointer: fine)').matches;
-  let lastInput = 0, drag = null;
+  // The lens is an object in the hand: a drag (mouse, or a finger sliding
+  // sideways) turns it, it carries on a little when let go, and after a
+  // moment at rest it settles back to the film's pose. A mouse at rest
+  // tilts it slightly toward the pointer. In a teardown close-up a drag
+  // orbits the part instead (the orbit layer below).
+  const pointer = { x: 0, y: 0, spin: 0, tx: 0, ty: 0, tspin: 0, drag: 0, tdrag: 0 };
+  const turn = { vs: 0, vt: 0, last: 0 };
+  let drag = null;
+  const NO_DRAG = 'a, button, input, textarea, select, label, summary, h1, h2, h3, p, li, dt, dd, .tier, .masthead, .td-rail, .td-copy, .td-tag, .td-orbit';
+  addEventListener('pointerdown', (e) => {
+    if (e.button > 0 || root.dataset.route !== 'home' || e.target.closest(NO_DRAG)) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: 0, mouse: e.pointerType === 'mouse' };
+    turn.vs = turn.vt = 0;
+    // A turning hand should not select the headline it passes over.
+    root.classList.add('turning');
+  }, { passive: true });
   addEventListener('pointermove', (e) => {
     if (e.pointerType === 'mouse') {
       pointer.tx = (e.clientX / innerWidth) * 2 - 1;
       pointer.ty = (e.clientY / innerHeight) * 2 - 1;
-      lastInput = performance.now();
       td.hoverAt = [e.clientX, e.clientY];
-    } else if (drag && e.pointerId === drag.id) {
-      pointer.tspin = drag.spin + ((e.clientX - drag.x) / innerWidth) * 2;
-      lastInput = performance.now();
     }
+    if (!drag || e.pointerId !== drag.id) return;
+    const now = performance.now(), dts = Math.max(0.008, (now - drag.t) / 1000);
+    const ds = ((e.clientX - drag.x) / innerWidth) * 2.6;
+    const dtl = drag.mouse ? ((e.clientY - drag.y) / innerHeight) * 1.4 : 0;
+    pointer.tspin += ds;
+    pointer.tdrag = Math.max(-0.5, Math.min(0.5, pointer.tdrag + dtl));
+    // Release velocity, smoothed over the last few moves.
+    turn.vs += (ds / dts - turn.vs) * 0.5;
+    turn.vt += (dtl / dts - turn.vt) * 0.5;
+    drag.moved += Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y);
+    drag.x = e.clientX; drag.y = e.clientY; drag.t = now; turn.last = now;
   }, { passive: true });
-  addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') drag = { id: e.pointerId, x: e.clientX, spin: pointer.tspin }; }, { passive: true });
-  const endDrag = () => { drag = null; pointer.tspin = 0; };
+  const endDrag = (e) => {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    if (drag.moved > 8) td.noClick = performance.now();
+    if (performance.now() - drag.t > 90) turn.vs = turn.vt = 0;   // held still before letting go
+    drag = null;
+    turn.last = performance.now();
+    root.classList.remove('turning');
+  };
   addEventListener('pointerup', endDrag, { passive: true });
   addEventListener('pointercancel', endDrag, { passive: true });
+  function turnStep(dt, now) {
+    if (!drag) {
+      pointer.tspin += turn.vs * dt; turn.vs *= Math.exp(-dt / 0.45);
+      pointer.tdrag = Math.max(-0.5, Math.min(0.5, pointer.tdrag + turn.vt * dt)); turn.vt *= Math.exp(-dt / 0.45);
+      // After 1.6 s at rest, settle back the short way round.
+      if (now - turn.last > 1600) {
+        const w = Math.round(pointer.tspin / (Math.PI * 2)) * Math.PI * 2;
+        pointer.tspin -= w; pointer.spin -= w;
+        const k = 1 - Math.exp(-dt / 0.9);
+        pointer.tspin -= pointer.tspin * k; pointer.tdrag -= pointer.tdrag * k;
+        if (Math.abs(pointer.tspin) < 1e-4) pointer.tspin = 0;
+        if (Math.abs(pointer.tdrag) < 1e-4) pointer.tdrag = 0;
+      }
+    }
+    const k = 1 - Math.exp(-dt / (drag ? 0.06 : 0.2));
+    pointer.spin += (pointer.tspin - pointer.spin) * k;
+    pointer.drag += (pointer.tdrag - pointer.drag) * k;
+  }
 
   // --------------------------------------------------------------- DOM bits
   const ring = $('.ring-text');
@@ -167,7 +211,10 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   // close-up blended over the scroll camera by td.f (0..1).
   // td.e (0..1) is the picked part's emphasis, which comes up first; td.f
   // follows a moment later and carries the camera in.
-  const td = { sel: null, e: 0, f: 0, tween: null, y0: 0, hover: null, hoverAt: null, railKey: '', capKey: '' };
+  // oaz/oel/zoom: the visitor's own orbit and zoom in a close-up, with
+  // their velocities (inertia) vaz/vel/vz.
+  const td = { sel: null, e: 0, f: 0, tween: null, y0: 0, hover: null, hoverAt: null, railKey: '', capKey: '',
+    oaz: 0, oel: 0, zoom: 1, vaz: 0, vel: 0, vz: 0, noClick: 0 };
 
   // ------------------------------------------------------------ the loop
   let sCur = 0, last = performance.now(), lastSig = '', resized = 0;
@@ -194,12 +241,13 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     if (Math.abs(target - sCur) < 1e-4) sCur = target;
     storyTl.time(Math.min(STORY_END, Math.max(0, sCur)));
     if (td.sel && !td.leaving && !td.backPending && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
-    teardownState();
+    orbitStep(dt);
+    teardownState(tSec);
 
     const k = 1 - Math.exp(-dt / 0.14);
     pointer.x += (pointer.tx - pointer.x) * k;
     pointer.y += (pointer.ty - pointer.y) * k;
-    pointer.spin += (pointer.tspin - pointer.spin) * (1 - Math.exp(-dt / (drag ? 0.06 : 0.35)));
+    turnStep(dt, now);
 
     // Once the site has scrolled over the stage there is nothing to draw.
     const cov = window.scrollY > coveredAt;
@@ -209,11 +257,15 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // Render only when something changed. Nothing in this scene moves on
     // its own, so a still page costs no GPU time at all: kinder to phone
     // batteries and to slow GPUs that would otherwise queue frames.
-    const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + resized +
-      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4) + ',' + td.e.toFixed(3) + ',' + (td.sel || '');
-    const changed = sig !== lastSig;
+    const sig = sCur.toFixed(4) + ',' + pointer.x.toFixed(3) + ',' + pointer.y.toFixed(3) + ',' + pointer.spin.toFixed(3) + ',' + pointer.drag.toFixed(3) + ',' + resized +
+      ',' + S.hl + ',' + S.dim.toFixed(3) + ',' + td.f.toFixed(4) + ',' + td.e.toFixed(3) + ',' + (td.sel || '') +
+      ',' + td.oaz.toFixed(2) + ',' + td.oel.toFixed(2) + ',' + td.zoom.toFixed(3);
+    // A close-up never freezes: its slow drift redraws every frame. (Tests
+    // read "idle" without the drift, which only ever moves the camera.)
+    const drifting = td.sel && td.f > 0.01;
+    const changed = sig !== lastSig || drifting;
+    window.__kessel && (window.__kessel.idle = sig === lastSig && !td.tween && !td.backPending);
     lastSig = sig;
-    window.__kessel && (window.__kessel.idle = !changed && !td.tween);
     if (!changed) return;
     // The lens holds still under the pointer in a close-up.
     pointer.tilt = 1 - ease(td.f);
@@ -294,7 +346,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   const CAM_KEYS = ['az', 'el', 'frame', 'tx', 'ty', 'tz', 'sx', 'sy', 'oroll'];
   const camBase = {};
   let camDirty = false;
-  function teardownState() {
+  function teardownState(tSec = 0) {
     let hl = '', dim = 0;
     if (isApart()) {
       const c = capAt(sCur);
@@ -316,12 +368,21 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       dim = Math.max(dim * (1 - td.e), 0.8 * td.e);
       const k = ease(td.f), c = TEAR_CLOSE[td.sel];
       partCentre(td.sel, S.tear, S.tspread || 1, cen);
+      // Once there it never freezes: a slow drift of a few degrees, on top
+      // of the visitor's own orbit and zoom.
+      const dz = Math.sin(tSec * 0.21) * 6, de = Math.sin(tSec * 0.16 + 1) * 2.5;
       const pose = {
-        az: c.az, el: c.el, frame: c.r * (n ? 1.55 : 1.3) * short, tx: cen[0], ty: cen[1], tz: cen[2],
-        sx: n ? 0 : -0.17, sy: n ? 0.15 : 0.02, oroll: 0,
+        az: c.az + td.oaz + dz, el: Math.max(-70, Math.min(80, c.el + td.oel + de)), frame: c.r * (n ? 1.55 : 1.3) * short * td.zoom,
+        tx: cen[0], ty: cen[1], tz: cen[2], sx: n ? 0 : -0.17, sy: n ? 0.15 : 0.02, oroll: 0,
       };
       for (const key in pose) S[key] += (pose[key] - S[key]) * k;
-    }
+      // The glide is an arc: the camera lifts a little on the way.
+      S.el += 9 * Math.sin(Math.PI * k);
+      S.dof = k;
+      S.dofR = c.r;
+    } else S.dof = 0;
+    S.pick = td.sel || '';
+    S.pe = td.e;
     S.hl = hl;
     S.dim = dim;
   }
@@ -343,6 +404,68 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   back.innerHTML = '<span aria-hidden="true">←</span><span class="td-back__txt"> All parts</span>';
   back.setAttribute('aria-label', 'Back to all parts');
   back.addEventListener('click', (e) => { e.stopPropagation(); deselect(); });
+
+  // The orbit layer: in a close-up it lies over the scene (under the
+  // caption, the rail and the header), takes drags, pinches and the wheel,
+  // and stops the page from scrolling under them. A tap still picks.
+  const orbit = document.createElement('div');
+  orbit.className = 'td-orbit';
+  orbit.setAttribute('aria-hidden', 'true');
+  tdSection && tdSection.appendChild(orbit);
+  const touches = new Map();
+  let pinch = null, odrag = null;
+  orbit.addEventListener('pointerdown', (e) => {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { orbit.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    td.vaz = td.vel = td.vz = 0;
+    if (touches.size === 2) {
+      const [a, b] = [...touches.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: td.zoom };
+      odrag = null;
+    } else odrag = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
+  });
+  orbit.addEventListener('pointermove', (e) => {
+    if (!touches.has(e.pointerId)) return;
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && touches.size >= 2) {
+      const [a, b] = [...touches.values()];
+      td.zoom = Math.max(0.6, Math.min(1.6, pinch.zoom * pinch.d / (Math.hypot(a.x - b.x, a.y - b.y) || 1)));
+      td.noClick = performance.now();
+      return;
+    }
+    if (!odrag) return;
+    const now = performance.now(), dts = Math.max(0.008, (now - odrag.t) / 1000);
+    const daz = -(e.clientX - odrag.x) * 0.32, del = (e.clientY - odrag.y) * 0.22;
+    td.oaz = Math.max(-65, Math.min(65, td.oaz + daz)); td.oel = Math.max(-55, Math.min(55, td.oel + del));
+    td.vaz += (daz / dts - td.vaz) * 0.5; td.vel += (del / dts - td.vel) * 0.5;
+    odrag.moved += Math.abs(e.clientX - odrag.x) + Math.abs(e.clientY - odrag.y);
+    if (odrag.moved > 8) td.noClick = now;
+    odrag.x = e.clientX; odrag.y = e.clientY; odrag.t = now;
+  });
+  const orbitEnd = (e) => {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinch = null;
+    if (odrag && performance.now() - odrag.t > 90) td.vaz = td.vel = 0;
+    if (!touches.size) odrag = null;
+  };
+  orbit.addEventListener('pointerup', orbitEnd);
+  orbit.addEventListener('pointercancel', orbitEnd);
+  orbit.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    td.vz += Math.max(-1, Math.min(1, e.deltaY / 400)) * 2.2;
+  }, { passive: false });
+  // Inertia: orbit and zoom carry on and settle after the hand lets go.
+  function orbitStep(dt) {
+    if (!td.sel) return;
+    if (!odrag) {
+      td.oaz = Math.max(-65, Math.min(65, td.oaz + td.vaz * dt)); td.vaz *= Math.exp(-dt / 0.4);
+      td.oel = Math.max(-55, Math.min(55, td.oel + td.vel * dt)); td.vel *= Math.exp(-dt / 0.4);
+    }
+    if (!pinch) { td.zoom = Math.max(0.6, Math.min(1.6, td.zoom * Math.exp(td.vz * dt))); td.vz *= Math.exp(-dt / 0.22); }
+    if (Math.abs(td.vaz) < 0.01) td.vaz = 0;
+    if (Math.abs(td.vel) < 0.01) td.vel = 0;
+    if (Math.abs(td.vz) < 1e-3) td.vz = 0;
+  }
 
   // Story time -> scroll position (the inverse of storyAt), for the rail.
   function yFor(s) {
@@ -373,7 +496,11 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // (hold: stop after the first step; a test hook.)
     td.tween = gsap.timeline({ onComplete: () => { td.tween = null; } })
       .to(td, { e: 1, duration: 0.3, ease: 'power1.out' }, 0);
-    if (!hold) td.tween.to(td, { f: 1, duration: had ? 0.6 : 0.9, ease: 'power2.inOut' }, had ? 0 : 0.3);
+    if (!hold) td.tween.to(td, { f: 1, duration: had ? 0.8 : 1.15, ease: 'power3.inOut' }, had ? 0 : 0.3);
+    // A new part starts from its own framing; the page stops scrolling so
+    // the wheel and a finger can orbit and zoom it.
+    td.oaz = td.oel = td.vaz = td.vel = td.vz = 0; td.zoom = 1;
+    if (!hold) { lenis.stop(); root.classList.add('td-orbiting'); }
     root.classList.add('td-picked');
     td.capKey = '';
   }
@@ -393,7 +520,8 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     td.backPending = false;
     td.leaving = true;
     td.tween && td.tween.kill();
-    root.classList.remove('td-picked');
+    root.classList.remove('td-picked', 'td-orbiting');
+    lenis.start();
     td.tween = gsap.to(td, { f: 0, e: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => { td.sel = null; td.leaving = false; td.tween = null; td.capKey = ''; } });
     td.capKey = '';
   }
@@ -409,7 +537,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   let badgeWasOpen = false;
   document.addEventListener('pointerdown', () => { badgeWasOpen = !!document.querySelector('.tier.is-open'); }, true);
   document.addEventListener('click', (e) => {
-    if (root.dataset.route !== 'home' || !isApart() || badgeWasOpen) return;
+    if (root.dataset.route !== 'home' || !isApart() || badgeWasOpen || performance.now() - td.noClick < 300) return;
     if (e.target.closest('a, button, input, textarea, select, label, .tier, .masthead, .td-rail, .td-copy')) return;
     const tag = e.target.closest('.td-tag');
     if (tag) { select(tag.dataset.part); return; }

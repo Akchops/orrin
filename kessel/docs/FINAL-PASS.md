@@ -79,3 +79,28 @@ barrel. The stills that show the scale (focus, d-scale, d-knurl) still
 show the old ticks until the stills are re-rendered after step 8.
 Check: software-WebGL focus stage and scale close-up, 2D the same; smoke
 test passed.
+
+### 6. Natural close-ups and a live 3D feel — done
+
+- Tapping a part (scene, label or rail) first lights it and dims the rest,
+  then glides the camera in over 1.15 s (power3 ease) on an arc that lifts
+  about 9 degrees on the way; no snap.
+- In the close-up: a slow drift (about 6 degrees of orbit and 2.5 of
+  elevation) so it never freezes; drag to orbit (kept within 65 degrees of
+  the close-up angle so the neighbours never block it); pinch or the wheel
+  zooms (0.6x to 1.6x) with inertia; the page stops scrolling while a part
+  is open (Back, Escape, a second tap or a tap on empty space returns).
+- Soft depth of field (3D): the scene goes into a half-float target with a
+  depth texture and one 24-tap pass blurs by distance from the part, so it
+  is sharp and the rest goes soft; only on quality rungs with the extras.
+  Skipped on the 2D tier (a per-part canvas blur would cost too much on
+  phones); there the other parts dim and drift back instead.
+- The other parts dim and drift back up to 22 mm from the picked part along
+  the axis, in both tiers, rather than vanishing.
+- The whole lens: a drag (mouse, or a finger sliding sideways) turns it,
+  it carries on a little when let go and settles back to the film's pose
+  after 1.6 s at rest; a mouse at rest tilts it slightly. Text is not
+  selected while turning.
+Check: 2D orbit, zoom, Escape and the lens drag scripted at 1440;
+software-WebGL close-up with depth of field and an orbit drag; smoke test
+passed; real taps, chips, Back and Escape still pass (`tap.mjs`).

@@ -4,7 +4,7 @@
 // Every channel the scroll timeline animates is applied in update(), and
 // nothing else moves the parts.
 
-import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, railId } from './teardown.js';
+import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, railId, pickDrift } from './teardown.js';
 
 const TAU = Math.PI * 2;
 
@@ -510,14 +510,16 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     glow.scale.set(gs, gs, 1);
     lightMat.opacity = S.light;
 
-    // Teardown: every part on its own path (teardown.js).
+    // Teardown: every part on its own path (teardown.js). With a part
+    // picked (S.pick, S.pe) the others also drift back from it a little.
     const u = S.tear || 0, ks = S.tspread || 1;   // tighter on phones
     for (const p of TEAR_PARTS) {
       const e = tearProgress(u, p.order);
+      const pd = pickDrift(p.id, S.pick, S.pe || 0, u, ks);
       if (p.id === 'blades') {
         // The iris comes out of the front, then the blades fan out.
         bladeOffset(p, e, 0, tv);
-        parts.blades[0].position.set(0, 0, tv[2] * ks);
+        parts.blades[0].position.set(0, 0, tv[2] * ks + pd);
         for (const b of blades) {
           const h = b.parent, r = h.userData.rest;
           bladeOffset(p, e, h.userData.phi, tv);
@@ -528,7 +530,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       }
       tearOffset(p, e, tv);
       for (const g of parts[p.id]) {
-        g.position.set(tv[0] * ks, tv[1] * ks, tv[2] * ks);
+        g.position.set(tv[0] * ks, tv[1] * ks, tv[2] * ks + pd);
         g.rotation.z = (p.spin || 0) * TAU * e;
       }
     }

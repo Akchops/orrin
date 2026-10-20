@@ -8,7 +8,7 @@
 // the focus scale rolls, and the lens comes apart and goes back together.
 import { IRIS_Z, SPREAD } from './lens.js';
 import { DISTANCES, throwPos, THROW_DEG } from './textures.js';
-import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset } from './teardown.js';
+import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, pickDrift } from './teardown.js';
 import { PARTS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
 import { createShading, MATS, COAT, css, cssa, len2, len3 } from './tier2-shade.js';
 
@@ -128,7 +128,7 @@ export function mount2D(container, { font }) {
   const M = new Float64Array(9), NM = new Float64Array(9);
   function setPose(S, pointer, fr, lz) {
     const tl = (1 - S.inside) * (pointer.tilt ?? 1);   // fades out in a teardown close-up
-    const tiltX = pointer.y * 0.12 * tl, tiltY = (pointer.x * 0.18 + pointer.spin) * tl;
+    const tiltX = (pointer.y * 0.12 + (pointer.drag || 0)) * tl, tiltY = (pointer.x * 0.18 + pointer.spin) * tl;
     const R = mul3(mul3(rotX(tiltX), rotY(tiltY)), mul3(rotX(S.rx), rotY(S.ry)));
     for (let r = 0; r < 3; r++) {
       M[r * 3] = R[r * 3] * fr; M[r * 3 + 1] = R[r * 3 + 1] * fr; M[r * 3 + 2] = R[r * 3 + 2] * lz;
@@ -943,18 +943,20 @@ export function mount2D(container, { font }) {
 
     // Teardown: the same part paths as the WebGL tier (teardown.js).
     const tear = S.tear || 0, ks = S.tspread || 1;
-    let bladePart = null, bladeE = 0;
+    let bladePart = null, bladeE = 0, bladePd = 0;
     for (const p of TEAR_PARTS) {
       const e = tearProgress(tear, p.order);
       const t = TO[p.id] || (TO[p.id] = { o: [0, 0, 0], spin: 0 });
+      // With a part picked, the others drift back from it (teardown.js).
+      const pd = pickDrift(p.id, S.pick, S.pe || 0, tear, ks);
       if (p.id === 'blades') {
         // The housing leaves along the axis; the blades fan out from it.
         bladeOffset(p, e, 0, tv);
-        t.o[0] = 0; t.o[1] = 0; t.o[2] = tv[2] * ks; t.spin = 0;
-        bladePart = p; bladeE = e;
+        t.o[0] = 0; t.o[1] = 0; t.o[2] = tv[2] * ks + pd; t.spin = 0;
+        bladePart = p; bladeE = e; bladePd = pd;
       } else {
         tearOffset(p, e, tv);
-        t.o[0] = tv[0] * ks; t.o[1] = tv[1] * ks; t.o[2] = tv[2] * ks; t.spin = (p.spin || 0) * TAU * e;
+        t.o[0] = tv[0] * ks; t.o[1] = tv[1] * ks; t.o[2] = tv[2] * ks + pd; t.spin = (p.spin || 0) * TAU * e;
       }
     }
     for (const [id, a] of Object.entries(TEAR_ANCHORS)) {
@@ -1005,7 +1007,7 @@ export function mount2D(container, { font }) {
       const t = TO[e.part];
       emitGlass(gi, t ? t.o[0] : 0, t ? t.o[1] : 0, (t ? t.o[2] : 0) + off(e.g), EMPH[e.part]);
     });
-    emitIris(S, off(2), bladePart, bladeE, ks, 'blades');
+    emitIris(S, off(2) + bladePd, bladePart, bladeE, ks, 'blades');
 
     // Bloom at the aperture when looking into the front, and the pinhole's
     // point of light while the iris is closed.

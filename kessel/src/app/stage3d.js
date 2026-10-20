@@ -72,6 +72,67 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     renderer.setSize(W, H, false);
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
+    if (dof.rt) { dof.rt.dispose(); dof.rt.depthTexture.dispose(); dof.rt = null; }
+  }
+
+  // ------------------------------------------------------- depth of field
+  // Teardown close-ups (S.dof > 0): the scene is drawn into a half-float
+  // target with a depth texture, then one full-screen pass blurs each pixel
+  // by its distance from the focus plane (the part the camera aims at), so
+  // the part is sharp and the rest goes soft. Only on rungs with the
+  // per-pixel extras; the watchdog steps it off with them.
+  const dof = { rt: null };
+  const dofMat = new T.ShaderMaterial({
+    uniforms: {
+      tColor: { value: null }, tDepth: { value: null }, uTexel: { value: new T.Vector2() },
+      uFocus: { value: 100 }, uRange: { value: 40 }, uMaxBlur: { value: 8 }, uAmount: { value: 0 },
+      cameraNear: { value: camera.near }, cameraFar: { value: camera.far },
+    },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `#include <packing>
+      uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 uTexel;
+      uniform float uFocus, uRange, uMaxBlur, uAmount, cameraNear, cameraFar;
+      varying vec2 vUv;
+      // Blur radius in pixels at uv: grows with the distance of the surface
+      // from the focus plane, up to uMaxBlur.
+      float coc(vec2 uv) {
+        float z = -perspectiveDepthToViewZ(texture2D(tDepth, uv).x, cameraNear, cameraFar);
+        return clamp(abs(z - uFocus) / uRange, 0.0, 1.0) * uMaxBlur * uAmount;
+      }
+      void main() {
+        float r0 = coc(vUv);
+        vec4 acc = texture2D(tColor, vUv); float wsum = 1.0;
+        // 24 taps on a golden-angle disc of radius r0. A tap counts only if
+        // its own blur reaches this pixel, so a sharp part never smears
+        // into the soft background around it.
+        for (int i = 0; i < 24; i++) {
+          float fi = float(i) + 0.5, rr = sqrt(fi / 24.0), th = fi * 2.39996;
+          vec2 uv = vUv + vec2(cos(th), sin(th)) * rr * r0 * uTexel;
+          float w = clamp(coc(uv) - rr * r0 + 1.0, 0.0, 1.0);
+          acc += texture2D(tColor, uv) * w; wsum += w;
+        }
+        vec4 c = acc / wsum;
+        // The target holds premultiplied, linear light: tone map and encode
+        // the colour, then premultiply again for the canvas.
+        gl_FragColor = vec4(c.a > 1e-4 ? c.rgb / c.a : vec3(0.0), 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+        gl_FragColor = vec4(gl_FragColor.rgb * c.a, c.a);
+      }`,
+    depthTest: false, depthWrite: false, blending: T.NoBlending,
+  });
+  const dofScene = new T.Scene(), dofCam = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const dofQuad = new T.Mesh(new T.PlaneGeometry(2, 2), dofMat);
+  dofQuad.frustumCulled = false;
+  dofScene.add(dofQuad);
+  function dofTarget() {
+    if (dof.rt) return dof.rt;
+    const w = Math.max(1, Math.floor(W * dpr)), h = Math.max(1, Math.floor(H * dpr));
+    dof.rt = new T.WebGLRenderTarget(w, h, { type: T.HalfFloatType, depthTexture: new T.DepthTexture(w, h) });
+    dofMat.uniforms.tColor.value = dof.rt.texture;
+    dofMat.uniforms.tDepth.value = dof.rt.depthTexture;
+    dofMat.uniforms.uTexel.value.set(1 / w, 1 / h);
+    return dof.rt;
   }
   resize();
 
@@ -91,7 +152,8 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     // The tilt fades out in a teardown close-up (pointer.tilt), so the part
     // stays where the camera aims and its caption card beside it.
     const tilt = (1 - inside) * (pointer.tilt ?? 1);
-    lens.root.rotation.set(pointer.y * 0.12 * tilt, (pointer.x * 0.18 + pointer.spin) * tilt, 0);
+    // pointer.drag: the tilt from a mouse drag, on top of the hover tilt.
+    lens.root.rotation.set((pointer.y * 0.12 + (pointer.drag || 0)) * tilt, (pointer.x * 0.18 + pointer.spin) * tilt, 0);
     scene.environmentRotation.set(pointer.y * 0.3, pointer.x * 0.7 + pointer.spin * 0.5, 0);
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
     const tl = S.tlight || 0;
@@ -160,7 +222,19 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     const d = toCam.length();
     const facing = Math.max(0, toCam.normalize().z);
     lens.glow.material.opacity *= Math.pow(facing, 3) * Math.min(1, Math.max(0, (d - 20) / 120));
-    renderer.render(scene, camera);
+    if ((S.dof || 0) > 0.01 && LADDER[rung].fx) {
+      const rt = dofTarget();
+      renderer.setRenderTarget(rt);
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.setRenderTarget(null);
+      const u = dofMat.uniforms;
+      u.uFocus.value = camera.position.distanceTo(target);
+      u.uRange.value = (S.dofR || 40) * 1.4;
+      u.uMaxBlur.value = 7 * dpr;
+      u.uAmount.value = S.dof;
+      renderer.render(dofScene, dofCam);
+    } else renderer.render(scene, camera);
   }
 
   const v = new T.Vector3();
@@ -208,6 +282,8 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   }
 
   function destroy() {
+    if (dof.rt) { dof.rt.dispose(); dof.rt.depthTexture.dispose(); }
+    dofMat.dispose(); dofQuad.geometry.dispose();
     lens.dispose(); env.dispose(); Object.values(textures).forEach((t) => t.dispose());
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }

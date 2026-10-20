@@ -34,8 +34,9 @@ export function createState() {
     inside: 0, cz: 160, yaw: 0, roll: 0, rx: 0, ry: 0,
     iris: 0, spread: 0, focus: 0, model: 1, light: 1, sensor: 0, throat: 0, tear: 0, oroll: 0, tlight: 0, tspread: 1,
     // Set by live.js, not by the timeline: the part to emphasise and how
-    // much the others dim.
-    hl: '', dim: 0,
+    // much the others dim; the picked part and how far the others drift
+    // back from it; the depth of field in a close-up and its depth range.
+    hl: '', dim: 0, pick: '', pe: 0, dof: 0, dofR: 40,
   };
 }
 

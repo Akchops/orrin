@@ -139,3 +139,15 @@ export function partCentre(id, u, ks, out = [0, 0, 0]) {
   }
   return out;
 }
+
+// With a part picked, the others drift back from it along the axis (mm),
+// by up to 22 mm at full emphasis e, so the close-up has room and the
+// neighbours recede rather than vanish.
+const pc = [0, 0, 0], qc = [0, 0, 0];
+export function pickDrift(id, pick, e, u, ks) {
+  if (!pick || e <= 0) return 0;
+  const rid = railId(id);
+  if (rid === pick) return 0;
+  const zp = partCentre(pick, u, ks, pc)[2], zq = partCentre(rid, u, ks, qc)[2];
+  return Math.sign(zq - zp || 1) * 22 * e;
+}
