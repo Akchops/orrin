@@ -5,6 +5,7 @@
 import { mountWebGL } from './stage3d.js';
 import { mount2D } from './tier2.js';
 import { renderStill } from './stills.js';
+import { showViewers } from './viewer.js';
 
 const root = document.documentElement;
 const params = new URLSearchParams(location.search);
@@ -134,3 +135,21 @@ else addEventListener('kessel:route', function once(e) {
   removeEventListener('kessel:route', once);
   start();
 });
+
+// The lens viewers on the Lenses pages (src/app/viewer.js) run on the same
+// terms as the film: WebGL on a GPU (or forced for testing), motion
+// allowed. Otherwise their stills stay. Each route change frees the
+// viewers of the route left behind.
+let viewerCaps = null, viewersOn = false;
+function viewers(route) {
+  if (params.get('still') || params.has('static') || reduce.matches || params.get('tier') === '2') return;
+  if (!viewersOn && !document.querySelector(`#${CSS.escape(route)} [data-viewer]`)) return;
+  if (!viewerCaps) viewerCaps = probe(params.get('gl') === 'force');
+  if (!viewerCaps.ok || typeof window.__kesselLibs !== 'function') return;
+  viewersOn = true;
+  document.fonts.ready.then(() => {
+    try { showViewers(root.dataset.route, window.__kesselLibs(), viewerCaps, { font: FONT }); } catch { /* the stills stay */ }
+  });
+}
+addEventListener('kessel:route', (e) => viewers(e.detail.route));
+viewers(root.dataset.route);

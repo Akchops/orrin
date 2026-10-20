@@ -36,7 +36,7 @@ export const MATS = {
   // Steel blades and the black iris housing, lit flat.
   I: { d: [0.075, 0.08, 0.09], env: 0.25, t: [1, 1, 1.05], sp: 0.3, sh: 16, fl: 0 },
 };
-const BAND = [[0xab, 0x9b, 0xff], [0xf0, 0xa6, 0x4a], [0x62, 0xdc, 0xc0]].map((c) => c.map((v) => v / 255));
+const BAND = [[0x6f, 0xa8, 0xff], [0xf0, 0xa6, 0x4a], [0x62, 0xdc, 0xc0]].map((c) => c.map((v) => v / 255));
 
 const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 

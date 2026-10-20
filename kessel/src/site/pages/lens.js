@@ -1,7 +1,8 @@
 // One lens: the detail page for each proposal. The lens itself is the page:
 // a full-bleed shot with the name set enormous behind it, a strip of tight
 // crops on the parts, the figures as readouts, then the way to the next lens.
-import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable } from '../parts.js';
+import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
+import { fovHTML } from '../fov-svg.js';
 import { lenses } from '../../content/lenses.js';
 
 // The large transparent shot for each lens (wide, standard, long).
@@ -56,11 +57,12 @@ export function lensHTML(l, i) {
     </div>
     <div class="lens__title">
       <h1 class="lens__name" id="${id}-title" tabindex="-1">${esc(l.name)}</h1>
-      <div class="lens__shot">${img(shot, { lazy: false })}</div>
+      <div class="lens__shot" id="${id}-viewer" data-viewer="${i}">${img(shot, { lazy: false })}</div>
       <p class="lens__name lens__name--ghost" aria-hidden="true">${esc(l.name)}</p>
     </div>
     <div class="lens__foot">
-      <p class="lens__line">${esc(l.line)}</p>
+      <p class="lens__line">${esc(l.line)} ${esc(l.shape)}</p>
+      ${viewerTools(`${id}-viewer`, { hint: 'Drag to turn the lens. Pinch, or use the buttons, to zoom.' })}
       <details class="enquire lens__enq">
         <summary class="btn btn--solid">Enquire about ${esc(l.name)}</summary>
         <div class="enquire__body">
@@ -85,6 +87,10 @@ export function lensHTML(l, i) {
     </dl>
     <div class="lens__table">${specTable(l, `${l.name}: sample specifications`)}</div>
   </section>
+
+  <div class="lens__fov">
+    ${fovHTML({ id: `${id}-fov`, lens: l.slug })}
+  </div>
 
   <nav class="lens__pager" aria-label="Other lenses">
     ${pager(prev, 'prev')}

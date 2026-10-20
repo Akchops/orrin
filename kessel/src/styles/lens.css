@@ -22,8 +22,8 @@
 .route--lens .lens__hero {
   /* The name is sized to run edge to edge; --em is its width in em. */
   --fs: min(calc((100cqi - var(--lz-pl) - var(--lz-pr)) / var(--em) * 0.98), calc(var(--vh) * 0.42));
-  --shot-w: 172cqi;   /* the shot, wider than the screen on phones */
-  --shot-x: -5cqi;    /* its left edge, past the screen edge */
+  --shot-w: 138cqi;   /* the shot, wider than the screen on phones */
+  --shot-x: -6cqi;    /* its left edge, past the screen edge */
   --cross: 0.62;      /* where the barrel crosses the name's line box */
   display: grid; grid-template-rows: auto auto 1fr; align-content: start;
   overflow-x: clip;

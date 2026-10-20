@@ -27,12 +27,15 @@ const POSES = {
   // Site imagery, rendered with a transparent background so it sits on the
   // page with no box. Close crops on details the scene already has.
   'hero-lens': { s: 16.5, az: 26, el: 9, frame: 64, tx: 0, ty: 0, tz: -44, iris: 0.5, sx: 0, sy: 0 },
-  'lens-1': { s: 16.5, model: 0, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -44, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lens-2': { s: 16.5, model: 1, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -50, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lens-3': { s: 16.5, model: 2, az: 38, el: 11, frame: 52, tx: 0, ty: 0, tz: -60, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-1': { s: 16.5, model: 0, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-2': { s: 16.5, model: 1, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-3': { s: 16.5, model: 2, az: 90, el: 0, frame: 46, tx: 0, ty: 0, tz: -62, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  // The three lenses: framed to their own extents (Shaniwar's petal hood,
+  // Sinhagad's hood and tripod foot). The lineup profiles share one frame,
+  // so lineup.py can stand them side by side at the same scale.
+  'lens-1': { s: 16.5, model: 0, az: 38, el: 11, frame: 64, tx: 0, ty: 0, tz: -26, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lens-2': { s: 16.5, model: 1, az: 38, el: 11, frame: 54, tx: 0, ty: 0, tz: -50, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lens-3': { s: 16.5, model: 2, az: 38, el: 11, frame: 70, tx: 0, ty: -6, tz: -52, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-1': { s: 16.5, model: 0, az: 90, el: 0, frame: 66, tx: 0, ty: 0, tz: -26, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-2': { s: 16.5, model: 1, az: 90, el: 0, frame: 66, tx: 0, ty: 0, tz: -49, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'lineup-3': { s: 16.5, model: 2, az: 90, el: 0, frame: 66, tx: 0, ty: -10, tz: -52, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
   // The iris as the film catches it, blades opening one at a time with
   // light behind them, framed inside the front ring.
   'd-iris': { s: 1.9, az: 0, el: 0, frame: 25, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },

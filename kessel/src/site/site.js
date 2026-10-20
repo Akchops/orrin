@@ -6,6 +6,8 @@
 // page works as one file opened from disk, offline, or inside a host that
 // only passes the fragment through. Without JavaScript, CSS :target shows
 // the same routes.
+import { startFov } from './fov-live.js';
+
 const root = document.documentElement;
 const map = window.__kesselRoutes || {};
 const $ = (s, el = document) => el.querySelector(s);
@@ -176,6 +178,9 @@ addEventListener('scroll', () => {
   requestAnimationFrame(() => { ticking = false; past(); });
 }, { passive: true });
 addEventListener('resize', past, { passive: true });
+
+// See the difference: every field-of-view viewer becomes a live switcher.
+try { startFov(); } catch { /* the static figure stays */ }
 
 window.__kesselSite = { anchor: () => anchorEl, get route() { return current; } };
 go(location.hash, { initial: true });

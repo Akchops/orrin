@@ -1,0 +1,274 @@
+/* ============================================================ SEE THE DIFFERENCE
+   The field-of-view viewer (kessel/src/app/fov.js, markup from
+   kessel/src/site/fov-svg.js). One street drawn in code; the screen shows
+   what the chosen lens sees, the overview shows all three frames on the
+   whole street. Without JavaScript the overview and a crop per lens tell
+   the same story. Every rule is scoped to .fov. */
+.fov {
+  /* The three lenses' colours. */
+  --fov-shaniwar: #6fa8ff;
+  --fov-parvati: var(--amber);
+  --fov-sinhagad: var(--coat-2);
+  --lc: var(--fov-shaniwar);
+  --fov-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* The street's palette: every key the scene names (fov.js), mixed from
+     the site's tokens, so the street brightens or darkens with the page.
+     Dusk: a blue sky warming at the horizon, the facades in shadow, the
+     shops lit warm, the three signs in the three lens colours. */
+  --fk-sky0: color-mix(in srgb, var(--page-hi) 72%, var(--fov-shaniwar));
+  --fk-sky1: color-mix(in srgb, color-mix(in srgb, var(--page-hi) 62%, var(--coat)) 88%, var(--amber));
+  --fk-sky2: color-mix(in srgb, color-mix(in srgb, var(--dim) 45%, var(--page-hi)) 72%, var(--amber));
+  --fk-glow: color-mix(in srgb, var(--amber) 60%, var(--engrave));
+  --fk-star: var(--engrave);
+  --fk-moon: color-mix(in srgb, var(--engrave) 88%, var(--amber));
+  --fk-ridge: color-mix(in srgb, var(--fk-sky1) 62%, var(--page-hi));
+  --fk-hill: color-mix(in srgb, var(--fk-ridge) 62%, var(--void));
+  --fk-fort: color-mix(in srgb, var(--fk-hill) 78%, var(--void));
+  --fk-fortHi: color-mix(in srgb, var(--amber) 55%, var(--fk-hill));
+  --fk-pave: color-mix(in srgb, var(--page-hi) 80%, var(--amber));
+  --fk-kerb: color-mix(in srgb, var(--dim) 38%, var(--page-hi));
+  --fk-road0: color-mix(in srgb, var(--page-hi) 84%, var(--amber));
+  --fk-road1: color-mix(in srgb, var(--page-lo) 86%, var(--fov-shaniwar));
+  --fk-trunk: color-mix(in srgb, var(--void) 70%, var(--fk-hill));
+  --fk-tree: color-mix(in srgb, var(--void) 78%, var(--coat-2));
+  --fk-leaf: color-mix(in srgb, var(--void) 62%, var(--coat-2));
+  --fk-b1: color-mix(in srgb, var(--anodise-2) 88%, var(--amber));
+  --fk-b2: color-mix(in srgb, var(--anodise-2) 86%, var(--fov-shaniwar));
+  --fk-b3: color-mix(in srgb, var(--anodise-2) 90%, var(--coat-2));
+  --fk-b4: color-mix(in srgb, var(--anodise-2) 86%, var(--coat));
+  --fk-b5: color-mix(in srgb, var(--anodise-2) 87%, var(--amber));
+  --fk-b6: color-mix(in srgb, color-mix(in srgb, var(--anodise-2) 84%, var(--dim)) 90%, var(--fov-shaniwar));
+  --fk-b7: color-mix(in srgb, var(--anodise-2) 90%, var(--amber));
+  --fk-tile: color-mix(in srgb, var(--anodise-2) 74%, var(--amber));
+  --fk-rail: color-mix(in srgb, var(--void) 74%, var(--line-2));
+  --fk-cornice: color-mix(in srgb, var(--anodise-2) 74%, var(--dim));
+  --fk-tank: color-mix(in srgb, var(--anodise-2) 70%, var(--dim));
+  --fk-band: color-mix(in srgb, var(--anodise-2) 86%, var(--dim));
+  --fk-shade: var(--page-lo);
+  --fk-win: color-mix(in srgb, var(--void) 76%, var(--fov-shaniwar));
+  --fk-lit: color-mix(in srgb, var(--amber) 70%, var(--engrave));
+  --fk-sill: color-mix(in srgb, var(--anodise-2) 70%, var(--dim));
+  --fk-door: var(--page-lo);
+  --fk-board: color-mix(in srgb, var(--engrave) 88%, var(--amber));
+  --fk-boardA: var(--amber);
+  --fk-boardB: var(--fov-shaniwar);
+  --fk-boardG: var(--coat-2);
+  --fk-ink: var(--void);
+  --fk-inkD: var(--void);
+  --fk-inkV: color-mix(in srgb, var(--void) 55%, var(--coat));
+  --fk-shop0: color-mix(in srgb, var(--anodise-2) 55%, var(--amber));
+  --fk-shop1: color-mix(in srgb, var(--amber) 72%, var(--engrave));
+  --fk-awnA: color-mix(in srgb, var(--anodise-2) 45%, var(--amber));
+  --fk-awnV: color-mix(in srgb, var(--anodise-2) 50%, var(--fov-shaniwar));
+  --fk-awnG: color-mix(in srgb, var(--anodise-2) 50%, var(--coat-2));
+  --fk-jarA: color-mix(in srgb, var(--amber) 85%, var(--engrave));
+  --fk-jarG: color-mix(in srgb, var(--coat-2) 85%, var(--engrave));
+  --fk-jarV: color-mix(in srgb, var(--fov-shaniwar) 80%, var(--engrave));
+  --fk-shutter: color-mix(in srgb, var(--anodise-2) 64%, var(--dim));
+  --fk-counter: color-mix(in srgb, var(--void) 72%, var(--amber));
+  --fk-bulb: color-mix(in srgb, var(--engrave) 70%, var(--amber));
+  --fk-wire: var(--page-lo);
+  --fk-mark: var(--dim);
+  --fk-rim: color-mix(in srgb, var(--amber) 70%, var(--engrave));
+  --fk-body: color-mix(in srgb, var(--page-lo) 88%, var(--coat));
+  --fk-strap: color-mix(in srgb, var(--void) 50%, var(--line-2));
+  --fk-paveN: color-mix(in srgb, var(--page-hi) 86%, var(--dim));
+  --fk-pole: var(--page-lo);
+  --fk-tyre: var(--page-lo);
+  --fk-chrome: var(--dim);
+  --fk-scoot: color-mix(in srgb, var(--anodise-2) 58%, var(--fov-shaniwar));
+  --fk-scootHi: color-mix(in srgb, var(--fov-shaniwar) 40%, var(--engrave));
+  --fk-tail: var(--amber);
+
+  display: grid; gap: clamp(1.75rem, 3.5vw, 3rem);
+}
+.fov[data-lens="shaniwar"], .fov [data-lens="shaniwar"] { --lc: var(--fov-shaniwar); }
+.fov[data-lens="parvati"], .fov [data-lens="parvati"] { --lc: var(--fov-parvati); }
+.fov[data-lens="sinhagad"], .fov [data-lens="sinhagad"] { --lc: var(--fov-sinhagad); }
+
+/* ------------------------------------------------------------------- head */
+.fov__head { display: grid; gap: 1rem 2.5rem; }
+.fov__lead { color: var(--dim); max-width: 44ch; font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.25rem); line-height: 1.5; }
+@media (min-width: 900px) {
+  .fov__head { grid-template-columns: minmax(0, 1fr) minmax(0, 25rem); align-items: end; }
+  .fov__head .eyebrow { grid-column: 1 / -1; }
+}
+
+/* ------------------------------------------------------------------- body */
+.fov__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+.fov__side { display: grid; gap: 1.5rem; align-content: start; min-width: 0; }
+.fov__lt { font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--engrave); margin-bottom: 0.8rem; max-width: none; }
+.fov__lt span { color: var(--dim); }
+.fov__legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.fov__role { font-family: var(--display); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lc); }
+.fov__name { font-family: var(--display); font-stretch: 118%; font-weight: 300; font-size: clamp(1.15rem, 1rem + 0.5vw, 1.45rem); line-height: 1.1; }
+.fov__nums { display: flex; align-items: baseline; gap: 0.7rem; font-family: var(--display); color: var(--dim); }
+.fov__mm { font-stretch: 125%; font-weight: 200; font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); line-height: 1; color: var(--engrave); }
+.fov__mm small { font-size: 0.4em; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+.fov__deg { font-size: 0.9rem; letter-spacing: 0.06em; }
+.fov__sees { color: var(--dim); font-size: 0.98rem; line-height: 1.5; }
+.fov__crop { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; background: var(--anodise); }
+
+/* The overview: the whole street, the three frames, a tag on each. */
+.fov__map { margin: 0; display: grid; gap: 0.7rem; }
+.fov__plate { position: relative; }
+.fov__svg { display: block; width: 100%; height: auto; background: var(--anodise); }
+.fov__r { fill: transparent; stroke: var(--lc); stroke-width: 1.5; pointer-events: none; }
+.fov__tag {
+  position: absolute; transform: translate(-0.75px, -100%); pointer-events: none;
+  padding: 0.12rem 0.38rem 0.08rem; background: var(--lc); color: var(--void);
+  font-family: var(--display); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; line-height: 1.4; text-transform: uppercase; white-space: nowrap;
+}
+.fov__cap { color: var(--dim); font-size: 0.7rem; }
+.fov__note { font-size: 0.7rem; letter-spacing: 0.1em; line-height: 1.6; max-width: 52ch; }
+
+/* ------------------------------------------------------- without JavaScript */
+/* The overview, then each lens with its own crop of the street. */
+html:not(.js) .fov__screen, html:not(.js) .fov__say { display: none; }
+html:not(.js) .fov__map { order: -1; }
+html:not(.js) .fov__lens {
+  position: relative; display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 10fr); gap: 0.6rem 1rem; align-items: start;
+  padding-top: 1rem; border-top: 1px solid var(--line);
+}
+html:not(.js) .fov__lens::before { content: ""; position: absolute; left: 0; top: -1px; width: 2.25rem; height: 2px; background: var(--lc); }
+html:not(.js) .fov__lens .fov__crop { outline: 1px solid var(--lc); outline-offset: -1px; }
+.fov__txt { display: grid; gap: 0.35rem; align-content: start; }
+html:not(.js) .fov__nums { margin-top: 0.15rem; }
+@media (max-width: 559px) {
+  html:not(.js) .fov__sees { grid-column: 1 / -1; }
+  html:not(.js) .fov__txt { display: contents; }
+  html:not(.js) .fov__lens { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; }
+  html:not(.js) .fov__lens .fov__crop { grid-row: 1 / 5; }
+  html:not(.js) .fov__lens > .fov__txt > :not(.fov__sees) { grid-column: 2; }
+  html:not(.js) .fov__sees { grid-row: 5; font-size: 0.95rem; }
+}
+@media (min-width: 900px) {
+  html:not(.js) .fov__side { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-areas: "map pick" "note pick"; column-gap: clamp(2rem, 4vw, 4rem); align-items: start; }
+  html:not(.js) .fov__map { grid-area: map; }
+  html:not(.js) .fov__pick { grid-area: pick; }
+  html:not(.js) .fov__note { grid-area: note; }
+  html:not(.js) .fov__legend { gap: 1.1rem; }
+}
+
+/* ------------------------------------------------------------ with JavaScript */
+/* The screen: what the chosen lens sees, the street SVG cropped to its
+   frame (src/site/fov-live.js moves the crop). */
+.js .fov__crop { display: none; }
+.fov__screen { position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--anodise); isolation: isolate; }
+.fov__still { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+/* A light scrim top and bottom, so the readouts hold over the picture. */
+.fov__screen::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(color-mix(in srgb, var(--void) 50%, transparent), transparent 22%, transparent 74%, color-mix(in srgb, var(--void) 55%, transparent));
+}
+.fov__hud {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+  padding: clamp(0.85rem, 2.2vw, 1.5rem) clamp(1rem, 2.6vw, 1.75rem);
+  font-family: var(--display); color: var(--engrave);
+}
+/* Frame lines: four corner marks in the lens colour. */
+.fov__corners {
+  position: absolute; inset: clamp(0.4rem, 1.1vw, 0.75rem); --k: clamp(0.8rem, 2.4vw, 1.5rem);
+  background:
+    linear-gradient(var(--lc), var(--lc)) left top / var(--k) 1.5px, linear-gradient(var(--lc), var(--lc)) left top / 1.5px var(--k),
+    linear-gradient(var(--lc), var(--lc)) right top / var(--k) 1.5px, linear-gradient(var(--lc), var(--lc)) right top / 1.5px var(--k),
+    linear-gradient(var(--lc), var(--lc)) left bottom / var(--k) 1.5px, linear-gradient(var(--lc), var(--lc)) left bottom / 1.5px var(--k),
+    linear-gradient(var(--lc), var(--lc)) right bottom / var(--k) 1.5px, linear-gradient(var(--lc), var(--lc)) right bottom / 1.5px var(--k);
+  background-repeat: no-repeat;
+}
+.fov__hud p { max-width: none; display: flex; align-items: baseline; gap: 0.6rem; text-shadow: 0 1px 10px color-mix(in srgb, var(--void) 70%, transparent); }
+.fov__hud-name { font-stretch: 118%; font-weight: 300; font-size: clamp(1rem, 0.85rem + 0.7vw, 1.5rem); }
+.fov__hud-role { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lc); }
+.fov__hud-read { align-self: flex-end; font-variant-numeric: tabular-nums; }
+.fov__hud-mm { font-stretch: 125%; font-weight: 200; font-size: clamp(1.6rem, 1rem + 2.4vw, 3.2rem); line-height: 0.9; }
+.fov__hud-read small { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-left: -0.35rem; }
+.fov__hud-deg { font-size: clamp(0.8rem, 0.7rem + 0.4vw, 1.05rem); letter-spacing: 0.06em; color: var(--dim); min-width: 2.6em; }
+
+.fov__say { color: var(--dim); font-size: 1rem; line-height: 1.5; min-height: 3em; max-width: 58ch; }
+.fov__say-name { font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lc); margin-right: 0.4rem; }
+
+/* The switcher: the legend's lenses become buttons. */
+.fov__lens { min-width: 0; }
+.fov__btn {
+  appearance: none; position: relative; display: block; width: 100%; height: 100%; min-height: 44px; margin: 0; padding: 1rem 1rem 0.9rem;
+  border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--engrave);
+  font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+.fov__btn::before { content: ""; position: absolute; left: -1px; top: -1px; width: 2.25rem; height: 2px; background: var(--lc); transition: width 0.45s var(--fov-ease); }
+.fov__btn .fov__sees { display: none; }
+.fov__btn .fov__txt { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "role nums" "name nums"; column-gap: 0.75rem; align-items: center; }
+.fov__btn .fov__role { grid-area: role; }
+.fov__btn .fov__name { grid-area: name; }
+.fov__btn .fov__nums { grid-area: nums; flex-direction: column; align-items: flex-end; gap: 0.2rem; }
+.fov__btn[aria-pressed="true"] { border-color: var(--lc); background: color-mix(in srgb, var(--lc) 9%, var(--anodise)); }
+.fov__btn[aria-pressed="true"]::before { width: calc(100% + 2px); }
+@media (hover: hover) {
+  .fov__btn:hover { border-color: color-mix(in srgb, var(--lc) 60%, var(--line)); background: var(--anodise); }
+  .fov__btn[aria-pressed="true"]:hover { border-color: var(--lc); background: color-mix(in srgb, var(--lc) 9%, var(--anodise)); }
+  .fov__btn:hover::before { width: 4rem; }
+  .fov__btn[aria-pressed="true"]:hover::before { width: calc(100% + 2px); }
+}
+.fov__btn:focus-visible { outline-offset: 3px; }
+
+/* Live: the frames on the overview are targets. The chosen one is solid,
+   the others faint, and a veil outside the camera's frame follows the
+   view as it moves. */
+.js .fov__r { stroke-opacity: 0.45; stroke-width: 1; stroke-dasharray: 3 3; transition: stroke-opacity 0.3s ease; }
+.fov.is-live .fov__r { pointer-events: all; cursor: pointer; }
+.fov[data-lens="shaniwar"] .fov__r[data-lens="shaniwar"], .fov[data-lens="parvati"] .fov__r[data-lens="parvati"], .fov[data-lens="sinhagad"] .fov__r[data-lens="sinhagad"] { stroke-opacity: 1; stroke-width: 2; stroke-dasharray: none; }
+.fov__veil { fill: var(--void); fill-opacity: 0.5; fill-rule: evenodd; pointer-events: none; }
+.js .fov__tag { opacity: 0.5; transition: opacity 0.3s ease; }
+.fov[data-lens="shaniwar"] .fov__tag[data-lens="shaniwar"], .fov[data-lens="parvati"] .fov__tag[data-lens="parvati"], .fov[data-lens="sinhagad"] .fov__tag[data-lens="sinhagad"] { opacity: 1; }
+
+/* Phones: the screen, the three buttons in a row, what the lens sees, then
+   the overview. */
+@media (max-width: 899px) {
+  .js .fov__body { grid-template-areas: "screen" "pick" "say" "map" "note"; row-gap: 1rem; }
+  .js .fov__side { display: contents; }
+  .js .fov__screen { grid-area: screen; }
+  .js .fov__pick { grid-area: pick; }
+  .js .fov__say { grid-area: say; }
+  .js .fov__map { grid-area: map; margin-top: 0.75rem; }
+  .js .fov__note { grid-area: note; }
+  .js .fov__lt { margin-bottom: 0.6rem; }
+  .js .fov__legend { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .fov__btn { padding: 0.85rem 0.6rem 0.7rem; }
+  .fov__btn .fov__txt { grid-template-columns: minmax(0, 1fr); grid-template-areas: "role" "name" "nums"; row-gap: 0.25rem; }
+  .fov__btn .fov__name { font-size: clamp(0.98rem, 0.8rem + 1vw, 1.25rem); }
+  .fov__btn .fov__nums { flex-direction: row; align-items: baseline; gap: 0.45rem; margin-top: 0.2rem; }
+  .fov__btn .fov__mm { font-size: clamp(1.25rem, 1rem + 1.2vw, 1.6rem); }
+  .fov__btn .fov__deg { font-size: 0.78rem; }
+}
+@media (min-width: 900px) {
+  .js .fov__body { grid-template-columns: minmax(0, 1fr) clamp(17rem, 24vw, 21rem); grid-template-areas: "screen side" "say side"; column-gap: clamp(1.5rem, 3vw, 3rem); align-items: start; }
+  .js .fov__screen { grid-area: screen; }
+  .js .fov__say { grid-area: say; }
+  .js .fov__side { grid-area: side; gap: 1.6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fov__btn, .fov__btn::before, .js .fov__r, .js .fov__tag { transition: none; }
+}
+
+/* The dial: every focal length between the three, ticks at each lens. */
+.fov__dial { display: grid; gap: 0.35rem; }
+.fov__dial-l { font-family: var(--display); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--engrave); }
+.fov__dial-l span { color: var(--dim); }
+.fov__mm-in { width: 100%; height: 44px; margin: 0; background: transparent; accent-color: var(--lc); -webkit-appearance: none; appearance: none; cursor: pointer; }
+.fov__mm-in::-webkit-slider-runnable-track { height: 2px; background: var(--line-2); }
+.fov__mm-in::-moz-range-track { height: 2px; background: var(--line-2); }
+.fov__mm-in::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -10px; border-radius: 50%; background: var(--lc); border: 3px solid var(--void); box-shadow: 0 0 0 1px var(--lc); }
+.fov__mm-in::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--lc); border: 3px solid var(--void); box-shadow: 0 0 0 1px var(--lc); }
+.fov__mm-in:focus-visible { outline: 2px solid var(--lc); outline-offset: 2px; }
+/* The three lenses on the dial's log scale: 24, 50 and 100 mm. */
+.fov__ticks { position: relative; height: 1.1rem; font-family: var(--display); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--dim); }
+.fov__ticks span { position: absolute; top: 0; transform: translateX(-50%); }
+.fov__ticks span:nth-child(1) { left: 11px; }
+.fov__ticks span:nth-child(2) { left: calc(11px + (100% - 22px) * 0.5143); }
+.fov__ticks span:nth-child(3) { left: calc(100% - 11px); }
+.fov[data-lens="shaniwar"] .fov__ticks [data-lens="shaniwar"], .fov[data-lens="parvati"] .fov__ticks [data-lens="parvati"], .fov[data-lens="sinhagad"] .fov__ticks [data-lens="sinhagad"] { color: var(--lc); }
+html:not(.js) .fov__dial { display: none; }
+@media (max-width: 899px) { .js .fov__body { grid-template-areas: "screen" "dial" "pick" "say" "map" "note"; } .js .fov__dial { grid-area: dial; } }
+@media (min-width: 900px) { .js .fov__body { grid-template-areas: "screen side" "dial side" "say side"; } .js .fov__dial { grid-area: dial; } }

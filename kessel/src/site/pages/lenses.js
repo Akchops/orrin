@@ -2,7 +2,8 @@
 // set behind the glass, then a section per lens, each composed differently
 // (bleeding right, bleeding left, a tight crop across the whole width), and
 // the side-by-side table set like an engraved scale.
-import { site, esc, lensRoute, img, proposalTag, footer, route } from '../parts.js';
+import { site, esc, lensRoute, img, proposalTag, footer, route, viewerTools } from '../parts.js';
+import { fovHTML } from '../fov-svg.js';
 import { lenses } from '../../content/lenses.js';
 
 const spec = (l, key) => (l.specs.find(([k]) => k === key) || [key, ''])[1];
@@ -32,6 +33,7 @@ function lensSection(l, i) {
     <p class="lx-lens__kicker"><span class="lx-lens__no">${no}</span> <span>${esc(l.role)} &middot; ${esc(spec(l, 'Focal length'))} &middot; ${esc(spec(l, 'Maximum aperture'))}</span> ${proposalTag}</p>
     <h2 class="lx-lens__name" id="${id}-name">${esc(l.name)}</h2>
     <p class="lx-lens__line">${esc(l.line)}</p>
+    <p class="lx-lens__shape">${esc(l.shape)}</p>
     <a class="lx-lens__more" href="#${lensRoute(l)}">View lens<span class="sr-only">: ${esc(l.name)}</span> <span class="lx-lens__arrow" aria-hidden="true">&rarr;</span></a>
   </div>
 </article>`;
@@ -52,14 +54,19 @@ export function lensesHTML() {
       </div>
     </div>
     <div class="lx-hero__stage">
-      <div class="lx-hero__fig">${img('lineup', { lazy: false })}</div>
+      <div class="lx-hero__fig" id="lenses-viewer" data-viewer="lineup">${img('lineup', { lazy: false })}</div>
       <ol class="lx-hero__labels">
     ${lenses.map(heroLabel).join('\n    ')}
       </ol>
+      ${viewerTools('lenses-viewer', { hint: 'Drag to turn the three lenses. Tap one to open it.', buttons: false })}
     </div>
   </header>
 
   ${lenses.map(lensSection).join('\n\n  ')}
+
+  <div class="lx-fov wrap">
+    ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar' })}
+  </div>
 
   <section class="lx-compare" aria-labelledby="lenses-compare-title">
     <div class="lx-compare__scale">${img('d-scale')}</div>

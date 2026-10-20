@@ -251,7 +251,7 @@ html:not(.js) main:not(:has(.route:not(#home):target, .route:not(#home) :target)
 .shead .lead { color: var(--dim); max-width: 38ch; }
 
 /* ------------------------------------------------------------- lens cards */
-[data-band="violet"] { --band: var(--coat); }
+[data-band="blue"] { --band: #6fa8ff; }
 [data-band="amber"] { --band: var(--amber); }
 [data-band="green"] { --band: var(--coat-2); }
 .lgrid { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(1.25rem, 2.4vw, 2rem); grid-template-columns: minmax(0, 1fr); }

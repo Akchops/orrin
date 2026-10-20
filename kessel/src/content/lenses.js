@@ -1,7 +1,8 @@
 // The three lenses. Names and roles are proposals; every figure in `specs`
 // is a sample for the concept (the page says so under each table). The
-// figures are kept consistent with each other: longer focal length, longer
-// and heavier barrel, longer close focus.
+// figures are kept consistent with each other and with the 3D models:
+// longer focal length, longer and heavier barrel, longer close focus, and
+// the front diameters and lengths of the three shapes.
 export const lenses = [
   {
     slug: 'shaniwar',
@@ -10,16 +11,19 @@ export const lenses = [
     line: 'For rooms, streets and landscapes, where everything in front of you belongs in the frame.',
     image: 'model-1-lg',
     thumb: 'model-1',
-    band: 'violet',
+    band: 'blue',
+    shape: 'Short and wide: a big, bulging front element under a deep petal hood.',
     specs: [
-      ['Focal length', '28 mm'],
+      ['Focal length', '24 mm'],
       ['Maximum aperture', 'f/2'],
       ['Mount', 'PL'],
-      ['Elements', '10 elements in 8 groups'],
+      ['Elements', '11 elements in 9 groups'],
       ['Iris', '11 blades'],
-      ['Close focus', '0.30 m'],
-      ['Front diameter', '80 mm'],
-      ['Weight', '1.25 kg'],
+      ['Close focus', '0.25 m'],
+      ['Front diameter', '92 mm'],
+      ['Length', '77 mm'],
+      ['Hood', 'Petal, fixed'],
+      ['Weight', '0.95 kg'],
     ],
   },
   {
@@ -30,6 +34,7 @@ export const lenses = [
     image: 'model-2-lg',
     thumb: 'model-2',
     band: 'amber',
+    shape: 'Balanced: a plain round front and a medium barrel.',
     specs: [
       ['Focal length', '50 mm'],
       ['Maximum aperture', 'f/1.8'],
@@ -38,6 +43,8 @@ export const lenses = [
       ['Iris', '11 blades'],
       ['Close focus', '0.45 m'],
       ['Front diameter', '80 mm'],
+      ['Length', '99 mm'],
+      ['Hood', 'None'],
       ['Weight', '1.05 kg'],
     ],
   },
@@ -49,15 +56,18 @@ export const lenses = [
     image: 'model-3-lg',
     thumb: 'model-3',
     band: 'green',
+    shape: 'Long: a slim barrel with a smaller front, a pull-out hood and a tripod collar.',
     specs: [
-      ['Focal length', '85 mm'],
+      ['Focal length', '100 mm'],
       ['Maximum aperture', 'f/2'],
       ['Mount', 'PL'],
       ['Elements', '8 elements in 6 groups'],
       ['Iris', '11 blades'],
-      ['Close focus', '0.80 m'],
-      ['Front diameter', '80 mm'],
-      ['Weight', '1.35 kg'],
+      ['Close focus', '1.0 m'],
+      ['Front diameter', '72 mm'],
+      ['Length', '135 mm'],
+      ['Hood', 'Tube, pull-out'],
+      ['Weight', '1.6 kg'],
     ],
   },
 ];

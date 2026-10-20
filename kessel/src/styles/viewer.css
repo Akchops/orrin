@@ -1,0 +1,49 @@
+/* ================================================================ VIEWERS
+   The 3D lens viewers (src/app/viewer.js): a canvas laid exactly over the
+   rendered still, shown once it has drawn its first frame; the still stays
+   for every other tier. Touch keeps vertical moves for the page. */
+.viewer__gl {
+  position: absolute; display: block; z-index: 1; pointer-events: auto;
+  touch-action: pan-y; cursor: grab; -webkit-tap-highlight-color: transparent;
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.viewer__gl:active { cursor: grabbing; }
+[data-viewer].is-live .viewer__gl { opacity: 1; }
+[data-viewer] > img { transition: opacity 0.5s ease 0.15s; }
+[data-viewer].is-live > img { opacity: 0; }
+#lenses .lx-hero__fig { position: relative; }
+/* The lens pages fade the shot into the page left and below: the canvas
+   takes the same mask as the still under it. */
+.route--lens .lens__shot .viewer__gl {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
+  mask-composite: intersect;
+}
+
+/* The controls: a hint, then turn and zoom buttons. */
+.viewer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+.viewer-tools[hidden] { display: none; }
+.viewer-tools__hint {
+  margin: 0; max-width: none; color: var(--dim);
+  font-family: var(--display); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.viewer-tools__btns { display: flex; gap: 0.35rem; }
+.viewer-tools__btns button {
+  appearance: none; min-width: 44px; min-height: 40px; padding: 0 0.75rem; border: 1px solid var(--line-2); border-radius: 999px;
+  background: rgba(27, 30, 36, 0.7); color: var(--engrave); cursor: pointer;
+  font-family: var(--display); font-size: 0.82rem; letter-spacing: 0.08em;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.viewer-tools__btns button[data-act="reset"] { font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.viewer-tools__btns button:focus-visible { outline: 2px solid var(--band, var(--coat)); outline-offset: 2px; }
+@media (hover: hover) { .viewer-tools__btns button:hover { border-color: var(--band, var(--coat)); } }
+#lenses .lx-hero .viewer-tools { justify-content: center; margin-top: 1rem; padding-inline: var(--gutter-l) var(--gutter-r); }
+/* A lens under the pointer in the lineup lights its label. */
+#lenses .lx-hero__label.is-hot a { color: var(--engrave); }
+#lenses .lx-hero__label.is-hot a::before { width: 100%; }
+
+/* See the difference on the Lenses page and each lens page. */
+#lenses .lx-fov { max-width: calc(1320px + var(--gutter-l) + var(--gutter-r)); }
+.route--lens .lens__fov { padding-block: clamp(3rem, 7vw, 6rem); padding-inline: clamp(0px, 3vw - 8px, 40px); }
+#lenses .lx-lens__shape { color: var(--dim); max-width: 40ch; }

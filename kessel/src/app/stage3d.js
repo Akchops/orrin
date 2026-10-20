@@ -61,11 +61,12 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   scene.add(rim2, rim2.target);
 
   const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font, quality === 'high' ? 2048 : 1024), rear: rearBarrelTexture(T, font) };
-  const lens = buildLens(T, L, { quality, textures });
+  const lens = buildLens(T, L, { quality, textures, font });
   scene.add(lens.root);
   if (!LADDER[rung].fx) lens.setEffects(false);
 
   const camera = new T.PerspectiveCamera(26, 1, 0.5, 4000);
+  if (caps.qa) window.__kesselScene = { scene, lens, camera };   // test hook (?gl=force only)
   let W = 1, H = 1;
   function resize() {
     W = Math.max(1, container.clientWidth); H = Math.max(1, container.clientHeight);

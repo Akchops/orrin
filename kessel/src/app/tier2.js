@@ -9,7 +9,7 @@
 import { IRIS_Z, SPREAD } from './lens.js';
 import { DISTANCES, throwPos, THROW_DEG } from './textures.js';
 import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, pickDrift } from './teardown.js';
-import { PARTS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
+import { PARTS, EXTRAS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
 import { createShading, MATS, COAT, css, cssa, len2, len3 } from './tier2-shade.js';
 
 const TAU = Math.PI * 2, DEG = Math.PI / 180;
@@ -46,7 +46,7 @@ export function mount2D(container, { font }) {
   // ------------------------------------------------------------ geometry
   // Each part gets ring buffers (world, view and screen position of every
   // profile point at every angle) at two levels of detail.
-  const parts = PARTS.map(prep);
+  const parts = PARTS.map(prep), extras = EXTRAS.map(prep);
   const throat = prep(THROAT);
   function prep(src) {
     const P = { ...src, segs: src.seg.map((c) => ({ m: MATS[c[0]], code: c[0], flag: c[1] || '' })) };
@@ -929,8 +929,8 @@ export function mount2D(container, { font }) {
     ctx.clearRect(0, 0, W, H);
     setCamera(S);
     const i0 = Math.min(1, Math.floor(S.model)), mf = S.model - i0;
-    const lz = [0.82, 1, 1.22][i0] + ([0.82, 1, 1.22][i0 + 1] - [0.82, 1, 1.22][i0]) * mf;
-    const fr = [1.08, 1, 0.94][i0] + ([1.08, 1, 0.94][i0 + 1] - [1.08, 1, 0.94][i0]) * mf;
+    const lz = [0.78, 1, 1.36][i0] + ([0.78, 1, 1.36][i0 + 1] - [0.78, 1, 1.36][i0]) * mf;
+    const fr = [1.14, 1, 0.9][i0] + ([1.14, 1, 0.9][i0 + 1] - [1.14, 1, 0.9][i0]) * mf;
     setPose(S, pointer, fr, lz);
     // Is the camera inside the barrel (or the camera throat behind it)?
     const zf = -6.25 * S.spread, zb = (S.throat > 0.01 ? -144.5 : -98) - 115 * S.spread;
@@ -1001,6 +1001,11 @@ export function mount2D(container, { font }) {
       if (P.id === 'scale') scaleText();
       else if (P.id === 'signature') signatureText();
       else if (P.mark === 'index') indexMark();
+    }
+    // The other models' hoods and collar, faded in as the film reaches them.
+    if (!showS) for (const P of extras) {
+      const w = P.model === 0 ? smooth(0, 1, 1 - S.model) : smooth(0, 1, S.model - 1);
+      if (w > 0.02) emitPart(P, 0, 0, 0, 0, false, false, '', w);
     }
     // Glass, then the iris.
     GLASS.forEach((e, gi) => {

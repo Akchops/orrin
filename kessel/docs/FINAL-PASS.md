@@ -121,3 +121,38 @@ passed; real taps, chips, Back and Escape still pass (`tap.mjs`).
   the low-quality materials (rebuilt context) skip the new maps.
 Check: software-WebGL hero, focus stage, signed barrel, focus-ring and
 mount close-ups; smoke test passed.
+
+### 8. Three lenses that look different — done
+
+- 3D (lens.js): Shaniwar is short (0.78 of the barrel) and wide (1.14),
+  with a bulging front element and a deep petal hood (long petals top and
+  bottom); Parvati keeps the plain round front; Sinhagad is long (1.36),
+  with a smaller front (0.9), a pull-out tube hood and a tripod collar with
+  its foot and plate. Each has its own focus-grip pattern (flat-topped,
+  the original knurl, rounded ribs), its own engraved name band
+  (SHANIWAR 24 mm, PARVATI 50 mm, SINHAGAD 100 mm) and its own colour ring
+  (cool blue, warm amber, green). The film morphs between them; the hoods
+  and collar grow out of the barrel as it does.
+- 2D tier: the same proportions and colours, and the hoods and collar as
+  lathe parts that fade in near their model. Simplification: Shaniwar's
+  petal hood is drawn as a round flared hood in 2D (petals would need
+  per-angle depth in the 2D lathe).
+- Side by side at one scale (#lenses): the three stand on their mounts in
+  one live scene; a drag turns all three on their axes, hovering lights
+  the lens and its label, a tap opens its page.
+- Each lens on its own page: the hero shot is now the live model, framed
+  exactly as its still; drag to turn it under the studio lights (mouse
+  also tilts), pinch or trackpad-pinch or the buttons to zoom, a slow sway
+  when untouched that fades out after half a minute. The still stays on
+  the 2D tier, with reduced motion and without JavaScript (the buttons
+  appear only once the model has drawn).
+- SEE THE DIFFERENCE: one street drawn in code (an inline SVG built from
+  the scene data, so it reads without JavaScript), on #lenses and on every
+  lens page. Picking a lens glides the crop from frame to frame in focal
+  length while the shops and the fort behind the person blur in; a dial
+  runs through every focal length from 24 to 100 mm; the overview veils
+  everything outside the current frame. Changing lens from one spot is a
+  pure crop, so nothing else moves.
+- Specs now match the models (24, 50 and 100 mm; front diameter, length,
+  hood), all still labelled sample figures.
+- Not done: the viewers are WebGL only; the 2D tier shows the stills.

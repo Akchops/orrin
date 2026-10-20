@@ -67,3 +67,15 @@ export function specTable(l, caption) {
   return `<table class="spec"><caption>${esc(caption)}</caption><tbody>${rows}</tbody></table>
 <p class="spec-note">${esc(site.specNote)}</p>`;
 }
+
+// The controls under a 3D lens viewer (src/app/viewer.js): hidden until
+// the viewer has drawn, so the stills never offer controls that do nothing.
+export function viewerTools(forId, { hint, buttons = true }) {
+  const b = (act, label, txt) => `<button type="button" data-act="${act}"${label ? ` aria-label="${label}"` : ''}>${txt}</button>`;
+  return `<div class="viewer-tools" data-for="${forId}" hidden>
+  <p class="viewer-tools__hint">${esc(hint)}</p>${buttons ? `
+  <div class="viewer-tools__btns" role="group" aria-label="Turn and zoom the 3D lens">
+    ${b('left', 'Turn left', '<span aria-hidden="true">&larr;</span>')}${b('right', 'Turn right', '<span aria-hidden="true">&rarr;</span>')}${b('out', 'Zoom out', '<span aria-hidden="true">&minus;</span>')}${b('in', 'Zoom in', '<span aria-hidden="true">+</span>')}${b('reset', '', 'Reset')}
+  </div>` : ''}
+</div>`;
+}

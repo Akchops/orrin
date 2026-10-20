@@ -36,7 +36,7 @@ const SECTIONS = [
   { id: 'mount', mid: -92 },
 ];
 
-export function buildLens(T, L, { quality = 'high', textures }) {
+export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "Arial Narrow", sans-serif' }) {
   const LQ = quality === 'low', HQ = quality === 'high';
   const seg = HQ ? 160 : LQ ? 72 : 112;
   const own = [];
@@ -98,7 +98,8 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     return geo;
   };
   const white = keep(new T.MeshStandardMaterial({ color: 0xf1efe9, metalness: 0, roughness: 0.5 }));
-  const bandColours = [0xab9bff, 0xf0a64a, 0x62dcc0];
+  // Accent rings: Shaniwar cool blue, Parvati warm amber, Sinhagad green.
+  const bandColours = [0x6fa8ff, 0xf0a64a, 0x62dcc0];
   const band = keep(new T.MeshStandardMaterial({ color: bandColours[0], metalness: 0.2, roughness: 0.45 }));
   const decal = (map) => keep(new T.MeshStandardMaterial({
     map, transparent: true, roughness: 0.55, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
@@ -158,6 +159,11 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   pBarrelFront.add(mesh(lathe([[38.7, 0], [35.3, 0]]), anodise));
   pBarrelFront.add(mesh(lathe([[35.3, 0], [34.8, -0.45]]), bare));
   pBarrelFront.add(mesh(lathe(ribbed(34.8, -0.45, -9.5, 1.4)), flock));
+  // The lens's name and its sample focal length, engraved round the front
+  // barrel; one texture row per lens, chosen by offset.
+  const nameTex = keep(nameTexture(T, font, HQ ? 4096 : 2048));
+  const nameMat = keep(decal(nameTex));
+  pBarrelFront.add(mesh(lathe([[40.06, -8.7], [40.06, -2.9]]), nameMat));
   {
     const r = mesh(new T.RingGeometry(35.4, 38.6, seg, 1), decal(textures.front));
     r.position.z = 0.02;
@@ -166,7 +172,9 @@ export function buildLens(T, L, { quality = 'high', textures }) {
 
   // ----------------------------------------------------------- focus ring
   // Knurled grip: a ring of rounded ridges extruded along the axis, with the
-  // centre left open so the glass can be seen through it.
+  // centre left open so the glass can be seen through it. One grip per lens
+  // (knurls[model]); Parvati's is the one the film and teardown show.
+  const knurls = [];
   {
     const ridges = LQ ? 90 : 150;
     const s = new T.Shape();
@@ -184,7 +192,31 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     g.translate(0, 0, -25);
     const sm = L.toCreasedNormals(g, Math.PI / 5);
     g.dispose();
-    pFocusRing.add(mesh(knurlWear(sm, 41.4, 0.75), knurlMat));
+    const k1 = mesh(knurlWear(sm, 41.4, 0.75), knurlMat);
+    pFocusRing.add(k1);
+    knurls[1] = k1;
+    // Each lens has its own grip. Shaniwar: broad flat-topped ridges with
+    // narrow cut grooves. Sinhagad: fewer, rounder, deeper ridges, like a
+    // ribbed rubber grip on a long lens.
+    const grip = (count, prof, depth) => {
+      const s2 = new T.Shape(), n2 = count * 8;
+      for (let i = 0; i <= n2; i++) {
+        const a = (i / n2) * TAU, f = (a * count / TAU) % 1;
+        const rr = 41.4 - depth * prof(f);
+        if (i === 0) s2.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); else s2.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      s2.holes.push(roundHole(38.8));
+      const g2 = new T.ExtrudeGeometry(s2, { depth: 13, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.35, bevelSegments: 2, curveSegments: 4 });
+      g2.translate(0, 0, -25);
+      const sm2 = L.toCreasedNormals(g2, Math.PI / 5);
+      g2.dispose();
+      const m2 = mesh(knurlWear(sm2, 41.4, depth), knurlMat);
+      m2.visible = false;
+      pFocusRing.add(m2);
+      return m2;
+    };
+    knurls[0] = grip(LQ ? 36 : 48, (f) => (f < 0.16 ? Math.sin((f / 0.16) * Math.PI) : 0), 0.9);
+    knurls[2] = grip(LQ ? 48 : 64, (f) => 1 - Math.pow(Math.sin(f * Math.PI), 0.6), 1.1);
   }
   pFocusRing.add(mesh(lathe([[40.6, -26.5], [40.6, -25.6], [41.0, -25.2]]), bare));
   pFocusRing.add(mesh(lathe([[41.0, -10.8], [40.6, -10.4], [40.6, -9.8]]), bare));
@@ -352,6 +384,81 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     pg.add(grp);
     elementMeshes.push(grp);
   });
+  // ------------------------------------------------------- lens variants
+  // What makes the three lenses different beyond their length (S.model:
+  // 0 Shaniwar, 1 Parvati, 2 Sinhagad). Hidden on Parvati, so the film and
+  // the teardown are unchanged.
+  // Shaniwar: a deep petal hood (long petals top and bottom), flaring out
+  // from a collar that slides over the front ring.
+  const petal = new T.Group();
+  {
+    const N = HQ ? 160 : 96, M = 12, z0 = -6;
+    const zf = (a) => 6 + 26 * Math.pow(0.5 - 0.5 * Math.cos(2 * a), 1.7);
+    const rin = (t) => 40.3 + 9 * Math.pow(t, 1.6);
+    const surf = (dr, flip) => {
+      const pos = [], idx = [];
+      for (let j = 0; j <= M; j++) for (let i = 0; i <= N; i++) {
+        const a = (i / N) * TAU, t = j / M, r = rin(t) + dr;
+        pos.push(Math.cos(a) * r, Math.sin(a) * r, z0 + t * (zf(a) - z0));
+      }
+      for (let j = 0; j < M; j++) for (let i = 0; i < N; i++) {
+        const p = j * (N + 1) + i, q = p + N + 1;
+        if (flip) idx.push(p, p + 1, q, p + 1, q + 1, q); else idx.push(p, q, p + 1, p + 1, q, q + 1);
+      }
+      const g = new T.BufferGeometry();
+      g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx); g.computeVertexNormals();
+      return g;
+    };
+    // The rolled front edge: black like the rest, catching a soft highlight.
+    const rimPos = [], rimIdx = [];
+    for (let i = 0; i <= N; i++) {
+      const a = (i / N) * TAU, z = zf(a), r = rin(1);
+      for (const [dr, dz] of [[0, 0], [0.7, 0.35], [1.4, 0]]) rimPos.push(Math.cos(a) * (r + dr), Math.sin(a) * (r + dr), z + dz);
+    }
+    for (let i = 0; i < N; i++) for (let k = 0; k < 2; k++) {
+      const p = i * 3 + k, q = p + 3;
+      rimIdx.push(p, q, p + 1, p + 1, q, q + 1);
+    }
+    const rim = new T.BufferGeometry();
+    rim.setAttribute('position', new T.Float32BufferAttribute(rimPos, 3));
+    rim.setIndex(rimIdx); rim.computeVertexNormals();
+    petal.add(mesh(surf(1.4, false), anodise), mesh(surf(0, true), flock), mesh(rim, anodise));
+  }
+  petal.visible = false;
+  lens.add(petal);
+  // Sinhagad: a pull-out hood, a plain tube with a bare lip and two
+  // grip grooves, telescoping forward off the front ring.
+  const tube = new T.Group();
+  tube.add(mesh(lathe([[41.9, -6], [41.9, 21.4], [41.6, 22]]), anodise));
+  tube.add(mesh(lathe([[41.6, 22], [40.4, 22]]), bare));
+  tube.add(mesh(lathe([[40.4, 22], [40.4, -6]]), flock));
+  for (const z of [-2.5, -1]) tube.add(mesh(lathe([[41.95, z + 0.4], [41.6, z + 0.2], [41.6, z - 0.2], [41.95, z - 0.4]]), bare));
+  tube.visible = false;
+  lens.add(tube);
+  // Sinhagad: a tripod collar near the mount, a ring with a clamp knob and
+  // a foot below with its mounting plate.
+  const collar = new T.Group();
+  {
+    collar.add(mesh(lathe([[42.8, -79.5], [43.4, -80.1], [43.4, -86.4], [42.8, -87]]), anodise));
+    collar.add(mesh(lathe([[42.8, -79.5], [37.2, -79.5]]), bare));
+    collar.add(mesh(lathe([[37.2, -87], [42.8, -87]]), bare));
+    const post = mesh(new T.BoxGeometry(12, 20, 6.4), anodise);
+    post.position.set(0, -51, -83.2);
+    const foot = mesh(new T.BoxGeometry(26, 3.2, 30), anodise);
+    foot.position.set(0, -62, -83.2);
+    const plate = mesh(new T.BoxGeometry(24, 0.6, 28), bare);
+    plate.position.set(0, -63.9, -83.2);
+    const knob = mesh(new T.CylinderGeometry(3.4, 3.4, 6, 24), bare);
+    knob.rotation.z = Math.PI / 2;
+    knob.position.set(45.5, 8, -83.2);
+    collar.add(post, foot, plate, knob);
+  }
+  collar.visible = false;
+  lens.add(collar);
+  // The front element bulges forward on the wide lens, about its rim plane.
+  const frontEl = elementMeshes[0], FRONT_RIM_Z = -7.92;
+
   for (const [id, pos] of Object.entries(TEAR_ANCHORS)) {
     const a = new T.Object3D(); a.position.set(...pos);
     const b = new T.Object3D(); b.position.set(pos[0], -pos[1], pos[2]);
@@ -566,15 +673,28 @@ export function buildLens(T, L, { quality = 'high', textures }) {
       }
     }
 
-    // Model: barrel length and front size per lens, and its colour band.
+    // Model: proportions, front element, hood, collar, grip, name and
+    // colour band per lens. Shaniwar short and wide, Sinhagad long with a
+    // smaller front; the hoods and collar grow out of the lens as the film
+    // morphs toward their model.
     if (Math.abs(S.model - lastModel) > 1e-4) {
       lastModel = S.model;
-      const i = Math.min(1, Math.floor(S.model)), f = S.model - i;
-      const len = [0.82, 1, 1.22], front = [1.08, 1, 0.94];
+      const m = S.model, i = Math.min(1, Math.floor(m)), f = m - i;
+      const len = [0.78, 1, 1.36], front = [1.14, 1, 0.9];
       const lz = len[i] + (len[i + 1] - len[i]) * f;
       const fr = front[i] + (front[i + 1] - front[i]) * f;
       lens.scale.set(fr, fr, lz);
       band.color.copy(ca.set(bandColours[i])).lerp(cb.set(bandColours[i + 1]), f);
+      const w0 = smooth(0, 1, 1 - m), w2 = smooth(0, 1, m - 1);
+      const bulge = 1 + 1.1 * w0;
+      frontEl.scale.z = bulge; frontEl.position.z = FRONT_RIM_Z * (1 - bulge);
+      petal.visible = w0 > 0.02; petal.scale.z = Math.max(0.02, w0); petal.position.z = -6 * (1 - Math.max(0.02, w0));
+      tube.visible = w2 > 0.02; tube.scale.z = Math.max(0.02, w2); tube.position.z = -6 * (1 - Math.max(0.02, w2));
+      collar.visible = w2 > 0.02; collar.scale.setScalar(Math.max(0.02, w2));
+      collar.position.z = -83.2 * (1 - Math.max(0.02, w2));
+      const near = Math.round(m);
+      knurls.forEach((k, j) => { k.visible = j === near; });
+      nameTex.offset.y = (2 - near) / 3;
       emSig = '';
     }
     emphasis(S);
@@ -637,6 +757,35 @@ function ribbed(r, z0, z1, pitch) {
   }
   pts.push([r, z1]);
   return pts;
+}
+
+// The three lens names round the front barrel, one row each (row 0 at the
+// top is Shaniwar). Engraving fill on transparent, repeated on both sides.
+const NAMES = [['SHANIWAR', '24 mm'], ['PARVATI', '50 mm'], ['SINHAGAD', '100 mm']];
+function nameTexture(T, font, W) {
+  const rowH = Math.round(W / 42), c = document.createElement('canvas');
+  c.width = W; c.height = rowH * 3;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f1efe9';
+  g.textBaseline = 'middle';
+  NAMES.forEach(([name, fl], r) => {
+    const y = r * rowH + rowH / 2;
+    for (const u of [0.25, 0.75]) {
+      g.font = `600 ${Math.round(rowH * 0.62)}px ${font}`;
+      if ('letterSpacing' in g) g.letterSpacing = `${Math.round(rowH * 0.12)}px`;
+      g.textAlign = 'right';
+      g.fillText(name, u * W - rowH * 0.3, y);
+      g.font = `400 ${Math.round(rowH * 0.5)}px ${font}`;
+      g.textAlign = 'left';
+      g.fillText(fl, u * W + rowH * 0.3, y);
+    }
+  });
+  const t = new T.CanvasTexture(c);
+  t.colorSpace = T.SRGBColorSpace;
+  t.anisotropy = 8;
+  t.repeat.set(1, 1 / 3);
+  t.offset.set(0, 1 / 3);
+  return t;
 }
 
 // Turning marks: rows of slightly different brightness with a faint
