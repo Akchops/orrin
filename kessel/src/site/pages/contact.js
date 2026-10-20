@@ -1,8 +1,8 @@
-// Contact: email and phone, no form. Three frames, each laid out its own way:
-// the email set enormous across the coated front element at full bleed (the
-// page's moment), the city and the phone beside the signed rear barrel that
-// carries the city's name, and what helps us answer, set like graduations
-// beside the engraved distance scale.
+// Contact: email and phone only, no form. Three frames, each laid out its
+// own way: the email set enormous across the coated front element at full
+// bleed (the page's moment), the phone beside the signed rear barrel, and
+// what helps us answer, set like graduations beside the engraved distance
+// scale.
 import { site, esc, img, footer, route } from '../parts.js';
 import { contact } from '../../content/contact.js';
 
@@ -36,10 +36,6 @@ export function contactHTML() {
 <div class="ct-studio">
   <figure class="ct-studio__img">${img(C.studioImage)}</figure>
   <dl class="ct-studio__in wrap">
-    <div class="ct-city">
-      <dt>${esc(C.labels.studio)}</dt>
-      <dd><span class="ct-city__name">${esc(site.city)}</span><span class="ct-city__country">${esc(C.country)}</span></dd>
-    </div>
     <div class="ct-phone">
       <dt>${esc(C.labels.phone)}</dt>
       <dd><a class="ct-phone__link" href="tel:${tel(site.phone)}"><span class="selectable">${esc(site.phone)}</span><span class="ct-phone__go" aria-hidden="true">${esc(C.callCta)} <span>&rarr;</span></span></a></dd>

@@ -3,10 +3,9 @@ export const contact = {
   eyebrow: 'Contact',
   title: 'Write to the studio',
   lead: 'Questions about a lens, or about which of the three suits your work: write or call the studio in Pune.',
-  labels: { email: 'Email', phone: 'Phone', studio: 'Studio' },
+  labels: { email: 'Email', phone: 'Phone' },
   mailCta: 'Write',
   callCta: 'Call',
-  country: 'India',
   helpTitle: 'What helps us answer',
   help: [
     'Which lens you are asking about, if you know.',

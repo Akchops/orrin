@@ -156,3 +156,25 @@ mount close-ups; smoke test passed.
 - Specs now match the models (24, 50 and 100 mm; front diameter, length,
   hood), all still labelled sample figures.
 - Not done: the viewers are WebGL only; the 2D tier shows the stills.
+
+### 9. More pages — done
+
+- Home stays the film and the teardown. The nav is now the pages after the
+  film: Lenses, Craft, Company, Contact (the logo goes home; the footer
+  also links the film and the teardown); the current page is marked,
+  lens pages counting as Lenses. Four links fit the phone header at 390,
+  so there is no menu to open.
+- Lenses: the index of the three opens on the live lineup (step 8), then a
+  section per lens, See the difference and the side-by-side table. Each
+  lens page opens on its live model, then the close-ups, the specs table
+  (labelled sample figures), See the difference set to that lens, and the
+  way to the next lens.
+- Craft: the five stages (glass, iris, barrel and focus ring, assembly,
+  signing) as tappable steps, each with its close-up; arrow keys and a
+  sideways swipe move between them; opens on the exploded lens at full
+  bleed. Without JavaScript the five stand one under the other.
+- Contact: email and phone only (the studio's city is gone from the page
+  and from the enquiry boxes); opens on the coated front element at full
+  bleed.
+- Company: the nav points at the existing company page for now; step 10
+  replaces it.

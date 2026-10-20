@@ -21,7 +21,6 @@ export const contactLines = (cls = '') => `
 <dl class="clist${cls ? ' ' + cls : ''}">
   <div><dt>Email</dt><dd><span class="selectable">${esc(site.email)}</span> <button class="copy" type="button" data-copy="${esc(site.email)}" hidden>Copy</button></dd></div>
   <div><dt>Phone</dt><dd><span class="selectable">${esc(site.phone)}</span></dd></div>
-  <div><dt>Studio</dt><dd>${esc(site.city)}</dd></div>
 </dl>`;
 
 export const proposalTag = '<span class="tag">Proposal</span>';

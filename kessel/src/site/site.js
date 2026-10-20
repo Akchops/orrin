@@ -7,6 +7,7 @@
 // only passes the fragment through. Without JavaScript, CSS :target shows
 // the same routes.
 import { startFov } from './fov-live.js';
+import './craft.js';
 
 const root = document.documentElement;
 const map = window.__kesselRoutes || {};

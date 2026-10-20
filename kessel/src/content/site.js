@@ -7,17 +7,17 @@ export const site = {
   founded: 2017,
   email: 'studio@kessel.example',
   phone: '+91 00000 00000',
-  // One page: the main nav jumps within it. The earlier pages stay
-  // reachable from a small link row in the footer.
+  // The main nav: the pages after the film. The logo goes home, to the
+  // film and the teardown; the footer also links the teardown.
   nav: [
-    { href: '#teardown', label: 'Teardown' },
-    { href: '#film-workshop', label: 'Company' },
-    { href: '#film-contact', label: 'Contact' },
-  ],
-  more: [
     { href: '#lenses', label: 'Lenses' },
     { href: '#craft', label: 'Craft' },
-    { href: '#workshop', label: 'Workshop' },
+    { href: '#workshop', label: 'Company' },
+    { href: '#contact', label: 'Contact' },
+  ],
+  more: [
+    { href: '#top', label: 'The film' },
+    { href: '#teardown', label: 'Teardown' },
   ],
 
   footer: {
