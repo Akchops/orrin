@@ -54,18 +54,49 @@ export function buildLens(T, L, { quality = 'high', textures }) {
   };
 
   // ------------------------------------------------------------ materials
+  // Turning marks: the fine concentric grooves a lathe tool leaves, as a
+  // roughness and bump pattern repeated along every lathed profile (lathe
+  // UVs run v along the profile), so metal up close shows its machining and
+  // highlights break into fine rings. Far away the mipmaps average it out.
+  const turned = keep(turningTexture(T));
   // Black anodising: a dark metal with a satin finish and a thin clear
   // layer, which is what gives anodised parts their crisp edge highlight.
   const anodise = keep(LQ
     ? new T.MeshStandardMaterial({ color: 0x1d1f24, metalness: 0.85, roughness: 0.4 })
-    : new T.MeshPhysicalMaterial({ color: 0x1c1e23, metalness: 0.85, roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.18 }));
-  // Machined edges cut through the anodising to bare aluminium.
-  const bare = keep(new T.MeshStandardMaterial({ color: 0xd4d7db, metalness: 1, roughness: 0.18 }));
+    : new T.MeshPhysicalMaterial({ color: 0x1c1e23, metalness: 0.85, roughness: 0.46, clearcoat: 0.5, clearcoatRoughness: 0.18,
+      roughnessMap: turned, bumpMap: turned, bumpScale: 0.35 }));
+  // Machined edges cut through the anodising to bare aluminium: brushed,
+  // so their highlight stretches into a soft streak along the cut.
+  const bare = keep(LQ
+    ? new T.MeshStandardMaterial({ color: 0xd4d7db, metalness: 1, roughness: 0.18 })
+    : new T.MeshPhysicalMaterial({ color: 0xd4d7db, metalness: 1, roughness: 0.22, anisotropy: 0.55, roughnessMap: turned }));
   // Interior: very dark satin rather than dead matte, so the baffle rings
   // pick up faint highlights and the tunnel reads when travelling through.
   const flock = keep(new T.MeshStandardMaterial({ color: 0x1a1c21, metalness: 0.3, roughness: 0.55, envMapIntensity: 0.5 }));
-  const steel = keep(new T.MeshStandardMaterial({ color: 0xcfd2d6, metalness: 1, roughness: 0.1 }));
+  const steel = keep(LQ
+    ? new T.MeshStandardMaterial({ color: 0xcfd2d6, metalness: 1, roughness: 0.1 })
+    : new T.MeshPhysicalMaterial({ color: 0xcfd2d6, metalness: 1, roughness: 0.14, anisotropy: 0.5, roughnessMap: turned, bumpMap: turned, bumpScale: 0.2 }));
   const bladeMat = keep(new T.MeshStandardMaterial({ color: 0x15161a, metalness: 0.7, roughness: 0.38, side: T.DoubleSide }));
+  // The knurl: the same anodising, lighter underneath so per-vertex colour
+  // can darken the grooves back to black and leave the crests a touch worn
+  // (the anodising rubbed thin where fingers turn the ring, unevenly round
+  // it).
+  const knurlMat = keep(anodise.clone());
+  knurlMat.color.setHex(0x3a3e46);
+  knurlMat.vertexColors = true;
+  const knurlWear = (geo, rTop, depth) => {
+    const pos = geo.attributes.position, col = new Float32Array(pos.count * 3);
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), r = Math.hypot(x, y), a = Math.atan2(y, x);
+      const crest = Math.min(1, Math.max(0, (r - (rTop - depth * 0.45)) / (depth * 0.45)));
+      // Wear patches: a slow, uneven variation round the ring.
+      const patch = 0.5 + 0.5 * Math.sin(a * 3 + 1.3) * Math.sin(a * 7 - 0.4);
+      const v = 0.48 + crest * (0.14 + 0.22 * patch);
+      col[i * 3] = v; col[i * 3 + 1] = v; col[i * 3 + 2] = v * 1.02;
+    }
+    geo.setAttribute('color', new T.BufferAttribute(col, 3));
+    return geo;
+  };
   const white = keep(new T.MeshStandardMaterial({ color: 0xf1efe9, metalness: 0, roughness: 0.5 }));
   const bandColours = [0xab9bff, 0xf0a64a, 0x62dcc0];
   const band = keep(new T.MeshStandardMaterial({ color: bandColours[0], metalness: 0.2, roughness: 0.45 }));
@@ -153,7 +184,7 @@ export function buildLens(T, L, { quality = 'high', textures }) {
     g.translate(0, 0, -25);
     const sm = L.toCreasedNormals(g, Math.PI / 5);
     g.dispose();
-    pFocusRing.add(mesh(sm, anodise));
+    pFocusRing.add(mesh(knurlWear(sm, 41.4, 0.75), knurlMat));
   }
   pFocusRing.add(mesh(lathe([[40.6, -26.5], [40.6, -25.6], [41.0, -25.2]]), bare));
   pFocusRing.add(mesh(lathe([[41.0, -10.8], [40.6, -10.4], [40.6, -9.8]]), bare));
@@ -606,6 +637,27 @@ function ribbed(r, z0, z1, pitch) {
   }
   pts.push([r, z1]);
   return pts;
+}
+
+// Turning marks: rows of slightly different brightness with a faint
+// periodic ripple, repeated along the profile. Used as a roughness map
+// (brighter = rougher) and as a bump map; values stay high so the average
+// roughness changes little.
+function turningTexture(T) {
+  const c = document.createElement('canvas'); c.width = 4; c.height = 256;
+  const g = c.getContext('2d');
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let y = 0; y < 256; y++) {
+    const v = Math.round(212 + (rnd() - 0.5) * 50 + Math.sin(y * 1.7) * 12);
+    g.fillStyle = `rgb(${v},${v},${v})`;
+    g.fillRect(0, y, 4, 1);
+  }
+  const t = new T.CanvasTexture(c);
+  t.wrapS = t.wrapT = T.RepeatWrapping;
+  t.repeat.set(1, 18);
+  t.colorSpace = T.NoColorSpace;
+  return t;
 }
 
 // Radial falloff for the bloom sprite: (1 - d^2)^3 plus a faint wide tail.

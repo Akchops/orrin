@@ -104,3 +104,20 @@ test passed.
 Check: 2D orbit, zoom, Escape and the lens drag scripted at 1440;
 software-WebGL close-up with depth of field and an orbit drag; smoke test
 passed; real taps, chips, Back and Escape still pass (`tap.mjs`).
+
+### 7. Materials up close — done
+
+- Turning marks: a procedural texture of fine concentric grooves, used as
+  a roughness and bump map on the lathed anodising and as roughness on the
+  bare edges and steel, so highlights break into fine rings up close and
+  average out at a distance.
+- Bare machined edges and the steel mount are brushed (anisotropic), so
+  their highlights stretch into soft streaks; every lathe profile already
+  carries bare bevelled edges and smooth-shaded corners that catch light.
+- Knurl wear: per-vertex colour leaves the crests a touch lighter, unevenly
+  round the ring, where fingers would rub the anodising thin.
+- Environment reflections come from the brighter studio map of step 3.
+- The quality ladder's low rungs still drop the clear coat and thin film;
+  the low-quality materials (rebuilt context) skip the new maps.
+Check: software-WebGL hero, focus stage, signed barrel, focus-ring and
+mount close-ups; smoke test passed.
