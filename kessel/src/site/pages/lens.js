@@ -30,7 +30,7 @@ export function lensHTML(l, i) {
 
   const tile = (kind, still, key, label) => `
     <figure class="lens__tile lens__tile--${kind}">
-      <div class="lens__crop">${img(still)}</div>
+      <div class="lens__crop" data-crop="close-up">${img(still)}</div>
       <figcaption class="lens__cap">
         <span class="lens__cap-k">${esc(key)}</span>
         <span class="lens__cap-v">${figure(spec(l, key))}</span>

@@ -22,8 +22,8 @@
 .route--lens .lens__hero {
   /* The name is sized to run edge to edge; --em is its width in em. */
   --fs: min(calc((100cqi - var(--lz-pl) - var(--lz-pr)) / var(--em) * 0.98), calc(var(--vh) * 0.42));
-  --shot-w: 138cqi;   /* the shot, wider than the screen on phones */
-  --shot-x: -6cqi;    /* its left edge, past the screen edge */
+  --shot-w: 100cqi;   /* the shot, the full width on phones, never past it */
+  --shot-x: 0cqi;     /* its left edge */
   --cross: 0.62;      /* where the barrel crosses the name's line box */
   display: grid; grid-template-rows: auto auto 1fr; align-content: start;
   overflow-x: clip;
@@ -57,18 +57,22 @@
   color: transparent; -webkit-text-stroke: 1px rgba(241, 239, 233, 0.55);
 }
 .route--lens .lens__shot {
-  position: absolute; z-index: 2; pointer-events: none;
-  width: var(--shot-w); left: var(--shot-x);
-  /* Top of the barrel crosses the lower part of the name. */
-  top: calc(var(--cross) * 100% - var(--shot-w) * 0.75 * var(--sil, 0.09));
+  position: relative; z-index: 2; pointer-events: none;
+  /* Centred on the hero, out through the title's side padding, never
+     wider than the hero itself (100cqi). */
+  width: var(--shot-w);
+  margin-left: calc((100cqi - var(--shot-w)) / 2 - var(--lz-pl));
+  margin-right: calc((100cqi - var(--shot-w)) / 2 - var(--lz-pr));
+  /* Stacked: in the flow under the name, so the text below always clears
+     it; the top of the barrel still rises into the lower part of the
+     name. */
+  margin-top: calc(var(--fs) * -0.3 - var(--shot-w) * 0.75 * var(--sil, 0.09));
 }
 .route--lens .lens__shot img {
   width: 100%; max-width: none;
-  /* lens-3 is cut by its left edge and every shot by its bottom: fade both. */
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to right, transparent, #000 6%), linear-gradient(#000 46%, transparent 86%);
-  mask-composite: intersect;
+  /* A soft floor under the lens, so the shot settles into the page. */
+  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
+  mask-image: linear-gradient(#000 78%, transparent 99%);
 }
 
 .route--lens .lens__foot {
@@ -169,7 +173,7 @@
   margin: 0; font-family: var(--display); font-weight: 200; font-stretch: 125%; line-height: 0.88; letter-spacing: -0.01em;
   font-size: clamp(2.6rem, 12cqi, 7rem); white-space: nowrap;
 }
-.route--lens .lens__read--main dd { font-size: clamp(7rem, 44cqi, 22rem); margin-left: -0.06em; line-height: 0.8; }
+.route--lens .lens__read--main dd { font-size: clamp(4rem, 36cqi, 22rem); margin-left: -0.06em; line-height: 0.8; }
 .route--lens .lens__read--main .lens__unit { font-size: 0.2em; color: var(--band); vertical-align: 0.25em; }
 /* Under the focal length, a run of engraved ticks with the index mark in
    the lens's band, like the distance scale on the barrel. */
@@ -247,12 +251,18 @@
 }
 
 /* ------------------------------------------------------------- wide */
-/* Tablets held upright keep the stacked hero, with a little less crop. */
-@media (min-width: 600px) { .route--lens .lens__hero { --shot-w: 140cqi; --shot-x: -3cqi; } }
-/* Landscape screens: the shot to the right, cut by the edge, the line low
-   on the left. */
+/* Tablets held upright keep the stacked hero; the shot stays inside. */
+@media (min-width: 600px) { .route--lens .lens__hero { --shot-w: 92cqi; --shot-x: 4cqi; } }
+/* Landscape screens: the shot to the right, whole, the line low on the
+   left. */
 @media (min-width: 800px) and (min-aspect-ratio: 5/4) {
-  .route--lens .lens__hero { --shot-w: 84cqi; --shot-x: 30cqi; min-height: var(--vh); }
+  /* As wide as the screen's height allows, so the whole lens stays inside
+     the hero and clear of the next section. */
+  .route--lens .lens__hero { --shot-w: min(64cqi, calc((var(--vh) - var(--head) - 9rem) * 1.25)); --shot-x: auto; min-height: var(--vh); }
+  .route--lens .lens__shot {
+    position: absolute; right: var(--lz-pr); margin: 0;
+    top: calc(var(--cross) * 100% - var(--shot-w) * 0.75 * var(--sil, 0.09));
+  }
   .route--lens .lens__foot { margin-top: clamp(1.5rem, 3vw, 2.5rem); align-self: end; width: min(calc(26rem + var(--lz-pl)), 32cqi); padding-right: 0; }
   .route--lens .lens__line { max-width: none; }
 }
@@ -273,7 +283,7 @@
   .route--lens .lens__specs > * { max-width: none; }
   .route--lens .lens__specs-h { grid-column: 1 / -1; }
   .route--lens .lens__read dd { font-size: clamp(3rem, 6.4cqi, 7rem); }
-  .route--lens .lens__read--main dd { font-size: clamp(9rem, 25cqi, 24rem); }
+  .route--lens .lens__read--main dd { font-size: clamp(5rem, 22cqi, 24rem); }
   .route--lens .lens__table { align-self: end; }
 
   .route--lens .lens__pager { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

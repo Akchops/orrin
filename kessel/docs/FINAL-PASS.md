@@ -262,3 +262,28 @@ limit with the pages nearly done); finished, merged and checked here.
   tools stay in the middle); marked as an intended crop.
 Check: steps, slider, keys, hotspots, Escape, focus return, timeline,
 FAQ and checks scripted at 1440 and 390; no-JS lists; overflow audit.
+
+### 4. Layout overflow fixed — done
+
+- New audit (`kessel/scripts/audit.mjs`): every page at 390, 768, 900,
+  1024, 1280, 1440 and 1728, and inside a 900 px framed pane, with
+  classic scrollbars shown (headless Chrome hides them, which hides 100vw
+  bugs). It fails a page on horizontal scroll, on text or a control past
+  the viewport, on text cut by a clipping box, and on any picture (still,
+  canvas, drawing) cut by the page edge or its box. Close-up tiles,
+  Contact's background images and the Company bench (which fills its
+  frame like a cover image) are marked `data-crop` as intended crops.
+- What it found and what changed: no page ever scrolled sideways, but
+  the Lenses page set its lineup at 112% of the page and its three lens
+  shots bleeding off alternate edges (and the long lens cropped to 1.9x
+  on phones), and each lens page set its shot up to 172% of the screen,
+  so lenses ran out of the page at every width. Now the lineup is the
+  page's width and sits under the title instead of over it; each Lenses
+  section shows its whole lens (A and B side by side with their copy in
+  their own column, C whole and wide); the lens page shot is in the flow
+  on phones and tablets (centred, never wider than the hero) and capped
+  by the screen's height on landscape screens, so it never covers the
+  text or the next section. The huge focal-length readout scales with
+  its box (it ran out at 768). The live lineup and lens viewers follow
+  the stills they cover.
+- Result: all 64 page-and-width combinations pass.

@@ -107,9 +107,9 @@ export function mountViewer(el, L, caps, { font }) {
     if (lineup) {
       // One frame for all three (they are the same height), with a margin;
       // the mounts stand on one line near the bottom.
-      frame = 59.5;
+      frame = 68;
       const halfW = frame * camera.aspect;
-      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 4, 0));
+      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 7, 0));
     } else frame = pose.frame;
     dirty = true;
   }
@@ -131,7 +131,7 @@ export function mountViewer(el, L, caps, { font }) {
       // Each lens turns on its own axis, which stands upright.
       for (const it of items) {
         it.lens.lens.rotation.z = -Math.PI / 2 + (v.yaw + v.hx) * DEG;
-        it.pivot.position.y = -frame + 4 + it.lift;
+        it.pivot.position.y = -frame + 7 + it.lift;
       }
     } else {
       // The lens turns under the lights (not the camera round it): yaw

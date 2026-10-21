@@ -16,7 +16,7 @@ export function contactHTML() {
         <li><span class="ct-help__no" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><p>${esc(h)}</p></li>`).join('');
   return route('contact', `Contact · ${site.name}`, `
 <div class="ct-stage">
-  <figure class="ct-stage__img">${img(C.image, { lazy: false })}</figure>
+  <figure class="ct-stage__img" data-crop="background">${img(C.image, { lazy: false })}</figure>
   <div class="ct-stage__in wrap">
     <header class="ct-head">
       <p class="eyebrow">${esc(C.eyebrow)}</p>
@@ -34,7 +34,7 @@ export function contactHTML() {
 </div>
 
 <div class="ct-studio">
-  <figure class="ct-studio__img">${img(C.studioImage)}</figure>
+  <figure class="ct-studio__img" data-crop="background">${img(C.studioImage)}</figure>
   <dl class="ct-studio__in wrap">
     <div class="ct-phone">
       <dt>${esc(C.labels.phone)}</dt>
@@ -44,7 +44,7 @@ export function contactHTML() {
 </div>
 
 <section class="ct-help" aria-labelledby="contact-help-title">
-  <figure class="ct-help__img">${img(C.helpImage)}</figure>
+  <figure class="ct-help__img" data-crop="background">${img(C.helpImage)}</figure>
   <div class="ct-help__in wrap">
     <h2 id="contact-help-title">${esc(C.helpTitle)}</h2>
     <ol class="ct-help__list">${help}
