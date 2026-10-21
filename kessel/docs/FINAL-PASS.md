@@ -233,3 +233,32 @@ is refused here, as before).
   horizontal angle (74, 40 and 20 degrees, and every angle between on the
   dial) with the figure and "angle of view" beside it; the spoken update
   says the angle too. Without JavaScript it shows the first lens's angle.
+
+### 3. Craft and Company rebuilt around drawings you can play with — done
+
+Built by two agents in their own worktrees (they stopped at a session
+limit with the pages nearly done); finished, merged and checked here.
+- Craft opens on a code-drawn lens in the street scene's style, on the
+  bench under a lamp by a window at dusk, that builds up stage by stage:
+  glass (seven elements in five groups, with light rays), iris (eleven
+  blades, face on and in section), barrel and focus ring (knurl and
+  engraved scale), assembly (the PL mount), signing (the lamp swings over,
+  the pen signs). Five step buttons and a slider stay in sync, arrow keys
+  work, the current stage glows, a short caption updates (read out).
+  Below: the close-up stills as a mosaic, then the next links. Without
+  JavaScript: the finished lens and all five captions.
+- Company opens on a code-drawn workshop bench at dusk (window with the
+  fort, lamp, pegboard, test chart) with four numbered hotspots: the
+  loupe, the iris tool, the signing pen and the finished lens tray (the
+  matched set). Each opens a short note with the role behind it (no
+  names); Escape, a close button or a tap outside closes it. Then a
+  2017-2025 timeline engraved like a distance scale that you drag or key
+  along, a facts strip (Pune, since 2017, three), the six checks with a
+  drawn lens that lights up as they pass, a FAQ that opens and closes,
+  and the contact link. Every section is tagged sample content.
+- Fixed on merge: "Assembly" no longer breaks mid-word on phones; the
+  Craft frame is 4:3 on phones so the whole lens and its labels fit.
+  The bench scene fills its frame like a cover image on phones (the four
+  tools stay in the middle); marked as an intended crop.
+Check: steps, slider, keys, hotspots, Escape, focus return, timeline,
+FAQ and checks scripted at 1440 and 390; no-JS lists; overflow audit.

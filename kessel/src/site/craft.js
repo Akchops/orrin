@@ -1,128 +1,135 @@
-// Craft: the five stages as tabs. The page is built (src/site/pages/craft.js)
-// as an index of links over five stacked stages, which is what shows
-// without JS; this turns the index into a tablist and shows one stage at a
-// time. The close-ups crossfade with a slight scale (instant with reduced
-// motion), a thin line fills along the rail, arrow keys move between the
-// tabs, and on touch screens a sideways swipe on the picture does too.
-const sec = document.getElementById('craft-stages');
+// Craft, live: the drawing of the lens on the bench (markup from
+// src/site/craft-svg.js) becomes a stepper. The page is built showing the
+// finished lens with the five stages as a list, which is what shows
+// without JS; this shows the stage buttons and the slider, starts the
+// drawing at the first stage and keeps the buttons, the slider, the frame's
+// readout and the caption in step. Entering the iris stage closes the
+// eleven blades and opens them half way, the light through the lens
+// narrowing with them; entering the signing draws the signature with the
+// pen. With reduced motion every change is instant and nothing moves.
+import { irisFace, irisSide, rayClears, IRIS } from '../app/craft-lens.js';
 
-if (sec) {
-  const tabs = [...sec.querySelectorAll('.cst__tab')];
-  const panels = [...sec.querySelectorAll('.cst__panel')];
-  const list = sec.querySelector('.cst__rail');
-  const stack = sec.querySelector('.cst__panels');
-  const ctrl = sec.querySelector('.cst__ctrl');
-  const [prevBtn, nextBtn] = ctrl.querySelectorAll('.cst__step');
-  const wide = matchMedia('(min-width: 960px)');
-  const still = matchMedia('(prefers-reduced-motion: reduce)');
-  const name = (i) => `${tabs[i].querySelector('.cst__no').textContent} ${tabs[i].querySelector('.cst__name').textContent}`;
-  let current = 0;
-  let leaving = null;
-  let timer = 0;
+const root = document.getElementById('craft-build');
 
-  // ------------------------------------------------------------ semantics
-  list.setAttribute('role', 'tablist');
-  tabs.forEach((t, i) => {
-    t.parentElement.setAttribute('role', 'presentation');
-    t.setAttribute('role', 'tab');
-    t.setAttribute('aria-controls', panels[i].id);
-    panels[i].setAttribute('role', 'tabpanel');
-    panels[i].setAttribute('aria-labelledby', t.id);
-  });
-  const orient = () => list.setAttribute('aria-orientation', wide.matches ? 'vertical' : 'horizontal');
-  orient();
-  wide.addEventListener('change', orient);
+if (root) {
+  const $ = (s) => root.querySelector(s);
+  const svg = $('.ck');
+  const ctl = $('.ckx__ctl'), say = $('.ckx__say');
+  const steps = [...root.querySelectorAll('.ckx__step')];
+  const range = $('.ckx__range');
+  const N = steps.length;
+  const names = steps.map((b) => b.querySelector('.ckx__name').textContent.trim());
+  const nos = steps.map((b) => b.querySelector('.ckx__no').textContent.trim());
+  const items = [...root.querySelectorAll('.ckx__li')];
+  const texts = items.map((li) => li.querySelector('.ckx__li-t').textContent.trim());
+  const ids = items.map((li) => li.id);
+  const out = { readNo: $('.ckx__read-no'), readName: $('.ckx__read-name'), sayNo: $('.ckx__say-no'), sayName: $('.ckx__say-name'), sayText: $('.ckx__say-t') };
+  const field = svg.querySelector('.ck-iris-field'), edges = svg.querySelector('.ck-iris-edges'), side = svg.querySelector('.ck-iris-side');
+  const raysB = [...svg.querySelectorAll('.ck-ray-b')];
+  const sig = [...svg.querySelectorAll('.ck-sig')];
+  const pen = svg.querySelector('.ck-p--pen > g');
+  const penRest = pen ? pen.getAttribute('transform') : '';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const put = (el, text) => { if (el && el.textContent !== text) el.textContent = text; };
+  let stage = 0, open = IRIS.open, raf = 0;
 
-  // --------------------------------------------------------------- select
-  // The new stage fades in over the old one, which stays put underneath
-  // until the fade is done, so the picture never dips to the page.
-  function select(i, { focus = false, instant = false } = {}) {
-    i = Math.max(0, Math.min(panels.length - 1, i));
-    const was = current;
-    current = i;
-    sec.style.setProperty('--p', (i + 0.5) / panels.length);
-    sec.style.setProperty('--dir', i >= was ? 1 : -1);
-    tabs.forEach((t, k) => {
-      const on = k === i;
-      t.classList.toggle('is-on', on);
-      t.setAttribute('aria-selected', String(on));
-      t.tabIndex = on ? 0 : -1;
-    });
-    if (leaving !== null) panels[leaving].classList.remove('was-on');
-    clearTimeout(timer);
-    leaving = null;
-    const quiet = instant || still.matches || i === was;
-    sec.classList.toggle('is-instant', quiet);
-    panels.forEach((p, k) => {
-      const on = k === i;
-      p.classList.toggle('is-on', on);
-      p.tabIndex = on ? 0 : -1;
-    });
-    if (!quiet) {
-      leaving = was;
-      panels[was].classList.add('was-on');
-      timer = setTimeout(() => { panels[was].classList.remove('was-on'); leaving = null; }, 900);
-    }
-    prevBtn.disabled = i === 0;
-    nextBtn.disabled = i === panels.length - 1;
-    prevBtn.querySelector('.cst__step-l').textContent = i ? name(i - 1) : 'Previous';
-    nextBtn.querySelector('.cst__step-l').textContent = i < panels.length - 1 ? name(i + 1) : 'Next';
-    prevBtn.setAttribute('aria-label', i ? `Previous stage: ${name(i - 1)}` : 'Previous stage');
-    nextBtn.setAttribute('aria-label', i < panels.length - 1 ? `Next stage: ${name(i + 1)}` : 'Next stage');
-    if (focus) tabs[i].focus();
+  // ------------------------------------------------------------ the iris
+  function setIris(a) {
+    open = a;
+    const f = irisFace(a);
+    field.setAttribute('d', f.field);
+    edges.setAttribute('d', f.edges);
+    side.setAttribute('d', irisSide(a));
+    light();
+  }
+  // Without the iris every ray gets through; with it, only those inside
+  // the opening.
+  function light() {
+    for (const r of raysB) r.setAttribute('opacity', stage < 2 || rayClears(+r.dataset.h, open) ? '0.6' : '0');
+  }
+  // Keyframes: [ms, value], eased between.
+  function play(keys, fn, done) {
+    cancelAnimationFrame(raf);
+    const t0 = performance.now(), end = keys[keys.length - 1][0];
+    const tick = (now) => {
+      const t = Math.min(end, now - t0);
+      let i = 1;
+      while (i < keys.length - 1 && t > keys[i][0]) i++;
+      const [ta, va] = keys[i - 1], [tb, vb] = keys[i];
+      fn(va + (vb - va) * ease(tb > ta ? Math.max(0, Math.min(1, (t - ta) / (tb - ta))) : 1));
+      if (t < end) raf = requestAnimationFrame(tick); else if (done) done();
+    };
+    raf = requestAnimationFrame(tick);
+  }
+  const closeIris = () => play([[0, open], [450, 0.96], [1550, 0.2], [2350, IRIS.open]], setIris);
+
+  // ------------------------------------------------------- the signature
+  const lens = sig.map((p) => p.getTotalLength());
+  function signed(done = true) {
+    sig.forEach((p, i) => { p.style.strokeDasharray = done ? '' : `${lens[i]} ${lens[i]}`; p.style.strokeDashoffset = done ? '' : String(lens[i]); });
+    if (pen) pen.setAttribute('transform', penRest);
+  }
+  // The main line, then the stroke under it, the pen's nib on the line.
+  function sign() {
+    signed(false);
+    const total = lens[0] + lens[1];
+    play([[300, 0], [2300, 1]], (f) => {
+      const d = f * total;
+      const k = d < lens[0] ? 0 : 1, at = k ? d - lens[0] : d;
+      sig[0].style.strokeDashoffset = String(Math.max(0, lens[0] - d));
+      sig[1].style.strokeDashoffset = String(Math.max(0, lens[1] - (d - lens[0])));
+      if (pen) { const p = sig[k].getPointAtLength(Math.min(lens[k], at)); pen.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`); }
+    }, () => signed(true));
   }
 
-  // ---------------------------------------------------------------- input
-  // The rail's links would jump to the stacked stage; here they select it.
-  tabs.forEach((t, i) => t.addEventListener('click', (e) => { e.preventDefault(); select(i); }));
-  list.addEventListener('keydown', (e) => {
-    const n = panels.length;
-    const to = { ArrowRight: current + 1, ArrowDown: current + 1, ArrowLeft: current - 1, ArrowUp: current - 1, Home: 0, End: n - 1 }[e.key];
+  // ------------------------------------------------------------ a stage
+  function set(n, { focus = false, instant = false } = {}) {
+    n = Math.max(1, Math.min(N, n));
+    const quiet = instant || reduce.matches;
+    if (n === stage) {
+      // Choosing the same stage again plays it again.
+      if (!quiet && n === 2) closeIris();
+      if (!quiet && n === 5) sign();
+      if (focus) steps[n - 1].focus();
+      return;
+    }
+    stage = n;
+    root.classList.toggle('is-instant', quiet);
+    root.dataset.stage = String(n);
+    steps.forEach((b, i) => { b.setAttribute('aria-pressed', String(i + 1 === n)); b.classList.toggle('is-done', i + 1 < n); });
+    range.value = String(n);
+    range.setAttribute('aria-valuetext', `Stage ${n} of ${N}: ${names[n - 1]}`);
+    put(out.readNo, nos[n - 1]); put(out.readName, names[n - 1]);
+    put(out.sayNo, nos[n - 1]); put(out.sayName, names[n - 1]); put(out.sayText, texts[n - 1]);
+    cancelAnimationFrame(raf);
+    signed(true);
+    if (n === 2 && !quiet) closeIris(); else setIris(IRIS.open);
+    if (n === 5 && !quiet) sign();
+    if (focus) steps[n - 1].focus();
+  }
+
+  // ------------------------------------------------------------- input
+  steps.forEach((b, i) => b.addEventListener('click', () => set(i + 1)));
+  ctl.querySelector('.ckx__steps').addEventListener('keydown', (e) => {
+    const to = { ArrowRight: stage + 1, ArrowLeft: stage - 1, Home: 1, End: N }[e.key];
     if (to === undefined) return;
     e.preventDefault();
-    select((to + n) % n, { focus: true });
+    set(to, { focus: true });
   });
-  prevBtn.addEventListener('click', () => select(current - 1));
-  nextBtn.addEventListener('click', () => select(current + 1));
+  range.addEventListener('input', () => set(+range.value));
 
-  // Swipe: the picture follows the finger a little, and a clear sideways
-  // move changes the stage. A mostly vertical move is left to the page.
-  let x0 = 0, y0 = 0, dx = 0, axis = '';
-  stack.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; axis = '';
-  }, { passive: true });
-  stack.addEventListener('touchmove', (e) => {
-    if (e.touches.length !== 1) return;
-    const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
-    if (!axis && Math.hypot(mx, my) > 8) axis = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
-    if (axis !== 'x') return;
-    dx = mx;
-    // Resistance at the ends, where there is no stage to go to.
-    const end = (dx > 0 && current === 0) || (dx < 0 && current === panels.length - 1);
-    sec.classList.add('is-drag');
-    sec.style.setProperty('--drag', `${(end ? 0.12 : 0.3) * dx}px`);
-  }, { passive: true });
-  const release = () => {
-    if (axis === 'x') {
-      sec.classList.remove('is-drag');
-      sec.style.setProperty('--drag', '0px');
-      if (Math.abs(dx) > 48) select(current + (dx < 0 ? 1 : -1));
-    }
-    axis = ''; dx = 0;
-  };
-  stack.addEventListener('touchend', release, { passive: true });
-  stack.addEventListener('touchcancel', release, { passive: true });
-
-  // An address that names a stage (#craft-iris) opens that stage. The site
-  // shell then scrolls to it.
+  // An address that names a stage (#craft-iris) opens that stage.
   addEventListener('kessel:route', (e) => {
     if (e.detail.route !== 'craft') return;
     let id = location.hash.slice(1);
     try { id = decodeURIComponent(id); } catch { /* keep as is */ }
-    const k = panels.findIndex((p) => p.id === id);
-    if (k >= 0) select(k, { instant: true });
+    const k = ids.indexOf(id);
+    if (k >= 0) set(k + 1, { instant: true });
   });
 
-  select(0, { instant: true });
+  ctl.hidden = false;
+  say.hidden = false;
+  set(1, { instant: true });
+  root.classList.add('is-live');
 }

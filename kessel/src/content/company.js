@@ -1,62 +1,67 @@
 // The company page. Fixed facts: Pune, founded 2017, one optician builds
-// and signs each lens, three models (names are proposals). Everything else
-// is sample content for this concept, and the page says so in every
-// section: no names, awards, customers or prices, and every year after
-// 2017 is a sample date.
+// and signs each lens, three models that share one body (names are
+// proposals). Everything else is sample content for this concept, and the
+// page says so in every section that has any: no names, awards, customers
+// or prices, roles only, and every year after 2017 is a sample date.
 export const company = {
   sample: 'Sample content for this concept',
+
+  // The opening: the workshop bench at dusk, drawn in code
+  // (src/site/bench-svg.js), with four tools on it to tap.
   hero: {
     eyebrow: 'The company · Pune · since 2017',
-    // The headline is set in two lines beside the lens.
     title: ['Lenses made', 'one at a time'],
-    lead: 'Kessel Optics is a small lens maker, founded in Pune in 2017. Each lens is built by one optician, checked, and signed on the barrel before it leaves the workshop.',
-    image: 'hero-lens',
-    // Engraved round the lens, like the ring on the home page.
-    ring: 'KESSEL OPTICS · PUNE · EST. 2017 · ONE OPTICIAN PER LENS · SIGNED ON THE BARREL · ',
-  },
-
-  story: {
-    id: 'company-story', no: '01', short: 'Why', kicker: 'Why Kessel exists',
-    title: 'One person, start to finish',
-    line: 'We wanted the person who seats the first element to be the one who closes the barrel.',
-    body: [
-      'Kessel Optics started in Pune in 2017 with one bench and one idea: a lens should be built by one person, from the first element to the last screw.',
-      'Most lenses pass down a line. Each pair of hands does one step and never sees the finished lens, so a small fault can travel a long way before anyone notices.',
-      'Building the whole lens is slower. It takes weeks, not hours, and it is why there are only three models. But the person who built it knows how it should feel, and notices when it does not.',
-      'When the lens is done, they sign it. The signature is not decoration: it says who built the lens, and who to ask if it ever needs looking at.',
+    lead: 'A small lens maker in Pune. One optician builds each lens from the first element to the last screw, checks it and signs the barrel.',
+    hintJs: 'Tap a number on the bench to see who does what.',
+    hintNoJs: 'The numbers on the bench are explained under the drawing.',
+    // Read by screen readers in place of the drawing.
+    alt: 'A workshop bench at dusk. Through the window behind it, Pune: a hill with a fort, the city lit for the evening. A lamp hangs over the bench and pools warm light on a work mat. On the mat, left to right: a loupe on a cloth beside a lens element, an iris ring with a fine pin spanner, a lens lying on V-blocks with a pen signing its rear barrel, and a tray holding the three finished lenses of the set, alike but for their blue, amber and green rings.',
+    // One note per hotspot, in the order of the markers. Roles only.
+    notes: [
+      { title: 'The loupe', role: 'Glass and coatings',
+        body: 'Each element is ground, polished and coated, then looked at under the loupe before it goes anywhere near a barrel. A speck in the coating or a mark on the edge sends it back.' },
+      { title: 'The iris tool', role: 'The machinist and the optician',
+        body: 'The machinist turns the iris ring and the pins its blades pivot on. The optician seats it with a fine pin spanner, a blade at a time, until it runs from a pinhole to fully open without catching.' },
+      { title: 'The signing pen', role: 'The optician',
+        body: 'One optician builds each lens, start to finish. When every check has passed they sign the rear barrel: the last thing that happens at the bench, and the name to ask for if the lens ever comes back.' },
+      { title: 'The finished lens tray', role: 'The inspector',
+        body: 'A second pair of eyes reads the test chart and can send any lens back to the bench. What passes waits here, capped: three lenses on one body, told apart by the engraving, the distance scale and the ring.' },
     ],
   },
 
   timeline: {
-    id: 'company-timeline', no: '02', short: 'Timeline', kicker: 'Timeline',
+    id: 'company-timeline', no: '01', kicker: 'Timeline',
     title: 'From one bench, 2017 onward',
-    note: 'Sample years: only the founding in 2017 is fixed. Lens names are proposals for this concept.',
-    // Five entries, two years apart, so the scrubber's ruler from 2017 to
-    // 2025 places them evenly. `short` labels the year on the scrubber.
+    note: 'Sample dates: only the founding in 2017 is fixed. Lens names are proposals.',
+    help: 'Drag along the scale, or use the arrow keys.',
+    // Two years apart, so the scale from 2017 to 2025 places them evenly.
+    // `icon` is the drawing that stands at that year on the scale.
     entries: [
-      { year: 2017, short: 'Founded', title: 'Founded in Pune', image: 'beauty',
-        body: 'Kessel Optics starts in Pune with one bench and a plan for a single lens, built by one person from start to finish.' },
-      { year: 2019, short: 'First lens', title: 'The first lens, signed', image: 'signed',
-        body: 'After two years of prototypes the first lens is finished: the standard model, proposed as Parvati. Its optician signs the barrel, as every optician has since.' },
-      { year: 2021, short: 'New workshop', title: 'A larger workshop', image: 'exploded-wide',
-        body: 'The work moves to a larger workshop in Pune, with a separate clean bench for the glass and room to set a test chart at a proper distance.' },
-      { year: 2023, short: 'Second model', title: 'The wide model', image: 'lens-1',
-        body: 'The wide model, proposed as Shaniwar, joins the range on the same body as the first, so the two swap on a rig; built by the same hands and put through the same checks.' },
-      { year: 2025, short: 'Third model', title: 'The long model', image: 'lineup',
-        body: 'The long model, proposed as Sinhagad, makes three: a matched set, wide, standard and long on one body, and no plans for a fourth.' },
+      { year: 2017, short: 'Founded', icon: 'bench', title: 'Founded in Pune',
+        line: 'Kessel Optics starts in Pune with one bench and a plan for a single lens, built by one person.' },
+      { year: 2019, short: 'First lens', icon: 'parvati', title: 'The first lens, signed',
+        line: 'The standard model, proposed as Parvati, is finished and its optician signs the barrel.' },
+      { year: 2021, short: 'Workshop', icon: 'workshop', title: 'A larger workshop',
+        line: 'The work moves to a larger workshop in Pune, with a clean bench for the glass and room for a test chart.' },
+      { year: 2023, short: 'Wide', icon: 'shaniwar', title: 'The wide model joins',
+        line: 'The wide model, proposed as Shaniwar, is built on the same body as the first, so the two swap on a rig.' },
+      { year: 2025, short: 'Long', icon: 'sinhagad', title: 'Three: a matched set',
+        line: 'The long model, proposed as Sinhagad, makes three: a matched set, and no plans for a fourth.' },
     ],
   },
 
-  work: {
-    id: 'company-work', no: '03', short: 'Checks', kicker: 'How we work',
-    title: 'Before a lens leaves the bench',
-    points: [
-      { title: 'One optician per lens', body: 'A lens is assembled by one optician, from the first element to the last screw. Others make parts and check the work, but the lens itself never changes hands.' },
-      { title: 'The signing', body: 'When every check has passed, the optician signs the rear barrel. It is the last thing that happens at the bench, and it stays on the lens for good.' },
-    ],
-    checksTitle: 'The checks',
-    checksHelp: 'Tick them off one by one, or run them in order.',
-    checks: [
+  // Fixed facts, set large like engraving.
+  facts: [
+    { label: 'Workshop', value: 'Pune' },
+    { label: 'Since', value: '2017' },
+    { label: 'Models', value: 'Three' },
+  ],
+
+  checks: {
+    id: 'company-checks', no: '02', kicker: 'Before a lens leaves',
+    title: 'Six checks, then the signature',
+    help: 'Tick them off one by one, or run them in order. Each lights its part of the lens.',
+    list: [
       { name: 'Centring', line: 'Every element sits on one axis. The lens turns on a stage and the image is watched for any wobble.' },
       { name: 'Focus scale', line: 'Each engraved distance is checked against a target set at that distance.' },
       { name: 'Iris travel', line: 'The iris runs from a pinhole to fully open and back, with no blade catching.' },
@@ -71,27 +76,9 @@ export const company = {
     signed: 'Signed. Ready to leave the workshop.',
   },
 
-  workshop: {
-    id: 'company-workshop', no: '04', short: 'Workshop', kicker: 'The workshop',
-    title: 'A small workshop in Pune',
-    // Read out like the film's focus readout: a label, a value, a note.
-    facts: [
-      { label: 'Workshop', value: 'Pune', note: 'one workshop, India' },
-      { label: 'Since', value: '2017', note: 'independent from the start' },
-      { label: 'Models', value: '3', note: 'wide, standard and long' },
-      { label: 'Each lens', value: '1', note: 'optician, start to finish' },
-    ],
-    values: [
-      { title: 'A small range', body: 'Three models and no catalogue. A short list means every lens is built the same careful way, every time.' },
-      { title: 'One pair of hands', body: 'The optician who seats the first element closes the barrel. Nothing is handed down a line for someone else to finish.' },
-      { title: 'Built to come back', body: 'Every lens can be opened again. For service it returns to the workshop where it was made, and the signature says whose bench it came from.' },
-    ],
-  },
-
   faq: {
-    id: 'company-faq', no: '05', short: 'Questions', kicker: 'Questions',
+    id: 'company-faq', no: '03', kicker: 'Questions',
     title: 'Plain answers',
-    answerTag: 'Sample answer',
     items: [
       { q: 'How long does one lens take?',
         a: 'About three weeks from the first element to the signature. Most of that is waiting: cement and coatings need time to settle, and some checks are repeated the next day.' },
@@ -100,27 +87,11 @@ export const company = {
       { q: 'What does the signature mean?',
         a: 'It says who built the lens and who answers for it. It goes on only after the lens has passed every check, so it is also a record that the checks were done.' },
       { q: 'Why only three models?',
-        a: 'Wide, standard and long cover most of what one camera needs. A short range means each lens can be built the same careful way every time.' },
+        a: 'Wide, standard and long cover most of what one camera needs, and all three share one body: the same barrel, focus ring and mount, so they swap on a rig without changing anything else. A short range means each lens is built the same careful way every time.' },
       { q: 'Is every lens really built by one person?',
         a: 'Yes. Others grind the glass, machine the barrel and check the work, but one optician assembles each lens from start to finish.' },
       { q: 'How do I ask about a lens?',
         a: 'Write to the studio or call. It helps to say which lens you are asking about and what you shoot.', link: { route: 'contact', label: 'Contact the studio' } },
-    ],
-  },
-
-  roles: {
-    id: 'company-people', no: '06', short: 'People', kicker: 'The people',
-    title: 'Who builds your lens',
-    note: 'Roles only. The people are not named.',
-    list: [
-      { name: 'The optician', does: 'builds and signs it', image: 'd-sign',
-        body: 'Assembles the lens from the first element to the last screw, runs it through the checks and signs the barrel. One optician per lens.' },
-      { name: 'Glass and coatings', does: 'grinds and coats the glass', image: 'd-glass',
-        body: 'Grinds, polishes and coats each element, then hands them over in the order the light will meet them.' },
-      { name: 'The machinist', does: 'machines the barrel', image: 'd-knurl',
-        body: 'Turns the barrel, the focus ring and the mount, and cuts the engraved distance scale.' },
-      { name: 'The inspector', does: 'checks it', image: 'd-iris',
-        body: 'A second pair of eyes. Reads the test chart, checks the centring and the scale, and can send a lens back to the bench.' },
     ],
   },
 

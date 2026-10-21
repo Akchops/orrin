@@ -1,10 +1,10 @@
-// The company page's interactions (its markup is src/site/pages/company.js).
-// The timeline becomes a year scrubber on wide screens and a vertical
-// stepper on phones; the checks gain a button that runs them in order; the
-// questions open and close with an eased height; the role cards show their
-// description on hover or a tap. Without this script every part still
-// reads: all the years in a list, real checkboxes, native <details> and
-// every description shown.
+// The company page's interactions (its markup is src/site/pages/company.js,
+// its drawings src/site/bench-svg.js). The bench's markers open a note
+// beside them; the timeline's scale scrubs and snaps to its entries; the
+// checks gain a button that runs them in order; the questions open and
+// close with an eased height. Without this script every part still reads:
+// the notes listed under the drawing, every year listed, real checkboxes
+// and native <details>.
 const page = document.getElementById('company');
 const $ = (s, el = page) => el.querySelector(s);
 const $$ = (s, el = page) => [...el.querySelectorAll(s)];
@@ -12,171 +12,143 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-if (page) { timeline(); checks(); questions(); roles(); }
+if (page) { bench(); timeline(); checks(); questions(); }
+
+// ------------------------------------------------------------- bench
+// Each marker (a link to its note in the list) becomes a button that opens
+// the note as a card beside it: above the marker when there is room, below
+// it otherwise, kept inside the page's gutters. One open at a time; the
+// close button, Escape, a tap elsewhere or moving focus away closes it.
+function bench() {
+  const root = $('[data-bench]');
+  if (!root) return;
+  const stage = $('.bn__stage', root);
+  const list = $('.bn__notes', root);
+  const notes = $$('.bn__note', root);
+  let open = -1;
+
+  list.setAttribute('role', 'presentation');
+  notes.forEach((nt) => {
+    nt.setAttribute('role', 'dialog');
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'bn__close';
+    x.setAttribute('aria-label', `Close the note: ${$('.bn__note-t', nt).textContent}`);
+    x.addEventListener('click', () => close(true));
+    nt.append(x);
+  });
+  const spots = $$('a.bn__spot', root).map((a, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = a.className;
+    b.dataset.i = String(i);
+    b.dataset.side = a.dataset.side;
+    b.style.cssText = a.style.cssText;
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', notes[i].id);
+    b.append(...a.childNodes);
+    a.replaceWith(b);
+    b.addEventListener('click', () => (open === i ? close(true) : show(i)));
+    return b;
+  });
+
+  function place() {
+    if (open < 0) return;
+    // Positions are relative to the notes layer, which covers the hero.
+    const nt = notes[open], s = spots[open].getBoundingClientRect(), R = list.getBoundingClientRect(), st = stage.getBoundingClientRect();
+    const cs = getComputedStyle(document.body);
+    const gl = parseFloat(cs.paddingLeft) || 16, gr = parseFloat(cs.paddingRight) || 16;
+    const head = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) || 4.25) * 16;
+    const w = nt.offsetWidth, h = nt.offsetHeight, gap = 12;
+    const cx = s.left + s.width / 2 - R.left;
+    const left = clamp(cx - w / 2, gl, R.width - gr - w);
+    // Above when it fits under the header and inside the drawing's top.
+    const above = s.top + 5 - gap - h >= Math.max(head + 8, st.top + 6);
+    const top = above ? s.top + 5 - R.top - gap - h : s.bottom - 5 - R.top + gap;
+    nt.style.left = `${Math.round(left)}px`;
+    nt.style.top = `${Math.round(top)}px`;
+    nt.style.setProperty('--ax', `${Math.round(clamp(cx - left, 18, w - 18))}px`);
+    nt.style.setProperty('--dy', above ? '6px' : '-6px');
+    nt.dataset.side = above ? 'above' : 'below';
+  }
+  function show(i) {
+    if (open >= 0) close(false);
+    open = i;
+    spots[i].setAttribute('aria-expanded', 'true');
+    notes[i].classList.add('is-open');
+    place();
+    notes[i].focus({ preventScroll: true });
+    const r = notes[i].getBoundingClientRect();
+    if (r.bottom > innerHeight || r.top < 0) notes[i].scrollIntoView({ block: 'nearest', behavior: reduce.matches ? 'auto' : 'smooth' });
+  }
+  function close(focus) {
+    if (open < 0) return;
+    const i = open;
+    open = -1;
+    spots[i].setAttribute('aria-expanded', 'false');
+    notes[i].classList.remove('is-open');
+    if (focus) spots[i].focus({ preventScroll: true });
+  }
+  const inside = (el) => open >= 0 && el instanceof Node && (notes[open].contains(el) || spots[open].contains(el));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open >= 0) { e.preventDefault(); close(true); } });
+  document.addEventListener('pointerdown', (e) => { if (open >= 0 && !inside(e.target)) close(false); }, true);
+  document.addEventListener('focusin', (e) => { if (open >= 0 && !inside(e.target)) close(false); });
+  addEventListener('resize', place, { passive: true });
+  addEventListener('kessel:route', () => close(false));
+  root.classList.add('is-live');
+}
 
 // ---------------------------------------------------------- timeline
-// One state, two presentations. Wide screens: a tab per year on a ruler,
-// with an index mark that follows the active year and can be dragged; one
-// entry shows at a time. Phones: each year's heading becomes a button and
-// one entry is open at a time, a rail down the left marking the way.
+// A range input lies over the whole scale (its own thumb invisible; the
+// amber index shows the value). Dragging moves the index freely and the
+// entry changes as it passes each year; letting go snaps to the nearest
+// entry. The arrow keys, Page Up/Down, Home and End step from entry to
+// entry. The current entry shows beside the scale and is announced.
 function timeline() {
-  const tl = $('[data-co-tl]');
+  const tl = $('[data-tl]');
   if (!tl) return;
-  const scrub = $('.co-tl__scrub', tl);
-  const track = $('.co-tl__track', tl);
-  const list = $('.co-tl__list', tl);
-  const tabs = $$('[role="tab"]', tl);
-  const items = $$('.co-tl__item', tl);
-  const panels = items.map((li) => $('.co-tl__panel', li));
-  const heads = items.map((li) => $('.co-tl__head', li));
-  const at = tabs.map((t) => parseFloat(t.style.getPropertyValue('--p')) || 0);
-  const wide = matchMedia('(min-width: 900px)');
-  const toggles = [];
-  let active = 0;
-  let shut = false; // phones: the open entry can be closed again
-  let mode = '';
-  let dragged = false;
+  const scale = $('.tl__scale', tl), input = $('.tl__in', tl), live = $('.tl__live', tl);
+  const entries = $$('.tl__entry', tl), icons = $$('.tl__ico', tl);
+  const years = $$('.tl__y.is-entry', tl), feet = $$('.tl__feet span', tl);
+  const P = entries.map((e) => Number(e.dataset.at));
+  let cur = -1;
+  const nearest = (p) => P.reduce((b, v, i) => (Math.abs(v - p) < Math.abs(P[b] - p) ? i : b), 0);
+  const say = (i) => `${$('.tl__year', entries[i]).textContent}: ${$('.tl__title', entries[i]).textContent}`;
 
-  function render() {
-    items.forEach((li, i) => {
-      li.classList.toggle('is-active', i === active);
-      li.classList.toggle('is-past', i < active);
-      li.classList.toggle('is-open', i === active && (mode === 'tabs' || !shut));
-    });
-    if (mode === 'tabs') {
-      tabs.forEach((t, i) => { t.setAttribute('aria-selected', String(i === active)); t.tabIndex = i === active ? 0 : -1; });
-      panels.forEach((p, i) => { p.inert = i !== active; });
-      track.style.setProperty('--at', at[active]);
-    } else {
-      toggles.forEach((b, i) => b.setAttribute('aria-expanded', String(i === active && !shut)));
-    }
+  function show(i, announce) {
+    if (i === cur) return;
+    cur = i;
+    entries.forEach((e, j) => e.classList.toggle('is-active', j === i));
+    icons.forEach((e, j) => e.classList.toggle('is-later', j > i));
+    years.forEach((e, j) => e.classList.toggle('is-current', j === i));
+    feet.forEach((e, j) => e.classList.toggle('is-current', j === i));
+    input.setAttribute('aria-valuetext', say(i));
+    if (announce) live.textContent = `${say(i)}. ${$('.tl__line', entries[i]).textContent}`;
   }
-
-  function select(i, focus) {
-    active = clamp(i, 0, items.length - 1);
-    shut = false;
-    render();
-    if (focus) (mode === 'tabs' ? tabs : toggles)[active].focus();
+  function snap(i, announce = true) {
+    tl.classList.remove('is-dragging');
+    scale.style.setProperty('--at', P[i]);
+    input.value = String(Math.round(P[i] * 1000));
+    show(i, announce);
   }
-
-  // Each year's heading holds the stepper's button on phones and is plain
-  // text on wide screens, where the tabs do the job.
-  function setMode() {
-    const m = wide.matches ? 'tabs' : 'steps';
-    if (m === mode) return;
-    mode = m;
-    tl.dataset.mode = m;
-    scrub.hidden = m !== 'tabs';
-    if (m === 'tabs') list.setAttribute('role', 'none'); else list.removeAttribute('role');
-    items.forEach((li, i) => {
-      const p = panels[i], h = heads[i];
-      if (m === 'tabs') {
-        const b = toggles[i];
-        if (b && b.parentNode === h) { h.append(...b.childNodes); b.remove(); }
-        li.setAttribute('role', 'none');
-        p.setAttribute('role', 'tabpanel');
-        p.setAttribute('aria-labelledby', tabs[i].id);
-      } else {
-        li.removeAttribute('role');
-        p.removeAttribute('role');
-        p.removeAttribute('aria-labelledby');
-        p.inert = false;
-        let b = toggles[i];
-        if (!b) {
-          b = toggles[i] = document.createElement('button');
-          b.type = 'button';
-          b.className = 'co-tl__toggle';
-          b.setAttribute('aria-controls', `${p.id}-body`);
-          b.addEventListener('click', () => {
-            if (i === active) { shut = !shut; render(); } else select(i);
-          });
-        }
-        b.append(...h.childNodes);
-        h.append(b);
-      }
-    });
-    render();
-  }
-
-  // Tabs: arrows step through the years (left/right, or up/down), Home and
-  // End jump to the ends; the year under focus is the one shown.
-  const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
-  $('[role="tablist"]', tl).addEventListener('keydown', (e) => {
-    const i = e.key in step ? active + step[e.key] : e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : null;
+  input.addEventListener('input', () => {
+    const p = Number(input.value) / 1000;
+    tl.classList.add('is-dragging');
+    scale.style.setProperty('--at', p);
+    show(nearest(p), false);
+  });
+  input.addEventListener('change', () => { const i = nearest(Number(input.value) / 1000); cur = -1; snap(i); });
+  input.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowUp: 1, PageUp: 1, ArrowLeft: -1, ArrowDown: -1, PageDown: -1 }[e.key];
+    const i = step ? cur + step : e.key === 'Home' ? 0 : e.key === 'End' ? P.length - 1 : null;
     if (i === null) return;
     e.preventDefault();
-    select(i, true);
+    const j = clamp(i, 0, P.length - 1);
+    if (j !== cur) snap(j);
   });
-  tabs.forEach((t, i) => t.addEventListener('click', () => { if (!dragged) select(i); }));
-
-  // Stepper: up and down move between the years' buttons.
-  list.addEventListener('keydown', (e) => {
-    const i = toggles.indexOf(document.activeElement);
-    if (mode !== 'steps' || i < 0) return;
-    const j = e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? toggles.length - 1 : null;
-    if (j === null) return;
-    e.preventDefault();
-    toggles[clamp(j, 0, toggles.length - 1)].focus();
-  });
-
-  // Earlier and later, inside each entry. Focus follows to the entry now
-  // shown, since the one it was in has just closed.
-  for (const b of $$('.co-tl__go button', tl)) {
-    b.addEventListener('click', () => {
-      const d = Number(b.dataset.go);
-      select(active + d);
-      if (mode === 'steps') { toggles[active].focus({ preventScroll: true }); keepInView(panels[active]); return; }
-      const p = panels[active], g = $(`[data-go="${d}"]`, p) || $('[data-go]', p);
-      g.focus({ preventScroll: true });
-      g.scrollIntoView({ block: 'nearest' });
-    });
-  }
-  for (const g of $$('.co-tl__go', tl)) g.hidden = false;
-
-  // The open entry's heading stays on screen when the one above it closes.
-  function keepInView(el) {
-    setTimeout(() => {
-      const r = el.getBoundingClientRect();
-      const top = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
-      if (r.top < top || r.top > innerHeight * 0.55) el.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
-    }, reduce.matches ? 0 : 520);
-  }
-
-  // Scrubbing: drag along the ruler and the index mark follows the pointer,
-  // the entry changing as it passes each year; let go and it settles on
-  // that year. A plain click on the ruler jumps to the nearest year.
-  const nearest = (p) => at.reduce((b, v, i) => (Math.abs(v - p) < Math.abs(at[b] - p) ? i : b), 0);
-  track.addEventListener('pointerdown', (e) => {
-    if (mode !== 'tabs' || e.button !== 0) return;
-    const r = track.getBoundingClientRect();
-    const pAt = (x) => clamp((x - r.left) / r.width, 0, 1);
-    const x0 = e.clientX;
-    let moving = false;
-    const move = (ev) => {
-      if (!moving && Math.abs(ev.clientX - x0) < 6) return;
-      if (!moving) { moving = true; track.setPointerCapture(e.pointerId); tl.classList.add('is-dragging'); }
-      const p = pAt(ev.clientX), n = nearest(p);
-      if (n !== active) { active = n; render(); }
-      track.style.setProperty('--at', p);
-    };
-    const end = (ev) => {
-      track.removeEventListener('pointermove', move);
-      track.removeEventListener('pointerup', end);
-      track.removeEventListener('pointercancel', end);
-      if (moving) {
-        tl.classList.remove('is-dragging');
-        dragged = true;
-        setTimeout(() => { dragged = false; });
-        select(active, true);
-      } else if (ev.type === 'pointerup' && !ev.target.closest('[role="tab"]')) select(nearest(pAt(ev.clientX)), true);
-    };
-    track.addEventListener('pointermove', move);
-    track.addEventListener('pointerup', end);
-    track.addEventListener('pointercancel', end);
-  });
-
-  wide.addEventListener('change', setMode);
-  setMode();
+  input.hidden = false;
+  $('.tl__help', tl).hidden = false;
+  snap(0, false);
   tl.classList.add('is-ready');
 }
 
@@ -187,10 +159,9 @@ function timeline() {
 function checks() {
   const box = $('[data-co-checks]');
   if (!box) return;
-  const inputs = $$('.co-check__box', box);
-  const rows = inputs.map((i) => i.closest('.co-check'));
-  const run = $('.co-checks__run', box);
-  const count = $('.co-checks__count', box);
+  const inputs = $$('.ck-tile__box', box);
+  const run = $('.ck__run', box);
+  const count = $('.ck__count', box);
   let token = 0; // a newer run, or a tick by hand, stops an older run
 
   function update() {
@@ -204,7 +175,7 @@ function checks() {
   function stop() {
     token++;
     box.classList.remove('is-running');
-    rows.forEach((r) => r.classList.remove('is-running'));
+    inputs.forEach((i) => i.closest('.ck-tile').classList.remove('is-running'));
   }
 
   run.addEventListener('click', () => {
@@ -220,7 +191,7 @@ function checks() {
       if (t !== token) return;
       const i = todo[k];
       if (!i) { box.classList.remove('is-running'); update(); return; }
-      const row = i.closest('.co-check');
+      const row = i.closest('.ck-tile');
       row.classList.add('is-running');
       setTimeout(() => {
         if (t !== token) return;
@@ -261,33 +232,4 @@ function questions() {
       };
     });
   }
-}
-
-// ------------------------------------------------------------- roles
-// Each card's heading becomes a button that covers the card: a tap opens
-// or closes the description (hover shows it too, where there is a mouse),
-// and Escape closes it again.
-function roles() {
-  const list = $('.co-roles');
-  if (!list) return;
-  const set = (card, open) => {
-    card.classList.toggle('is-open', open);
-    $('.co-role__btn', card).setAttribute('aria-expanded', String(open));
-  };
-  for (const card of $$('.co-role', list)) {
-    const h = $('.co-role__head', card), desc = $('.co-role__desc', card);
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'co-role__btn';
-    b.setAttribute('aria-expanded', 'false');
-    b.setAttribute('aria-controls', desc.id);
-    b.append(...h.childNodes);
-    h.append(b);
-    b.addEventListener('click', () => set(card, !card.classList.contains('is-open')));
-  }
-  list.addEventListener('keydown', (e) => {
-    const card = e.key === 'Escape' && e.target.closest('.co-role.is-open');
-    if (card) set(card, false);
-  });
-  list.classList.add('is-ready');
 }

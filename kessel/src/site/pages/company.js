@@ -1,16 +1,19 @@
-// Company: who Kessel is and how a lens is made, all of it sample content
-// for this concept (each section carries the tag). The lens close up at
-// full height with the headline beside it opens the page; then the story,
-// the timeline (a year scrubber on wide screens, a vertical stepper on
-// phones), the checks a lens passes before the optician signs it, the
-// workshop in figures, the questions and the people by role. Contact ends
-// it. Everything reads without JS: src/site/company.js only adds the
-// interactions.
-import { site, esc, paras, img, footer, route } from '../parts.js';
+// Company: who Kessel is, drawn more than told. The page opens on the
+// workshop bench at dusk (src/site/bench-svg.js), four tools on it to tap;
+// then a timeline scrubbed along a scale engraved like a lens's distance
+// scale, the facts set large, the six checks lighting a drawn lens, the
+// questions, and contact. Everything reads without JS (markers keyed to a
+// numbered list, every year listed, real checkboxes, native <details>);
+// src/site/company.js only adds the interactions. Each section with
+// invented content carries the sample tag.
+import { site, esc, footer, route } from '../parts.js';
 import { company } from '../../content/company.js';
+import { benchSVG, checksSVG, iconSVG, SPOTS, BENCH } from '../bench-svg.js';
 
 const C = company;
 const sample = `<p class="co-sample">${esc(C.sample)}</p>`;
+const pct = (v, of) => +(v / of * 100).toFixed(2);
+const pad = (i) => String(i).padStart(2, '0');
 
 // Section head: number and kicker, the heading, the sample tag.
 const head = (s, extra = '') => `<div class="co-head">
@@ -19,188 +22,148 @@ const head = (s, extra = '') => `<div class="co-head">
     ${sample}${extra}
   </div>`;
 
-// The optician's signature as an SVG stroke: the same deterministic pen
-// path that src/app/textures.js engraves on the rear barrel, so the page
-// signs with the hand that is on the lens.
-function signature() {
-  const pts = [[30, 300]];
-  for (let i = 0; i < 220; i++) {
-    const t = i / 220;
-    pts.push([30 + t * 240 + Math.sin(t * 29) * 12 + Math.sin(t * 7.3) * 7,
-      300 + Math.sin(t * 21 + 1.2) * 34 * (1 - t * 0.5) + Math.cos(t * 9.1) * 9 - t * 14]);
-  }
-  const d = 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L');
-  return `<svg class="co-sign" viewBox="12 250 276 126" aria-hidden="true" focusable="false">
-        <path class="co-sign__pen" pathLength="1" d="${d}"/>
-        <path class="co-sign__rule" pathLength="1" d="M24 362C100 374 190 352 276 360"/>
-      </svg>`;
-}
-
-// ------------------------------------------------------------- hero
-function hero() {
+// ------------------------------------------------------------- bench
+// #workshop, the old Workshop page, lands here (its id resolves to this
+// route, and the router focuses the h1 inside it). The copy comes first in
+// the markup, so the heading leads for screen readers; the drawing comes
+// first on screen.
+function bench() {
   const H = C.hero;
-  const sections = [C.story, C.timeline, C.work, C.workshop, C.faq, C.roles];
-  const index = sections.map((s) => `<li><a href="#${s.id}"><span class="co-index__no">${esc(s.no)}</span><span class="co-index__name">${esc(s.short)}</span></a></li>`).join('');
-  // #workshop, the old Workshop page, lands here (its id resolves to this
-  // route, and the router focuses the h1 inside it).
-  return `<header class="co-hero" id="workshop">
-  <div class="co-hero__fig">
-    <svg class="co-hero__ring" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
-      <defs><path id="company-ring" d="M500,500 m-440,0 a440,440 0 1,1 880,0 a440,440 0 1,1 -880,0"/></defs>
-      <circle cx="500" cy="500" r="472"/>
-      <text><textPath href="#company-ring">${esc(H.ring.repeat(2))}</textPath></text>
-    </svg>
-    <figure>${img(H.image, { lazy: false })}</figure>
+  const spots = SPOTS.map((s, i) => `<a class="bn__spot" href="#company-note-${i + 1}" data-i="${i}" data-side="${s.side}" style="left:${pct(s.x, BENCH.w)}%;top:${pct(s.y, BENCH.h)}%"><span class="bn__num" aria-hidden="true">${i + 1}</span><span class="bn__lbl"><span class="sr-only">${i + 1}. </span>${esc(H.notes[i].title)}</span></a>`).join('');
+  const notes = H.notes.map((nt, i) => `<li class="bn__note" id="company-note-${i + 1}" data-i="${i}" tabindex="-1" aria-labelledby="company-note-${i + 1}-t">
+      <span class="bn__note-no" aria-hidden="true">${i + 1}</span>
+      <div class="bn__note-body">
+        <h2 class="bn__note-t" id="company-note-${i + 1}-t">${esc(nt.title)}</h2>
+        <p class="bn__note-role">${esc(nt.role)}</p>
+        <p class="bn__note-p">${esc(nt.body)}</p>
+      </div>
+    </li>`).join('\n    ');
+  return `<header class="bn" id="workshop" data-bench>
+  <div class="bn__copy">
+    <div class="bn__meta"><p class="eyebrow">${esc(H.eyebrow)}</p>${sample}</div>
+    <h1 id="company-title" tabindex="-1">${H.title.map((l) => `<span class="bn__l">${esc(l)}</span>`).join(' ')}</h1>
+    <p class="bn__lead">${esc(H.lead)}</p>
+    <p class="bn__hint"><span class="bn__hint-js">${esc(H.hintJs)}</span><span class="bn__hint-nojs">${esc(H.hintNoJs)}</span></p>
   </div>
-  <div class="co-hero__copy wrap">
-    <div class="co-hero__meta">
-      <p class="eyebrow">${esc(H.eyebrow)}</p>
-      ${sample}
+  <div class="bn__stage" data-crop="scene">
+    <div class="bn__world">
+      ${benchSVG('company-bench', H.alt)}
+      <div class="bn__spots" role="group" aria-label="On the bench">${spots}</div>
     </div>
-    <h1 id="company-title" tabindex="-1">${H.title.map((l) => `<span class="co-hero__l">${esc(l)}</span>`).join(' ')}</h1>
-    <p class="co-hero__lead">${esc(H.lead)}</p>
-    <nav class="co-index" aria-label="On this page"><ol>${index}</ol></nav>
   </div>
+  <ol class="bn__notes" aria-label="Notes on the bench">
+    ${notes}
+  </ol>
 </header>`;
 }
 
-// ------------------------------------------------------------ story
-function story() {
-  const S = C.story;
-  return `<section class="co-sec co-story wrap" id="${S.id}" aria-labelledby="${S.id}-title">
-  ${head(S)}
-  <div class="co-story__text">
-    <p class="co-story__line">${esc(S.line)}</p>
-    <div class="co-story__body">${paras(S.body)}</div>
+// ---------------------------------------------------------- timeline
+// The scale runs from the first year to the last, ticked like a distance
+// scale, with a drawing standing at each entry. Without JS: the scale as a
+// picture and every entry listed. With JS: a range input over the scale
+// scrubs it (pointer, touch, arrow keys), snapping to the entries, and
+// only the current entry shows beside it.
+function timeline() {
+  const T = C.timeline, E = T.entries;
+  const y0 = E[0].year, y1 = E[E.length - 1].year;
+  const at = (y) => +((y - y0) / (y1 - y0)).toFixed(4);
+  const years = [];
+  for (let y = y0; y <= y1; y++) {
+    const e = E.find((x) => x.year === y);
+    years.push(`<span class="tl__y${e ? ' is-entry' : ''}" style="--p:${at(y)}"${e ? ` data-i="${E.indexOf(e)}"` : ''}>${y}</span>`);
+  }
+  // Ticks every quarter year, longer at each year, like a distance scale.
+  const ticks = [];
+  for (let q = 0; q <= (y1 - y0) * 4; q++) ticks.push(`<i${q % 4 ? '' : ' class="is-year"'} style="--p:${+(q / ((y1 - y0) * 4)).toFixed(4)}"></i>`);
+  const icons = E.map((e, i) => `<li class="tl__ico" style="--p:${at(e.year)}" data-i="${i}">${iconSVG(e.icon)}</li>`).join('');
+  const feet = E.map((e, i) => `<span style="--p:${at(e.year)}" data-i="${i}">${esc(e.short)}</span>`).join('');
+  const items = E.map((e, i) => `<li class="tl__entry" data-i="${i}" data-at="${at(e.year)}">
+        <p class="tl__year">${e.year}</p>
+        <div class="tl__txt">
+          <h3 class="tl__title">${esc(e.title)}</h3>
+          <p class="tl__line">${esc(e.line)}</p>
+          <p class="tl__tag">${i === 0 ? 'Founding year' : 'Sample date'}</p>
+        </div>
+      </li>`).join('\n      ');
+  return `<section class="co-sec tl wrap" id="${T.id}" aria-labelledby="${T.id}-title" data-tl>
+  ${head(T, `\n    <p class="co-note">${esc(T.note)}</p>`)}
+  <div class="tl__body">
+    <div class="tl__scale" style="--at:0">
+      <ol class="tl__icons" aria-hidden="true">${icons}</ol>
+      <div class="tl__band" aria-hidden="true">
+        <span class="tl__ticks">${ticks.join('')}</span>
+        ${years.join('')}
+      </div>
+      <div class="tl__feet" aria-hidden="true">${feet}</div>
+      <span class="tl__index" aria-hidden="true"></span>
+      <label class="sr-only" for="${T.id}-in">Year on the timeline</label>
+      <input class="tl__in" id="${T.id}-in" type="range" min="0" max="1000" step="1" value="0" hidden>
+    </div>
+    <div class="tl__read">
+      <p class="tl__help" hidden>${esc(T.help)}</p>
+      <ol class="tl__list">
+      ${items}
+      </ol>
+    </div>
+    <p class="sr-only tl__live" aria-live="polite"></p>
   </div>
 </section>`;
 }
 
-// --------------------------------------------------------- timeline
-// One list of entries. Without JS it is all of them, in order. With JS,
-// wide screens get the scrubber above it (a tab per year on a ruler from
-// the first year to the last) and show one entry at a time; phones get a
-// vertical stepper, one entry open at a time.
-function timeline() {
-  const T = C.timeline, E = T.entries;
-  const y0 = E[0].year, y1 = E[E.length - 1].year;
-  const at = (y) => ((y - y0) / (y1 - y0)).toFixed(4);
-  const label = (e) => `${e.year}, ${e.title}`;
-  const tabs = E.map((e) => `<button class="co-tl__tab" type="button" role="tab" id="company-tab-${e.year}" aria-controls="company-y${e.year}" aria-selected="false" tabindex="-1" style="--p:${at(e.year)}"><span class="co-tl__tab-y">${e.year}</span><span class="co-tl__tab-t">${esc(e.short)}</span></button>`).join('');
-  // The years between the entries, marked on the ruler.
-  const years = [];
-  for (let y = y0 + 1; y < y1; y++) if (!E.some((e) => e.year === y)) years.push(`<span style="--p:${at(y)}">${y}</span>`);
-  const items = E.map((e, i) => {
-    const prev = E[i - 1], next = E[i + 1];
-    return `<li class="co-tl__item">
-      <div class="co-tl__panel" id="company-y${e.year}">
-        <h3 class="co-tl__head"><span class="co-tl__year">${e.year}</span> <span class="co-tl__title">${esc(e.title)}</span></h3>
-        <div class="co-tl__body" id="company-y${e.year}-body">
-          <div class="co-tl__inner">
-            <figure class="co-tl__fig" data-still="${e.image}">${img(e.image)}</figure>
-            <div class="co-tl__copy">
-              <p>${esc(e.body)}</p>
-              <p class="co-tl__tag">${i === 0 ? 'Founding year' : 'Sample year'}</p>
-              <div class="co-tl__go" hidden>
-                ${prev ? `<button type="button" data-go="-1" aria-label="Earlier: ${esc(label(prev))}"><span aria-hidden="true">&larr;</span> ${prev.year}</button>` : ''}
-                ${next ? `<button type="button" data-go="1" aria-label="Later: ${esc(label(next))}">${next.year} <span aria-hidden="true">&rarr;</span></button>` : ''}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </li>`;
-  }).join('\n    ');
-  return `<section class="co-sec co-tl wrap" id="${T.id}" aria-labelledby="${T.id}-title" data-co-tl>
-  ${head(T, `\n    <p class="co-note">${esc(T.note)}</p>`)}
-  <div class="co-tl__scrub" hidden>
-    <div class="co-tl__track">
-      <div class="co-tl__ruler" aria-hidden="true">${years.join('')}</div>
-      <span class="co-tl__index" aria-hidden="true"></span>
-      <div class="co-tl__tabs" role="tablist" aria-label="Years">${tabs}</div>
-    </div>
-  </div>
-  <ol class="co-tl__list">
-    ${items}
-  </ol>
+// ------------------------------------------------------------- facts
+function facts() {
+  const items = C.facts.map((f, i) => `${i ? '<span class="cf__dot" aria-hidden="true"></span>' : ''}<div class="cf__item"><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('');
+  return `<section class="cf" aria-label="Kessel in three facts">
+  <dl class="cf__row wrap">${items}</dl>
 </section>`;
 }
 
 // ------------------------------------------------------------ checks
-// Real checkboxes, so ticking works without JS too: CSS lights the gauge,
-// counts the passes and draws the signature once all of them are ticked.
-// JS adds the button that runs them in order.
-function work() {
-  const W = C.work;
-  const points = W.points.map((p) => `<div class="co-work__point">
-      <h3>${esc(p.title)}</h3>
-      <p>${esc(p.body)}</p>
-    </div>`).join('\n    ');
-  const checks = W.checks.map((c, i) => `<li class="co-check">
+// Real checkboxes, so ticking works without JS too: CSS lights each check's
+// mark on the drawn lens, fills the gauge, counts the passes and draws the
+// signature once all of them are ticked. JS adds the button that runs them.
+function checks() {
+  const K = C.checks;
+  const tiles = K.list.map((c, i) => `<li class="ck-tile" data-n="${i + 1}">
         <label>
-          <span class="co-check__no" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
-          <input class="co-check__box" type="checkbox" name="company-check" value="${esc(c.name)}">
-          <svg class="co-check__tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-          <span class="co-check__text"><span class="co-check__name">${esc(c.name)}</span> <span class="co-check__line">${esc(c.line)}</span></span>
+          <input class="ck-tile__box" type="checkbox" name="company-check" value="${esc(c.name)}">
+          <span class="ck-tile__no" aria-hidden="true">${pad(i + 1)}</span>
+          <svg class="ck-tile__tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          <span class="ck-tile__name">${esc(c.name)}</span>
+          <span class="ck-tile__line">${esc(c.line)}</span>
         </label>
       </li>`).join('\n      ');
-  const gauge = W.checks.map(() => '<li></li>').join('');
-  return `<section class="co-sec co-work wrap" id="${W.id}" aria-labelledby="${W.id}-title">
-  ${head(W)}
-  <div class="co-work__points">
-    ${points}
-  </div>
-  <div class="co-checks" data-co-checks>
-    <div class="co-checks__top">
-      <h3 id="company-checks-title">${esc(W.checksTitle)}</h3>
-      <p class="co-checks__help">${esc(W.checksHelp)}</p>
-      <button class="co-checks__run btn" type="button" data-run="${esc(W.run)}" data-busy="${esc(W.busy)}" data-again="${esc(W.again)}" hidden>${esc(W.run)}</button>
-    </div>
-    <ol class="co-checks__list" aria-labelledby="company-checks-title">
-      ${checks}
-    </ol>
-    <div class="co-checks__foot">
-      <ol class="co-checks__gauge" aria-hidden="true">${gauge}</ol>
-      <p class="co-checks__count" aria-live="polite"><span class="co-checks__n"></span> of ${W.checks.length} checks passed</p>
-    </div>
-    <div class="co-checks__sign">
-      ${signature()}
-      <p class="co-checks__state"><span class="co-checks__wait">${esc(W.waiting)}</span><span class="co-checks__done">${esc(W.signed)}</span></p>
+  const gauge = K.list.map(() => '<li></li>').join('');
+  return `<section class="co-sec ck wrap" id="${K.id}" aria-labelledby="${K.id}-title">
+  ${head(K)}
+  <div class="ck__panel" data-co-checks>
+    <figure class="ck__fig">
+      ${checksSVG('company-ck')}
+      <figcaption class="ck__state"><span class="ck__wait">${esc(K.waiting)}</span><span class="ck__done">${esc(K.signed)}</span></figcaption>
+    </figure>
+    <div class="ck__side">
+      <div class="ck__top">
+        <p class="ck__help">${esc(K.help)}</p>
+        <button class="ck__run btn" type="button" data-run="${esc(K.run)}" data-busy="${esc(K.busy)}" data-again="${esc(K.again)}" hidden>${esc(K.run)}</button>
+      </div>
+      <ol class="ck__list" aria-labelledby="${K.id}-title">
+      ${tiles}
+      </ol>
+      <div class="ck__foot">
+        <ol class="ck__gauge" aria-hidden="true">${gauge}</ol>
+        <p class="ck__count" aria-live="polite"><span class="ck__n"></span> of ${K.list.length} checks passed</p>
+      </div>
     </div>
   </div>
-</section>`;
-}
-
-// ---------------------------------------------------------- workshop
-function workshop() {
-  const W = C.workshop;
-  const facts = W.facts.map((f) => `<div class="co-facts__item">
-      <dt>${esc(f.label)}</dt>
-      <dd><span class="co-facts__value">${esc(f.value)}</span> <span class="co-facts__note">${esc(f.note)}</span></dd>
-    </div>`).join('\n    ');
-  const values = W.values.map((v, i) => `<li class="co-value">
-      <span class="co-value__no" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
-      <h3>${esc(v.title)}</h3>
-      <p>${esc(v.body)}</p>
-    </li>`).join('\n    ');
-  return `<section class="co-sec co-shop wrap" id="${W.id}" aria-labelledby="${W.id}-title">
-  ${head(W)}
-  <dl class="co-facts">
-    ${facts}
-  </dl>
-  <ol class="co-values">
-    ${values}
-  </ol>
 </section>`;
 }
 
 // --------------------------------------------------------------- faq
 function faq() {
   const F = C.faq;
-  const items = F.items.map((it) => `<details class="co-q">
-      <summary><span class="co-q__q">${esc(it.q)}</span><span class="co-q__icon" aria-hidden="true"></span></summary>
+  const items = F.items.map((it, i) => `<details class="co-q">
+      <summary><span class="co-q__no" aria-hidden="true">${pad(i + 1)}</span><span class="co-q__q">${esc(it.q)}</span><span class="co-q__icon" aria-hidden="true"></span></summary>
       <div class="co-q__a">
-        <p class="co-q__tag">${esc(F.answerTag)}</p>
         <p>${esc(it.a)}</p>
         ${it.link ? `<a class="more" href="#${it.link.route}">${esc(it.link.label)} <span aria-hidden="true">&rarr;</span></a>` : ''}
       </div>
@@ -213,31 +176,10 @@ function faq() {
 </section>`;
 }
 
-// ------------------------------------------------------------- roles
-// Each card's heading becomes a button with JS (the description shows on
-// hover, focus or a tap); without JS every description is shown.
-function roles() {
-  const R = C.roles;
-  const cards = R.list.map((r, i) => `<li class="co-role">
-      <figure class="co-role__fig">${img(r.image, { alt: '' })}</figure>
-      <span class="co-role__no" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
-      <div class="co-role__copy">
-        <h3 class="co-role__head"><span class="co-role__name">${esc(r.name)}</span> <span class="co-role__does">${esc(r.does)}</span></h3>
-        <div class="co-role__desc" id="company-role-${i + 1}"><p>${esc(r.body)}</p></div>
-      </div>
-    </li>`).join('\n    ');
-  return `<section class="co-sec co-people wrap" id="${R.id}" aria-labelledby="${R.id}-title">
-  ${head(R, `\n    <p class="co-note">${esc(R.note)}</p>`)}
-  <ul class="co-roles">
-    ${cards}
-  </ul>
-</section>`;
-}
-
 // -------------------------------------------------------------- next
 function next() {
   const N = C.next;
-  const more = N.more.map((n) => `<a class="co-next__more" href="#${n.route}"><span class="co-next__k">${esc(n.label)}</span> <span class="co-next__m">${esc(n.text)} <span aria-hidden="true">&rarr;</span></span></a>`).join('\n    ');
+  const more = N.more.map((m) => `<a class="co-next__more" href="#${m.route}"><span class="co-next__k">${esc(m.label)}</span> <span class="co-next__m">${esc(m.text)} <span aria-hidden="true">&rarr;</span></span></a>`).join('\n    ');
   return `<nav class="co-next wrap" aria-label="Where next">
   <a class="co-next__main" href="#${N.contact.route}">
     <span class="co-next__k">${esc(N.contact.label)}</span>
@@ -251,13 +193,11 @@ function next() {
 
 export function companyHTML() {
   return route('company', `Company · ${site.name}`, `
-${hero()}
-${story()}
+${bench()}
 ${timeline()}
-${work()}
-${workshop()}
+${facts()}
+${checks()}
 ${faq()}
-${roles()}
 ${next()}
 ${footer('#company')}`);
 }
