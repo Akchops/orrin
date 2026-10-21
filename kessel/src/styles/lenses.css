@@ -38,7 +38,7 @@
 #lenses .lx-hero__labels {
   list-style: none; margin: 0; padding: 0; display: grid; align-items: start;
   /* Columns follow the three lenses in the still (cut by the edges). */
-  grid-template-columns: 34.1fr 5.1fr 27.8fr 5fr 28fr;
+  grid-template-columns: 28.3fr 5.2fr 33fr 5.2fr 28.3fr;
   margin-top: clamp(0.75rem, 2vw, 1.75rem);
 }
 #lenses .lx-hero__label:nth-child(2) { grid-column: 3; }
@@ -277,3 +277,7 @@
 @media (max-width: 799px) {
   html:not(.js) #lenses .lx-hero { padding-top: calc(var(--safe-t) + var(--head) + 3.5rem); }
 }
+
+/* The matched-set note under the table. */
+#lenses .lx-set { color: var(--dim); max-width: 60ch; margin-top: 1.2rem; line-height: 1.55; }
+#lenses .lx-set strong { color: var(--engrave); font-weight: 600; }

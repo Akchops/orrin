@@ -282,3 +282,7 @@
   .route--lens .lens__pg + .lens__pg { border-top: 0; border-left: 1px solid var(--line); }
   .route--lens .lens__pg-name { font-size: clamp(2.6rem, 8cqi, 8.5rem); }
 }
+
+/* The matched-set line under the lens's own line. */
+.route--lens .lens__set { color: var(--dim); max-width: 38ch; font-size: 0.98rem; line-height: 1.5; }
+.route--lens .lens__set strong { color: var(--engrave); font-weight: 600; }

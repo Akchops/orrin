@@ -1,19 +1,26 @@
 // Engraving textures, drawn at boot. Nothing is downloaded.
 
-// Distance marks, metres, as a fraction of the focus throw. Real focus
-// throws are close to linear in dioptres (1/distance), which is why the
-// marks bunch up toward infinity; this spacing follows 1/d.
-export const DISTANCES = [
-  { m: Infinity, label: '∞' }, { m: 10, label: '10' }, { m: 5, label: '5' }, { m: 3, label: '3' },
-  { m: 2, label: '2' }, { m: 1.5, label: '1.5' }, { m: 1.2, label: '1.2' }, { m: 1, label: '1' }, { m: 0.8, label: '0.8' },
+// The matched set: one body and one focus throw (160 degrees), each lens
+// with its own distance scale, from infinity down to its close focus
+// (0.25, 0.45 and 1 m; sample figures). Real focus throws are close to
+// linear in dioptres (1/distance), which is why the marks bunch up toward
+// infinity; a mark at m metres sits at throw position close / m.
+export const SCALES = [
+  { close: 0.25, m: [Infinity, 3, 1.5, 1, 0.7, 0.5, 0.4, 0.3, 0.25], ft: [Infinity, 10, 5, 3, 2, 1.5, 1] },
+  { close: 0.45, m: [Infinity, 10, 5, 3, 2, 1.5, 1, 0.7, 0.5, 0.45], ft: [Infinity, 30, 15, 8, 5, 3, 2, 1.5] },
+  { close: 1, m: [Infinity, 20, 10, 6, 4, 3, 2.5, 2, 1.5, 1.2, 1], ft: [Infinity, 50, 20, 12, 8, 6, 5, 4] },
 ];
 export const THROW_DEG = 160;
-export const throwPos = (m) => (m === Infinity ? 0 : (1 / m) / 1.25);
-export function distanceAt(f) {
-  // Inverse of throwPos: f in 0..1 -> metres.
-  const inv = f * 1.25;
-  return inv < 1e-3 ? Infinity : 1 / inv;
+export const markLabel = (v) => (v === Infinity ? '\u221e' : String(v));
+export const throwPos = (m, k = 1) => (m === Infinity ? 0 : SCALES[k].close / m);
+export const throwPosFt = (ft, k = 1) => throwPos(ft === Infinity ? Infinity : ft * 0.3048, k);
+// Inverse of throwPos: f in 0..1 -> metres.
+export function distanceAt(f, k = 1) {
+  return f < 1e-3 ? Infinity : SCALES[k].close / f;
 }
+// Each lens's name, sample focal length and aperture, as engraved.
+export const LENS_MARKS = [['SHANIWAR', '24 mm'], ['PARVATI', '50 mm'], ['SINHAGAD', '100 mm']];
+export const SET_APERTURE = 'T2.1';
 
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
@@ -31,7 +38,7 @@ function tex(T, c, { color = true, repeat = false } = {}) {
 // side, u runs up the screen and v along the axis, so every numeral is
 // stamped turned a quarter, which leaves it upright to the viewer.
 // The texture is 16 px per mm in both directions so glyphs keep their shape.
-export function scaleTexture(T, font) {
+export function scaleTexture(T, font, k = 1) {
   const W = 4096, H = 168;
   const c = canvas(W, H), g = c.getContext('2d');
   const uOf = (p) => ((((90 - p * THROW_DEG) / 360) % 1) + 1) % 1;
@@ -46,14 +53,15 @@ export function scaleTexture(T, font) {
     g.fillText(text, 0, 0);
     g.restore();
   };
+  const sc = SCALES[k];
   // Metres, nearer the front of the ring (canvas top = front).
-  for (const d of DISTANCES) stamp(d.label, uOf(throwPos(d.m)) * W, 46, 50, '#f1efe9');
+  for (const m of sc.m) stamp(markLabel(m), uOf(throwPos(m, k)) * W, 46, 50, '#f1efe9');
   stamp('m', uOf(1.13) * W, 46, 34, '#f1efe9');
   // One set of ticks, all the way round so the band reads as one ring from
   // any side and visibly turns as a whole: a short tick every 4 degrees,
   // and a long one exactly at each numeral. Short ticks that would sit
   // beside a long one are left out, so no tick ever looks doubled.
-  const marks = DISTANCES.map((d) => throwPos(d.m));
+  const marks = sc.m.map((m) => throwPos(m, k));
   g.fillStyle = 'rgba(241,239,233,0.85)';
   for (let k = 0; k < 90; k++) {
     const p = k * (4 / THROW_DEG);
@@ -62,17 +70,15 @@ export function scaleTexture(T, font) {
   }
   for (const p of marks) g.fillRect(uOf(p) * W - 2, 78, 4, 20);
   // Feet, behind.
-  for (const [ft, label] of [[Infinity, '\u221e'], [30, '30'], [15, '15'], [10, '10'], [6, '6'], [4, '4'], [3, '3']]) {
-    const m = ft === Infinity ? Infinity : ft * 0.3048;
-    stamp(label, uOf(throwPos(m)) * W, 128, 34, '#f0a64a');
-  }
+  for (const ft of sc.ft) stamp(markLabel(ft), uOf(throwPosFt(ft, k)) * W, 128, 34, '#f0a64a');
   stamp('ft', uOf(1.13) * W, 128, 26, '#f0a64a');
   return tex(T, c);
 }
 
-// Front ring: maker's line set round the annulus face.
+// Front ring: the lens's own label set round the annulus face: its name,
+// focal length and aperture, then the maker's line.
 // size: 2048 px on desktop; phones get 1024 (a quarter of the memory).
-export function frontRingTexture(T, font, S = 2048) {
+export function frontRingTexture(T, font, S = 2048, k = 1) {
   const c = canvas(S, S), g = c.getContext('2d');
   const s = S / 80;                    // px per mm across an 80 mm square
   g.clearRect(0, 0, S, S);
@@ -80,7 +86,8 @@ export function frontRingTexture(T, font, S = 2048) {
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.font = `500 ${1.55 * s}px ${font}`;
-  const text = 'KESSEL OPTICS  ·  HAND ASSEMBLED IN PUNE  ·  ';
+  const [name, fl] = LENS_MARKS[k];
+  const text = `${name}  ${fl}  ${SET_APERTURE}  ·  KESSEL OPTICS  ·  PUNE`;
   const chars = [...text];
   const R = 36.8 * s;
   // Text runs across the top half only, like real front-ring engraving.

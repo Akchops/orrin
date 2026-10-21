@@ -193,3 +193,31 @@ mount close-ups; smoke test passed.
   up with an engraved ring round it.
 Check: timeline, checks, FAQ and role cards scripted at 1440 and 390;
 #workshop resolves to it and the nav marks Company.
+
+## Follow-up (matched set, street viewer, illustrated pages, overflow)
+
+Restore point: local tag `kessel-before-followup` on 086d395 (pushing tags
+is refused here, as before).
+
+### 1. The lenses are a matched set — done
+
+- One body for all three, as cinema sets are built to swap on a rig: the
+  wide lens's petal hood and bulging front, the long lens's pull-out hood
+  and tripod collar, the different proportions and grips are gone, in 3D
+  and in the 2D tier.
+- They differ by the engraved name and focal length round the front
+  barrel (SHANIWAR 24 mm, PARVATI 50 mm, SINHAGAD 100 mm), the colour
+  ring (blue, amber, green), the distance scale (each from infinity to its
+  own close focus: 0.25, 0.45 and 1 m, metres and feet) and the front
+  label (name, focal length, T2.1, maker). The film still moves from one
+  lens to the next: the ring's colour blends and the engravings change.
+- Bug found and fixed on the way: the per-part emphasis gives every part
+  its own copy of each material, so the scale and front label have to be
+  swapped on those copies.
+- The pages say it: "A matched set" on each lens page under its line, in
+  the Lenses intro and under the comparison table; the specs share the
+  front diameter, length and T2.1 (sample figures, labelled).
+- The live viewers keep turning and zooming; the lineup is three equal
+  bodies. Product stills and the viewers stop the iris down evenly (the
+  film still opens it a blade at a time). Each lens page's close-ups show
+  that lens's own front label and scale. All stills re-rendered.

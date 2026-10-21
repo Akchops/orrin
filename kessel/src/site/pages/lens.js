@@ -3,7 +3,7 @@
 // crops on the parts, the figures as readouts, then the way to the next lens.
 import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
-import { lenses } from '../../content/lenses.js';
+import { lenses, matchedSet } from '../../content/lenses.js';
 
 // The large transparent shot for each lens (wide, standard, long).
 const SHOT = { shaniwar: 'lens-1', parvati: 'lens-2', sinhagad: 'lens-3' };
@@ -61,7 +61,8 @@ export function lensHTML(l, i) {
       <p class="lens__name lens__name--ghost" aria-hidden="true">${esc(l.name)}</p>
     </div>
     <div class="lens__foot">
-      <p class="lens__line">${esc(l.line)} ${esc(l.shape)}</p>
+      <p class="lens__line">${esc(l.line)}</p>
+      <p class="lens__set"><strong>${esc(matchedSet.title)}.</strong> ${esc(matchedSet.line)}</p>
       ${viewerTools(`${id}-viewer`, { hint: 'Drag to turn the lens. Pinch, or use the buttons, to zoom.' })}
       <details class="enquire lens__enq">
         <summary class="btn btn--solid">Enquire about ${esc(l.name)}</summary>
@@ -76,8 +77,8 @@ export function lensHTML(l, i) {
 
   <section class="lens__detail" aria-labelledby="${id}-detail">
     <h2 class="sr-only" id="${id}-detail">${esc(l.name)} up close</h2>
-    ${tile('glass', 'd-glass', 'Front diameter', 'Coated front element')}
-    ${tile('scale', 'd-scale', 'Close focus', 'Engraved distance scale')}
+    ${tile('glass', `d-glass-${i + 1}`, 'Front diameter', 'Front label and coated glass')}
+    ${tile('scale', `d-scale-${i + 1}`, 'Close focus', 'Its own distance scale')}
     ${tile('mount', 'd-mount', 'Mount', 'Stainless mount, rear element')}
   </section>
 

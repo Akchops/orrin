@@ -1,8 +1,8 @@
-// The three lenses. Names and roles are proposals; every figure in `specs`
-// is a sample for the concept (the page says so under each table). The
-// figures are kept consistent with each other and with the 3D models:
-// longer focal length, longer and heavier barrel, longer close focus, and
-// the front diameters and lengths of the three shapes.
+// The three lenses, a matched set: one body, so the front diameter,
+// length and aperture are shared and the weights close, as cinema sets are
+// built to swap on a rig. Names and roles are proposals; every figure in
+// `specs` is a sample for the concept (the page says so under each table).
+// Longer focal length, longer close focus, as the engraved scales show.
 export const lenses = [
   {
     slug: 'shaniwar',
@@ -12,18 +12,16 @@ export const lenses = [
     image: 'model-1-lg',
     thumb: 'model-1',
     band: 'blue',
-    shape: 'Short and wide: a big, bulging front element under a deep petal hood.',
     specs: [
       ['Focal length', '24 mm'],
-      ['Maximum aperture', 'f/2'],
+      ['Maximum aperture', 'T2.1'],
       ['Mount', 'PL'],
       ['Elements', '11 elements in 9 groups'],
       ['Iris', '11 blades'],
       ['Close focus', '0.25 m'],
-      ['Front diameter', '92 mm'],
-      ['Length', '77 mm'],
-      ['Hood', 'Petal, fixed'],
-      ['Weight', '0.95 kg'],
+      ['Front diameter', '80 mm'],
+      ['Length', '99 mm'],
+      ['Weight', '1.00 kg'],
     ],
   },
   {
@@ -34,17 +32,15 @@ export const lenses = [
     image: 'model-2-lg',
     thumb: 'model-2',
     band: 'amber',
-    shape: 'Balanced: a plain round front and a medium barrel.',
     specs: [
       ['Focal length', '50 mm'],
-      ['Maximum aperture', 'f/1.8'],
+      ['Maximum aperture', 'T2.1'],
       ['Mount', 'PL'],
       ['Elements', '7 elements in 6 groups'],
       ['Iris', '11 blades'],
       ['Close focus', '0.45 m'],
       ['Front diameter', '80 mm'],
       ['Length', '99 mm'],
-      ['Hood', 'None'],
       ['Weight', '1.05 kg'],
     ],
   },
@@ -56,18 +52,23 @@ export const lenses = [
     image: 'model-3-lg',
     thumb: 'model-3',
     band: 'green',
-    shape: 'Long: a slim barrel with a smaller front, a pull-out hood and a tripod collar.',
     specs: [
       ['Focal length', '100 mm'],
-      ['Maximum aperture', 'f/2'],
+      ['Maximum aperture', 'T2.1'],
       ['Mount', 'PL'],
       ['Elements', '8 elements in 6 groups'],
       ['Iris', '11 blades'],
       ['Close focus', '1.0 m'],
-      ['Front diameter', '72 mm'],
-      ['Length', '135 mm'],
-      ['Hood', 'Tube, pull-out'],
-      ['Weight', '1.6 kg'],
+      ['Front diameter', '80 mm'],
+      ['Length', '99 mm'],
+      ['Weight', '1.10 kg'],
     ],
   },
 ];
+
+// Said on the Lenses page and every lens page.
+export const matchedSet = {
+  title: 'A matched set',
+  line: 'The three share one body: the same length, front diameter and ring positions, so they swap on a rig without moving the matte box or the follow focus.',
+  differ: 'What changes from lens to lens is the engraved name and focal length, the colour ring, the distance scale and the label on the front.',
+};

@@ -7,9 +7,9 @@
 // blade by blade, the camera dives through the barrel, turns at the back,
 // the focus scale rolls, and the lens comes apart and goes back together.
 import { IRIS_Z, SPREAD } from './lens.js';
-import { DISTANCES, throwPos, THROW_DEG } from './textures.js';
+import { SCALES, markLabel, throwPos, throwPosFt, THROW_DEG } from './textures.js';
 import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, pickDrift } from './teardown.js';
-import { PARTS, EXTRAS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
+import { PARTS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
 import { createShading, MATS, COAT, css, cssa, len2, len3 } from './tier2-shade.js';
 
 const TAU = Math.PI * 2, DEG = Math.PI / 180;
@@ -20,7 +20,6 @@ const FINE = 300;      // px: a part whose radius on screen is larger gets twice
 const FACET = 0, POLY = 1, TEXT = 2, GLASSD = 3, IRIS = 4, LIGHT = 5, BLOOM = 6, SENSOR = 7, SIGN = 8;
 // Distance scale (as textures.js lays it out): rows along the band, in z.
 const SC_R = 40.42, SC_M = -29.65, SC_FT = -34.73;
-const FEET = [[Infinity, '∞'], [30, '30'], [15, '15'], [10, '10'], [6, '6'], [4, '4'], [3, '3']];
 // Ridges round the knurled grip and the aperture ring, and the shading
 // across one ridge as [fraction, brightness] (the knurl's lit and shaded
 // flanks are filled in per facet from the key light).
@@ -46,7 +45,7 @@ export function mount2D(container, { font }) {
   // ------------------------------------------------------------ geometry
   // Each part gets ring buffers (world, view and screen position of every
   // profile point at every angle) at two levels of detail.
-  const parts = PARTS.map(prep), extras = EXTRAS.map(prep);
+  const parts = PARTS.map(prep);
   const throat = prep(THROAT);
   function prep(src) {
     const P = { ...src, segs: src.seg.map((c) => ({ m: MATS[c[0]], code: c[0], flag: c[1] || '' })) };
@@ -71,17 +70,21 @@ export function mount2D(container, { font }) {
       // all round, a long one exactly at each numeral (throw position p sits
       // at -160p degrees), and no short tick beside a long one. Each tick
       // goes on the facet that holds it.
-      L.ticks = Array.from({ length: n }, () => []);
-      const longs = DISTANCES.map((d) => (((-throwPos(d.m) * THROW_DEG) % 360) + 360) % 360);
-      const put = (a, kind) => {
-        const i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step) % n;
-        L.ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind });
-      };
-      for (let m = 0; m < 90; m++) {
-        const a = m * 4;
-        if (!longs.some((b) => Math.abs((((a - b) % 360) + 540) % 360 - 180) < 1.6)) put(a, 1);
-      }
-      for (const b of longs) put(b, 2);
+      // Each lens of the matched set has its own scale (L.tickSets[k]).
+      L.tickSets = SCALES.map((sc, k) => {
+        const ticks = Array.from({ length: n }, () => []);
+        const longs = sc.m.map((m) => (((-throwPos(m, k) * THROW_DEG) % 360) + 360) % 360);
+        const put = (a, kind) => {
+          const i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step) % n;
+          ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind });
+        };
+        for (let m = 0; m < 90; m++) {
+          const a = m * 4;
+          if (!longs.some((b) => Math.abs((((a - b) % 360) + 540) % 360 - 180) < 1.6)) put(a, 1);
+        }
+        for (const b of longs) put(b, 2);
+        return ticks;
+      });
     }
     return L;
   }
@@ -389,7 +392,7 @@ export function mount2D(container, { font }) {
     const vis = smooth(0.06, 0.32, ndv);
     if (vis <= 0.01) return;
     let n = 0;
-    for (const tk of L.ticks[i]) {
+    for (const tk of L.tickSets[lensK][i]) {
       const z1 = tk.kind === 2 ? -33.1 : tk.kind === 1 ? -32.5 : -32.25;
       const z0 = -31.63;
       const va = local(SC_R * tk.c, SC_R * tk.s, z0, 0), vb = local(SC_R * tk.c, SC_R * tk.s, z1, 2);
@@ -426,9 +429,10 @@ export function mount2D(container, { font }) {
     it.c0 = css(TMP[0], TMP[1], TMP[2]); it.a = smooth(0.14, 0.42, nd) * Math.min(1, k); it.txt = label; it.font = fontStr;
   }
   function scaleText() {
-    for (const d of DISTANCES) putNumeral(d.label, throwPos(d.m), SC_M, FONT_M, WHITE);
+    const k = lensK, sc = SCALES[k];
+    for (const m of sc.m) putNumeral(markLabel(m), throwPos(m, k), SC_M, FONT_M, WHITE);
     putNumeral('m', 1.13, SC_M, FONT_U, WHITE);
-    for (const [ft, label] of FEET) putNumeral(label, throwPos(ft === Infinity ? Infinity : ft * 0.3048), SC_FT, FONT_U, AMBER);
+    for (const ft of sc.ft) putNumeral(markLabel(ft), throwPosFt(ft, k), SC_FT, FONT_U, AMBER);
     putNumeral('ft', 1.13, SC_FT, FONT_FL, AMBER);
   }
 
@@ -712,6 +716,8 @@ export function mount2D(container, { font }) {
   }
 
   let ptr = { x: 0, y: 0, spin: 0 };
+  // The lens of the set being drawn (its distance scale).
+  let lensK = 1;
   function drawGlass(it) {
     const B = it.ref, c = GLASS[it.k].coat, a = B.alpha, n = B.n;
     if (a <= 0.01) return;
@@ -928,10 +934,10 @@ export function mount2D(container, { font }) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     setCamera(S);
-    const i0 = Math.min(1, Math.floor(S.model)), mf = S.model - i0;
-    const lz = [0.78, 1, 1.36][i0] + ([0.78, 1, 1.36][i0 + 1] - [0.78, 1, 1.36][i0]) * mf;
-    const fr = [1.14, 1, 0.9][i0] + ([1.14, 1, 0.9][i0 + 1] - [1.14, 1, 0.9][i0]) * mf;
-    setPose(S, pointer, fr, lz);
+    // The three lenses are a matched set: one body; the scale (and the
+    // colour ring, tier2-shade.js) follow the lens.
+    lensK = Math.max(0, Math.min(2, Math.round(S.model)));
+    setPose(S, pointer, 1, 1);
     // Is the camera inside the barrel (or the camera throat behind it)?
     const zf = -6.25 * S.spread, zb = (S.throat > 0.01 ? -144.5 : -98) - 115 * S.spread;
     const enclosed = S.inside * smooth(0, 14, zf - cam.pos[2]) * smooth(0, 14, cam.pos[2] - zb);
@@ -1001,11 +1007,6 @@ export function mount2D(container, { font }) {
       if (P.id === 'scale') scaleText();
       else if (P.id === 'signature') signatureText();
       else if (P.mark === 'index') indexMark();
-    }
-    // The other models' hoods and collar, faded in as the film reaches them.
-    if (!showS) for (const P of extras) {
-      const w = P.model === 0 ? smooth(0, 1, 1 - S.model) : smooth(0, 1, S.model - 1);
-      if (w > 0.02) emitPart(P, 0, 0, 0, 0, false, false, '', w);
     }
     // Glass, then the iris.
     GLASS.forEach((e, gi) => {

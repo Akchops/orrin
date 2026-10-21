@@ -60,7 +60,14 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   rim2.position.set(150, -90, -60);
   scene.add(rim2, rim2.target);
 
-  const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font, quality === 'high' ? 2048 : 1024), rear: rearBarrelTexture(T, font) };
+  // One scale and one front label per lens of the matched set. Parvati's
+  // front label is the one the film's hero frame shows close up, so only
+  // it gets the full size on desktops.
+  const textures = {
+    scale: [0, 1, 2].map((k) => scaleTexture(T, font, k)),
+    front: [0, 1, 2].map((k) => frontRingTexture(T, font, k === 1 && quality === 'high' ? 2048 : 1024, k)),
+    rear: rearBarrelTexture(T, font),
+  };
   const lens = buildLens(T, L, { quality, textures, font });
   scene.add(lens.root);
   if (!LADDER[rung].fx) lens.setEffects(false);
@@ -285,7 +292,7 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   function destroy() {
     if (dof.rt) { dof.rt.dispose(); dof.rt.depthTexture.dispose(); }
     dofMat.dispose(); dofQuad.geometry.dispose();
-    lens.dispose(); env.dispose(); Object.values(textures).forEach((t) => t.dispose());
+    lens.dispose(); env.dispose(); Object.values(textures).flat().forEach((t) => t && t.dispose());
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
 

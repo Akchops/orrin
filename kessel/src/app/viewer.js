@@ -16,18 +16,15 @@ import { scaleTexture, frontRingTexture, rearBarrelTexture } from './textures.js
 import { createState } from './story.js';
 
 const DEG = Math.PI / 180;
-// The stills' poses (src/app/stills.js lens-1..3): camera angles, the
-// half-height in mm that fills the frame, and the point it aims at.
-const POSE = [
-  { az: 38, el: 11, frame: 64, ty: 0, tz: -26 },
-  { az: 38, el: 11, frame: 54, ty: 0, tz: -50 },
-  { az: 38, el: 11, frame: 70, ty: -6, tz: -52 },
-];
-// Lens length in mm per model (lens.js scales the barrel by 0.78, 1, 1.36).
-const LEN = [0.78, 1, 1.36].map((k) => 99 * k);
+// The stills' pose (src/app/stills.js lens-1..3): camera angles, the
+// half-height in mm that fills the frame, and the point it aims at. The
+// three lenses are a matched set, one body, so they share it.
+const POSE = [0, 1, 2].map(() => ({ az: 38, el: 11, frame: 54, ty: 0, tz: -50 }));
+// Lens length in mm, mount to front, the same for all three.
+const LEN = [99, 99, 99];
 // The lineup: where each lens stands across the still, as a share of its
 // width (the label columns on #lenses follow the same three places).
-const LINEUP_X = [0.185, 0.5275, 0.87];
+const LINEUP_X = [0.1594, 0.5, 0.8406];
 const SLUG = ['shaniwar', 'parvati', 'sinhagad'];
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -65,10 +62,15 @@ export function mountViewer(el, L, caps, { font }) {
   rim2.position.set(150, -90, -60);
   scene.add(key, key.target, rim, rim.target, rim2, rim2.target);
 
-  const textures = { scale: scaleTexture(T, font), front: frontRingTexture(T, font, quality === 'high' ? 2048 : 1024), rear: rearBarrelTexture(T, font) };
+  // Only the lenses on show get their scale and front label.
+  const textures = {
+    scale: [0, 1, 2].map((k) => (models.includes(k) ? scaleTexture(T, font, k) : null)),
+    front: [0, 1, 2].map((k) => (models.includes(k) ? frontRingTexture(T, font, quality === 'high' && !lineup ? 2048 : 1024, k) : null)),
+    rear: rearBarrelTexture(T, font),
+  };
   const items = models.map((m, i) => {
     const lens = buildLens(T, L, { quality, textures, font });
-    const S = Object.assign(createState(), { model: m, iris: 0.4, focus: 0.3, light: 0 });
+    const S = Object.assign(createState(), { model: m, iris: 0.4, irisEven: true, focus: 0.3, light: 0 });
     lens.update(S, 0);
     lens.lightDisc.visible = false; lens.glow.visible = false;
     const pivot = new T.Group();
@@ -103,11 +105,11 @@ export function mountViewer(el, L, caps, { font }) {
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
     if (lineup) {
-      // One frame for all three: Sinhagad, the tallest, fits the height
-      // with a margin; the mounts stand on one line near the bottom.
-      frame = 94;
+      // One frame for all three (they are the same height), with a margin;
+      // the mounts stand on one line near the bottom.
+      frame = 59.5;
       const halfW = frame * camera.aspect;
-      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 5, 0));
+      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 4, 0));
     } else frame = pose.frame;
     dirty = true;
   }
@@ -129,7 +131,7 @@ export function mountViewer(el, L, caps, { font }) {
       // Each lens turns on its own axis, which stands upright.
       for (const it of items) {
         it.lens.lens.rotation.z = -Math.PI / 2 + (v.yaw + v.hx) * DEG;
-        it.pivot.position.y = -frame + 5 + it.lift;
+        it.pivot.position.y = -frame + 4 + it.lift;
       }
     } else {
       // The lens turns under the lights (not the camera round it): yaw
@@ -324,7 +326,7 @@ export function mountViewer(el, L, caps, { font }) {
     if (tools) tools.hidden = true;
     labels.forEach((l) => l.classList.remove('is-hot'));
     items.forEach((it) => it.lens.dispose());
-    env.dispose(); Object.values(textures).forEach((t) => t.dispose());
+    env.dispose(); Object.values(textures).flat().forEach((t) => t && t.dispose());
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
   return { destroy, el };

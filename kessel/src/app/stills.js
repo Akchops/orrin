@@ -18,24 +18,25 @@ const POSES = {
   // Site pages: the same lens, posed off the film's path. Product shots
   // (the models, the exploded view) are lit without the light coming
   // through the iris, which otherwise shows as a halo behind the barrel.
-  'model-1-lg': { s: 12.4, sx: 0, sy: 0, light: 0 },
-  'model-2-lg': { s: 13.3, sx: 0, sy: 0, light: 0 },
-  'model-3-lg': { s: 14.15, sx: 0, sy: 0, light: 0 },
-  beauty: { s: 16.5, sx: 0, sy: 0 },
-  exploded: { s: 16.5, noLeaks: true, spread: 1, az: 64, el: 12, frame: 82, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
-  iris34: { s: 16.5, iris: 0.42, az: 16, el: 9, frame: 30, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
+  'model-1-lg': { irisEven: true, s: 12.4, sx: 0, sy: 0, light: 0 },
+  'model-2-lg': { irisEven: true, s: 13.3, sx: 0, sy: 0, light: 0 },
+  'model-3-lg': { irisEven: true, s: 14.15, sx: 0, sy: 0, light: 0 },
+  beauty: { s: 16.5, irisEven: true, sx: 0, sy: 0 },
+  exploded: { s: 16.5, irisEven: true, noLeaks: true, spread: 1, az: 64, el: 12, frame: 82, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
+  iris34: { s: 16.5, irisEven: true, iris: 0.42, az: 16, el: 9, frame: 30, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
   // Site imagery, rendered with a transparent background so it sits on the
   // page with no box. Close crops on details the scene already has.
-  'hero-lens': { s: 16.5, az: 26, el: 9, frame: 64, tx: 0, ty: 0, tz: -44, iris: 0.5, sx: 0, sy: 0 },
-  // The three lenses: framed to their own extents (Shaniwar's petal hood,
-  // Sinhagad's hood and tripod foot). The lineup profiles share one frame,
-  // so lineup.py can stand them side by side at the same scale.
-  'lens-1': { s: 16.5, model: 0, az: 38, el: 11, frame: 64, tx: 0, ty: 0, tz: -26, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lens-2': { s: 16.5, model: 1, az: 38, el: 11, frame: 54, tx: 0, ty: 0, tz: -50, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lens-3': { s: 16.5, model: 2, az: 38, el: 11, frame: 70, tx: 0, ty: -6, tz: -52, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-1': { s: 16.5, model: 0, az: 90, el: 0, frame: 66, tx: 0, ty: 0, tz: -26, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-2': { s: 16.5, model: 1, az: 90, el: 0, frame: 66, tx: 0, ty: 0, tz: -49, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
-  'lineup-3': { s: 16.5, model: 2, az: 90, el: 0, frame: 66, tx: 0, ty: -10, tz: -52, iris: 0.4, light: 0, focus: 0.3, sx: 0, sy: 0 },
+  'hero-lens': { s: 16.5, irisEven: true, az: 26, el: 9, frame: 64, tx: 0, ty: 0, tz: -44, iris: 0.5, sx: 0, sy: 0 },
+  // The three lenses: a matched set, one body, so one pose; the iris is
+  // stopped down evenly, as a real one closes. The lineup profiles share
+  // one frame, so lineup.py stands them side by side at the same scale.
+  ...[1, 2, 3].reduce((o, k) => Object.assign(o, {
+    [`lens-${k}`]: { s: 16.5, model: k - 1, az: 38, el: 11, frame: 54, tx: 0, ty: 0, tz: -50, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+    [`lineup-${k}`]: { s: 16.5, model: k - 1, az: 90, el: 0, frame: 56, tx: 0, ty: 0, tz: -49, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+    // Each lens's own front label and distance scale, for its page.
+    [`d-glass-${k}`]: { s: 0, model: k - 1, az: 6, el: 5, frame: 29, tx: 0, ty: 0, tz: -6, iris: 0.06, sx: 0, sy: 0 },
+    [`d-scale-${k}`]: { s: 16.5, model: k - 1, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -27, focus: 0.62, light: 0, sx: 0, sy: 0 },
+  }), {}),
   // The iris as the film catches it, blades opening one at a time with
   // light behind them, framed inside the front ring.
   'd-iris': { s: 1.9, az: 0, el: 0, frame: 25, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
@@ -52,7 +53,7 @@ const POSES = {
   // The stills have no rail or caption panel to make room for: centred.
   'td-apart': { s: 21.1, sx: 0, sy: 0.02 },
   'td-apart-tall': { s: 21.1, layout: 'narrow', sy: -0.04, frame: 126 },
-  'exploded-wide': { s: 16.5, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
+  'exploded-wide': { s: 16.5, irisEven: true, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
 };
 
 export async function renderStill(name, font) {

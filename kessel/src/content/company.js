@@ -41,9 +41,9 @@ export const company = {
       { year: 2021, short: 'New workshop', title: 'A larger workshop', image: 'exploded-wide',
         body: 'The work moves to a larger workshop in Pune, with a separate clean bench for the glass and room to set a test chart at a proper distance.' },
       { year: 2023, short: 'Second model', title: 'The wide model', image: 'lens-1',
-        body: 'The wide model, proposed as Shaniwar, joins the range: a shorter barrel and a larger front, built by the same hands and put through the same checks.' },
+        body: 'The wide model, proposed as Shaniwar, joins the range on the same body as the first, so the two swap on a rig; built by the same hands and put through the same checks.' },
       { year: 2025, short: 'Third model', title: 'The long model', image: 'lineup',
-        body: 'The long model, proposed as Sinhagad, makes three. Wide, standard and long, and no plans for a fourth.' },
+        body: 'The long model, proposed as Sinhagad, makes three: a matched set, wide, standard and long on one body, and no plans for a fourth.' },
     ],
   },
 

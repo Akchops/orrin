@@ -46,4 +46,3 @@
 /* See the difference on the Lenses page and each lens page. */
 #lenses .lx-fov { max-width: calc(1320px + var(--gutter-l) + var(--gutter-r)); }
 .route--lens .lens__fov { padding-block: clamp(3rem, 7vw, 6rem); padding-inline: clamp(0px, 3vw - 8px, 40px); }
-#lenses .lx-lens__shape { color: var(--dim); max-width: 40ch; }

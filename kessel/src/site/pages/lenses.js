@@ -4,7 +4,7 @@
 // the side-by-side table set like an engraved scale.
 import { site, esc, lensRoute, img, proposalTag, footer, route, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
-import { lenses } from '../../content/lenses.js';
+import { lenses, matchedSet } from '../../content/lenses.js';
 
 const spec = (l, key) => (l.specs.find(([k]) => k === key) || [key, ''])[1];
 // "28 mm" -> ["28", "mm"], so the number can be set large and the unit small.
@@ -33,7 +33,6 @@ function lensSection(l, i) {
     <p class="lx-lens__kicker"><span class="lx-lens__no">${no}</span> <span>${esc(l.role)} &middot; ${esc(spec(l, 'Focal length'))} &middot; ${esc(spec(l, 'Maximum aperture'))}</span> ${proposalTag}</p>
     <h2 class="lx-lens__name" id="${id}-name">${esc(l.name)}</h2>
     <p class="lx-lens__line">${esc(l.line)}</p>
-    <p class="lx-lens__shape">${esc(l.shape)}</p>
     <a class="lx-lens__more" href="#${lensRoute(l)}">View lens<span class="sr-only">: ${esc(l.name)}</span> <span class="lx-lens__arrow" aria-hidden="true">&rarr;</span></a>
   </div>
 </article>`;
@@ -49,7 +48,7 @@ export function lensesHTML() {
       <p class="eyebrow lx-hero__eyebrow">Lenses <span>&middot; 01&ndash;03</span></p>
       <h1 id="lenses-title" tabindex="-1" class="lx-hero__title"><span>Three</span> <span>lenses</span></h1>
       <div class="lx-hero__aside">
-        <p class="lx-hero__lead">A wide, a standard and a long lens for cinema and photography. Each is assembled by one optician and signed on the barrel.</p>
+        <p class="lx-hero__lead">A wide, a standard and a long lens for cinema and photography: a matched set, one body, each assembled by one optician and signed on the barrel.</p>
         <p class="note">${esc(site.proposalNote)}</p>
       </div>
     </div>
@@ -79,6 +78,7 @@ export function lensesHTML() {
         <table class="spec lx-spec"><caption>Sample specifications for the three proposal lenses</caption>
           <thead><tr><td></td>${heads}</tr></thead><tbody>${rows}</tbody></table>
         <p class="spec-note">${esc(site.specNote)}</p>
+        <p class="lx-set"><strong>${esc(matchedSet.title)}.</strong> ${esc(matchedSet.line)} ${esc(matchedSet.differ)}</p>
       </div>
     </div>
   </section>
