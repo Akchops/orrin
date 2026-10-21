@@ -12,7 +12,7 @@ export const site = {
   nav: [
     { href: '#lenses', label: 'Lenses' },
     { href: '#craft', label: 'Craft' },
-    { href: '#workshop', label: 'Company' },
+    { href: '#company', label: 'Company' },
     { href: '#contact', label: 'Contact' },
   ],
   more: [

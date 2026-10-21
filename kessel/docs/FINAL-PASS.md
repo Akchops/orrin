@@ -178,3 +178,18 @@ mount close-ups; smoke test passed.
   bleed.
 - Company: the nav points at the existing company page for now; step 10
   replaces it.
+
+### 10. Company page — done
+
+- #company replaces the old Workshop page (#workshop still lands on it).
+  Every section is tagged "Sample content for this concept".
+- Why Kessel exists; a timeline from 2017 (founded, first lens, the move
+  to a larger workshop, the wide model, the third model) as a year
+  scrubber on wide screens and a stepper on phones; how they work, with
+  the six checks to tick off or run in order until the lens is signed;
+  the workshop as a facts strip and three value blocks; a FAQ that opens
+  and closes; "Who builds your lens" as four roles, no names.
+- No awards, customers, prices or people's names. Opens on the lens close
+  up with an engraved ring round it.
+Check: timeline, checks, FAQ and role cards scripted at 1440 and 390;
+#workshop resolves to it and the nav marks Company.

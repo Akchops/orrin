@@ -8,6 +8,7 @@
 // the same routes.
 import { startFov } from './fov-live.js';
 import './craft.js';
+import './company.js';
 
 const root = document.documentElement;
 const map = window.__kesselRoutes || {};

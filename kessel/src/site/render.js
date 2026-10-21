@@ -10,7 +10,7 @@ import { homeHTML } from './pages/home.js';
 import { lensesHTML } from './pages/lenses.js';
 import { lensHTML } from './pages/lens.js';
 import { craftHTML } from './pages/craft.js';
-import { workshopHTML } from './pages/workshop.js';
+import { companyHTML } from './pages/company.js';
 import { contactHTML } from './pages/contact.js';
 
 // --------------------------------------------------------------- shell
@@ -28,7 +28,7 @@ export function header() {
 
 // --------------------------------------------------------------- all
 export function renderSite() {
-  const routes = [homeHTML(), lensesHTML(), ...lenses.map(lensHTML), craftHTML(), workshopHTML(), contactHTML()];
+  const routes = [homeHTML(), lensesHTML(), ...lenses.map(lensHTML), craftHTML(), companyHTML(), contactHTML()];
   const html = routes.join('\n\n');
   // Every id on the site belongs to one route: the map lets the first
   // script in <head> pick the route from the address before first paint.

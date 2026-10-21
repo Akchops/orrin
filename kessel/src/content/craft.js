@@ -36,6 +36,6 @@ export const craft = {
   ],
   next: [
     { route: 'lenses', label: 'Next', text: 'See the three', last: 'lenses' },
-    { route: 'workshop', label: 'Then', text: 'About the', last: 'company' },
+    { route: 'company', label: 'Then', text: 'About the', last: 'company' },
   ],
 };
