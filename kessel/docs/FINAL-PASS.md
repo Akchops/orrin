@@ -221,3 +221,15 @@ is refused here, as before).
   bodies. Product stills and the viewers stop the iris down evenly (the
   film still opens it a blade at a time). Each lens page's close-ups show
   that lens's own front label and scale. All stills re-rendered.
+
+### 2. The street viewer is the centrepiece — done
+
+- "See the difference" now comes straight after the opening visual on the
+  Lenses page and on every lens page (that lens preselected), instead of
+  near the bottom; the viewer itself is unchanged in look and behaviour.
+- Depth of field on the long lens: the shops behind the person blur
+  harder at 100 mm (and a little at 50 mm), the fort behind them more.
+- Angle-of-view readout: a fan in the screen's corner opens to the lens's
+  horizontal angle (74, 40 and 20 degrees, and every angle between on the
+  dial) with the figure and "angle of view" beside it; the spoken update
+  says the angle too. Without JavaScript it shows the first lens's angle.

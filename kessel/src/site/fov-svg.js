@@ -11,7 +11,7 @@
 // id must be unique on the site (it prefixes every id inside); lens is the
 // one shown first. head: false leaves out the eyebrow, title and lead.
 import { esc } from './parts.js';
-import { LENSES, FRAMES, WORLD, GRADS, BLUR, lensById, scene } from '../app/fov.js';
+import { LENSES, FRAMES, WORLD, GRADS, BLUR, lensById, scene, fanPath } from '../app/fov.js';
 
 const ORDER = ['far', 'mid', 'subj', 'near'];
 const v = (k) => `var(--fk-${k})`;
@@ -96,6 +96,10 @@ export function fovHTML({ id = 'fov', lens = 'shaniwar', head = true } = {}) {
       <div class="fov__hud" aria-hidden="true">
         <span class="fov__corners"></span>
         <p class="fov__hud-who"><span class="fov__hud-name">${esc(first.name)}</span> <span class="fov__hud-role">${esc(first.role)}</span></p>
+        <div class="fov__aov">
+          <svg class="fov__fan" viewBox="-50 -48 100 52" focusable="false"><path class="fov__fan-ref" d="${fanPath(84)}"/><path class="fov__fan-wedge" d="${fanPath(first.deg)}"/></svg>
+          <p class="fov__aov-t"><span class="fov__aov-deg">${first.deg}&deg;</span><small>angle of view</small></p>
+        </div>
         <p class="fov__hud-read"><span class="fov__hud-mm">${first.mm}</span><small>mm</small> <span class="fov__hud-deg">${first.deg}&deg;</span></p>
       </div>
     </div>

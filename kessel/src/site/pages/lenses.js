@@ -61,11 +61,11 @@ export function lensesHTML() {
     </div>
   </header>
 
-  ${lenses.map(lensSection).join('\n\n  ')}
-
   <div class="lx-fov wrap">
     ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar' })}
   </div>
+
+  ${lenses.map(lensSection).join('\n\n  ')}
 
   <section class="lx-compare" aria-labelledby="lenses-compare-title">
     <div class="lx-compare__scale">${img('d-scale')}</div>

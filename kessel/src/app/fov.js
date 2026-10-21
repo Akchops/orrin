@@ -31,6 +31,13 @@ export const LENSES = [
 export const angle = (mm) => 2 * Math.atan(18 / mm) * 180 / Math.PI;
 for (const l of LENSES) l.deg = Math.round(angle(l.mm));
 export const lensById = (id) => LENSES.find((l) => l.id === id) || LENSES[0];
+// The angle-of-view fan in the screen's corner: a wedge opening upward
+// from the camera, as wide as the lens's horizontal angle.
+export function fanPath(deg, r = 44) {
+  const h = (deg / 2) * Math.PI / 180, x = (r * Math.sin(h)).toFixed(2), y = (-r * Math.cos(h)).toFixed(2);
+  return `M0 0L${-x} ${y}A${r} ${r} 0 0 1 ${x} ${y}Z`;
+}
+
 
 // -------------------------------------------------------------- geometry
 // The world is 1000 x 640 units. Each frame is 3:2. The wide is centred on
@@ -48,7 +55,7 @@ export const SUBJECT = { x: 610, y: 548, h: 106 };
 // How much each lens blurs the layers behind the person (a standard
 // deviation in world units, wide to long): at one aperture a longer lens
 // has less depth of field, so the shops go soft and the fort softer.
-export const BLUR = { far: [0, 1.6, 5.5], mid: [0, 0.9, 3.4] };
+export const BLUR = { far: [0, 2.2, 7.5], mid: [0, 1.1, 5] };
 
 // ---------------------------------------------------------- path helpers
 // Every closed shape runs clockwise, so shapes merged into one path never

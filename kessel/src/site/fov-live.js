@@ -4,7 +4,7 @@
 // one frame to the next (in focal length, so the zoom feels even) while
 // the layers behind the person blur in or out. The dial runs through every
 // focal length between the three. No libraries: the SVG does the drawing.
-import { LENSES, AIM, WIDE_W, BLUR, WORLD, angle } from '../app/fov.js';
+import { LENSES, AIM, WIDE_W, BLUR, WORLD, angle, fanPath } from '../app/fov.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const LOG = LENSES.map((l) => Math.log(l.mm));
@@ -40,6 +40,7 @@ function enhance(root) {
   }
   const hudName = root.querySelector('.fov__hud-name'), hudRole = root.querySelector('.fov__hud-role');
   const hudMm = root.querySelector('.fov__hud-mm'), hudDeg = root.querySelector('.fov__hud-deg');
+  const fan = root.querySelector('.fov__fan-wedge'), aovDeg = root.querySelector('.fov__aov-deg');
   const sayName = root.querySelector('.fov__say-name'), sayText = root.querySelector('.fov__say-text');
   const liveEl = root.querySelector('.fov__live');
   const dial = root.querySelector('.fov__dial'), input = root.querySelector('.fov__mm-in');
@@ -64,7 +65,10 @@ function enhance(root) {
     veil.setAttribute('d', `M-1 -1H${WORLD.w + 1}V${WORLD.h + 1}H-1Z M${f.x.toFixed(1)} ${f.y.toFixed(1)}v${f.h.toFixed(1)}h${f.w.toFixed(1)}v${(-f.h).toFixed(1)}Z`);
     const mm = Math.exp(lm);
     hudMm.textContent = Math.round(mm);
-    hudDeg.textContent = Math.round(angle(mm)) + '°';
+    const deg = angle(mm);
+    hudDeg.textContent = Math.round(deg) + '°';
+    aovDeg.textContent = Math.round(deg) + '°';
+    fan.setAttribute('d', fanPath(deg));
     input.value = Math.round(((lm - L0) / (L1 - L0)) * 1000);
     const n = nearest(lm);
     if (n !== shown) {
@@ -87,7 +91,7 @@ function enhance(root) {
       if (t < 1) anim = requestAnimationFrame(step);
     };
     anim = requestAnimationFrame(step);
-    if (announce) { const l = LENSES[i]; liveEl.textContent = `${l.name}, ${l.mm} mm: ${l.sees}`; }
+    if (announce) { const l = LENSES[i]; liveEl.textContent = `${l.name}, ${l.mm} mm, ${l.deg}° angle of view: ${l.sees}`; }
   }
   // The dial: any focal length between the three; let go near one and it
   // settles on it.
@@ -96,7 +100,7 @@ function enhance(root) {
     const n = nearest(lm);
     if (Math.abs(LOG[n] - lm) < 0.12) go(n, { announce: false });
     const l = LENSES[nearest(lm)];
-    liveEl.textContent = `${Math.round(Math.exp(lm))} mm, nearest ${l.name}.`;
+    liveEl.textContent = `${Math.round(Math.exp(lm))} mm, ${Math.round(angle(Math.exp(lm)))}° angle of view, nearest ${l.name}.`;
   });
   dial.hidden = false;
   draw();

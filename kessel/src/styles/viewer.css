@@ -43,6 +43,7 @@
 #lenses .lx-hero__label.is-hot a { color: var(--engrave); }
 #lenses .lx-hero__label.is-hot a::before { width: 100%; }
 
-/* See the difference on the Lenses page and each lens page. */
-#lenses .lx-fov { max-width: calc(1320px + var(--gutter-l) + var(--gutter-r)); }
-.route--lens .lens__fov { padding-block: clamp(3rem, 7vw, 6rem); padding-inline: clamp(0px, 3vw - 8px, 40px); }
+/* See the difference: the centrepiece of the Lenses page, straight after
+   the lineup, and of each lens page, straight after the model. */
+#lenses .lx-fov { width: 100%; max-width: 1320px; margin-inline: auto; }
+.route--lens .lens__fov { padding-block: clamp(2.5rem, 6vw, 5rem); padding-inline: clamp(0px, 3vw - 8px, 40px); max-width: 1320px; margin-inline: auto; width: 100%; box-sizing: border-box; }

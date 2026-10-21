@@ -75,6 +75,10 @@ export function lensHTML(l, i) {
     </div>
   </div>
 
+  <div class="lens__fov">
+    ${fovHTML({ id: `${id}-fov`, lens: l.slug })}
+  </div>
+
   <section class="lens__detail" aria-labelledby="${id}-detail">
     <h2 class="sr-only" id="${id}-detail">${esc(l.name)} up close</h2>
     ${tile('glass', `d-glass-${i + 1}`, 'Front diameter', 'Front label and coated glass')}
@@ -88,10 +92,6 @@ export function lensHTML(l, i) {
     </dl>
     <div class="lens__table">${specTable(l, `${l.name}: sample specifications`)}</div>
   </section>
-
-  <div class="lens__fov">
-    ${fovHTML({ id: `${id}-fov`, lens: l.slug })}
-  </div>
 
   <nav class="lens__pager" aria-label="Other lenses">
     ${pager(prev, 'prev')}

@@ -182,6 +182,20 @@ html:not(.js) .fov__nums { margin-top: 0.15rem; }
 .fov__hud-name { font-stretch: 118%; font-weight: 300; font-size: clamp(1rem, 0.85rem + 0.7vw, 1.5rem); }
 .fov__hud-role { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lc); }
 .fov__hud-read { align-self: flex-end; font-variant-numeric: tabular-nums; }
+/* The angle of view: a fan as wide as the lens's horizontal angle, with the
+   figure beside it, in the screen's lower left corner. */
+.fov__aov {
+  position: absolute; left: clamp(1rem, 2.6vw, 1.75rem); bottom: clamp(0.85rem, 2.2vw, 1.5rem);
+  display: flex; align-items: flex-end; gap: 0.5rem;
+}
+.fov__fan { width: clamp(2.6rem, 6vw, 4.4rem); height: auto; overflow: visible; }
+.fov__fan-ref { fill: none; stroke: color-mix(in srgb, var(--engrave) 35%, transparent); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+.fov__fan-wedge { fill: color-mix(in srgb, var(--lc) 30%, transparent); stroke: var(--lc); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.fov__aov-t { display: grid !important; gap: 0.1rem; line-height: 1; }
+.fov__aov-deg { font-stretch: 125%; font-weight: 300; font-size: clamp(1.1rem, 0.8rem + 1.2vw, 1.9rem); color: var(--engrave); font-variant-numeric: tabular-nums; }
+.fov__aov-t small { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+/* The degrees move to the fan; the readout keeps the focal length. */
+.fov__hud-read .fov__hud-deg { display: none; }
 .fov__hud-mm { font-stretch: 125%; font-weight: 200; font-size: clamp(1.6rem, 1rem + 2.4vw, 3.2rem); line-height: 0.9; }
 .fov__hud-read small { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-left: -0.35rem; }
 .fov__hud-deg { font-size: clamp(0.8rem, 0.7rem + 0.4vw, 1.05rem); letter-spacing: 0.06em; color: var(--dim); min-width: 2.6em; }
