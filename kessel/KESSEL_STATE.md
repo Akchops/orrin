@@ -14,8 +14,8 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 | 2 | Three different lenses again (restore silhouettes, hood, collar); lineup at one scale | done |
 | 3 | Street viewer as centrepiece (already built in the last follow-up: verify) | done |
 | 4 | Lens pages as pinned, scroll-led experiences (focus pull, aperture and bokeh, what it sees, specs and enquire); Lenses hover tint, bokeh preview, compare strip | done |
-| 5 | Craft and Company illustrated centrepieces (already built: verify, vary layouts) | in progress |
-| 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | next |
+| 5 | Craft and Company illustrated centrepieces (already built: verify, vary layouts) | done |
+| 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | in progress |
 | 7 | Final QA at every width, reduced motion, no-JS | next |
 
 ## Notes for resuming
@@ -70,3 +70,10 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 - Known: the Lenses page's full street viewer and the lens pages' "what it
   sees" at 1024x768, tablets and phones are taller than one screen, so
   they play in the flow (scroll still drives them, cue and nudge still).
+- 5 done (checked, no code change beyond step 2's bench tray): Craft opens
+  on the bench drawing with the five-stage build-up (steps and slider) and
+  close-ups; Company opens on the bench with four hotspots (loupe, iris
+  tool, signing pen, finished-lens tray, now three different sizes), the
+  2017-2025 timeline scrub, the PUNE / 2017 / THREE strip, the six checks
+  and the FAQ; every invented part says "Sample content for this
+  concept"; layouts differ section to section. Audit 64 of 64.
