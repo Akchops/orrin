@@ -395,6 +395,12 @@ html:not(.js) #company .tl__index { display: none; }
   text-shadow: 0 -1px 0 color-mix(in srgb, var(--void) 90%, transparent), 0 1px 0 color-mix(in srgb, var(--engrave) 14%, transparent);
 }
 #company .cf__dot { flex: none; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0.8rem color-mix(in srgb, var(--amber) 60%, transparent); }
+/* From 600 px the three stay on one row: the figures scale with the row
+   (they wrapped between 600 and 940 px and again past 1475). */
+@media (min-width: 600px) {
+  #company .cf__row { flex-wrap: nowrap; container-type: inline-size; }
+  #company .cf dd { font-size: min(8.4rem, 8.2cqi); }
+}
 @media (max-width: 599px) {
   #company .cf__row { flex-direction: column; align-items: stretch; gap: 0; padding-block: 2rem; }
   #company .cf__item { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 1rem; padding-block: 0.9rem; border-bottom: 1px solid var(--line); }

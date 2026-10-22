@@ -316,3 +316,29 @@ WebGL (forced), where it animates from scroll.
 - The badge now also shows on the pages with a 3D viewer (Lenses and the
   lens pages), saying whether the viewer is live or a still and why; on
   phones it sits bottom left there, clear of the page's labels.
+- Second round (Craft, Company, Contact and the shell, by agents; six
+  findings, each reproduced by a second agent; two were already fixed
+  above):
+  - Craft: from 1600 px the heading wrapped to three lines and its
+    sample-content note printed over the drawing's first label: the
+    heading is capped where the figure stops growing.
+  - Craft: the mosaic captions covered up to 120% of the small tiles at
+    900-1024 and ran over the engraving and the signature: captions are
+    now a small solid chip; the small tiles show number and name (the
+    longer label is still read out).
+  - Company: the facts strip broke onto two rows (600-940 and past 1475
+    px) with a stray dot: one row from 600 px, figures scaled to the row.
+  - Without JavaScript, "Skip to content" on any page but Home sent the
+    visitor to Home (the CSS router saw #main): left out on those pages.
+  - My first #top fix put an empty anchor under the badge's margin, so
+    with JavaScript off the badge covered the header: the anchor is gone;
+    a link to #top now goes to the very top by HTML's own rule.
+Check: every fix scripted and measured; overflow audit 64 of 64; smoke
+test passed (2D at 390 and 1440, software WebGL at 1440, reduced motion,
+no-JS).
+
+Not done in this follow-up: nothing seen on a real GPU (none here; the
+live scene was only seen animating from scroll on software WebGL, forced
+with ?gl=force). P2 notes left for later: the mount close-up shows the
+iris as a purple shape through the rear element; the Company bench fills
+its frame like a cover image on phones (its tools always stay in view).

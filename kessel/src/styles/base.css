@@ -77,6 +77,10 @@ p { margin: 0; max-width: 60ch; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip { position: fixed; left: var(--gutter-l); top: 8px; z-index: 60; background: var(--engrave); color: var(--void); padding: 0.4rem 0.8rem; transform: translateY(-200%); }
 .skip:focus { transform: none; }
+/* Without JavaScript the skip link's #main would replace the page's own
+   address and the CSS router would fall back to Home: on the other pages
+   it is left out (with JavaScript it focuses the page's heading). */
+html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .skip { display: none; }
 .selectable { user-select: all; }
 
 /* ------------------------------------------------------------- tier badge */

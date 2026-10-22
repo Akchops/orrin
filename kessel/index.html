@@ -101,6 +101,10 @@ p { margin: 0; max-width: 60ch; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip { position: fixed; left: var(--gutter-l); top: 8px; z-index: 60; background: var(--engrave); color: var(--void); padding: 0.4rem 0.8rem; transform: translateY(-200%); }
 .skip:focus { transform: none; }
+/* Without JavaScript the skip link's #main would replace the page's own
+   address and the CSS router would fall back to Home: on the other pages
+   it is left out (with JavaScript it focuses the page's heading). */
+html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .skip { display: none; }
 .selectable { user-select: all; }
 
 /* ------------------------------------------------------------- tier badge */
@@ -1495,7 +1499,9 @@ html.turning, html.turning body { user-select: none; -webkit-user-select: none; 
     grid-area: fig; z-index: 3; align-self: start; justify-self: start; max-width: 33%;
     padding: clamp(1.4rem, 2.6vw, 2.4rem) 0 0 clamp(1.4rem, 2.6vw, 2.4rem);
   }
-  #craft .ckx__head h1 { font-size: clamp(2.2rem, 0.6rem + 2.6vw, 3.6rem); text-shadow: 0 0 2rem color-mix(in srgb, var(--void) 50%, transparent); }
+  /* Capped where the figure stops growing (1320 px), so the heading never
+     wraps to a third line and pushes its note onto the drawing's labels. */
+  #craft .ckx__head h1 { font-size: clamp(2.2rem, 0.6rem + 2.6vw, 3.05rem); text-shadow: 0 0 2rem color-mix(in srgb, var(--void) 50%, transparent); }
 }
 
 /* ---------------------------------------------------- the drawing's stages */
@@ -1647,10 +1653,12 @@ html.turning, html.turning body { user-select: none; -webkit-user-select: none; 
 }
 #craft .ckm__tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 #craft .ckm__tile--d-glass img { object-position: 50% 45%; }
+/* The caption is a solid chip in the corner, so it never runs over the
+   engraving, the signature or a bright ring in the still. */
 #craft .ckm__tile figcaption {
-  position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.55rem;
-  padding: 2.2rem clamp(0.7rem, 1.6vw, 1.1rem) clamp(0.6rem, 1.4vw, 0.95rem);
-  background: linear-gradient(transparent, color-mix(in srgb, var(--void) 82%, transparent));
+  position: absolute; left: 0.5rem; bottom: 0.5rem; max-width: calc(100% - 1rem); display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.55rem;
+  padding: 0.45rem 0.65rem 0.5rem; border-radius: 2px;
+  background: color-mix(in srgb, var(--void) 86%, transparent);
   font-family: var(--display); letter-spacing: 0.12em; text-transform: none;
 }
 #craft .ckm__no { font-size: 0.7rem; color: var(--amber); }
@@ -1662,6 +1670,9 @@ html.turning, html.turning body { user-select: none; -webkit-user-select: none; 
   #craft .ckm__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 4fr); grid-template-areas: "glass iris scale" "glass mount sign"; }
   #craft .ckm__tile--d-glass { aspect-ratio: 1; }
   #craft .ckm__tile:not(.ckm__tile--d-glass) { aspect-ratio: auto; }
+  /* The small tiles keep the number and the name; the longer label is
+     still read out. */
+  #craft .ckm__tile:not(.ckm__tile--d-glass) .ckm__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 /* -------------------------------------------------------------- the end */
@@ -2086,6 +2097,12 @@ html:not(.js) #company .tl__index { display: none; }
   text-shadow: 0 -1px 0 color-mix(in srgb, var(--void) 90%, transparent), 0 1px 0 color-mix(in srgb, var(--engrave) 14%, transparent);
 }
 #company .cf__dot { flex: none; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0.8rem color-mix(in srgb, var(--amber) 60%, transparent); }
+/* From 600 px the three stay on one row: the figures scale with the row
+   (they wrapped between 600 and 940 px and again past 1475). */
+@media (min-width: 600px) {
+  #company .cf__row { flex-wrap: nowrap; container-type: inline-size; }
+  #company .cf dd { font-size: min(8.4rem, 8.2cqi); }
+}
 @media (max-width: 599px) {
   #company .cf__row { flex-direction: column; align-items: stretch; gap: 0; padding-block: 2rem; }
   #company .cf__item { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 1rem; padding-block: 0.9rem; border-bottom: 1px solid var(--line); }
@@ -2863,9 +2880,8 @@ html:not(.js) .fov__dial { display: none; }
 </style>
 </head>
 <body>
-<!-- #top is the very top of the page, above the badge and the stills
-     notice, so a link to it never scrolls them out of view. -->
-<span id="top"></span>
+<!-- No element is named "top": a link to #top then goes to the very top
+     of the page (HTML's own rule), above the badge and the stills notice. -->
 <a class="skip" href="#main" data-skip>Skip to content</a>
 
 <!-- Which version of the page is running, always visible. Without JS this
