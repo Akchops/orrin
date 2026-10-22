@@ -3,7 +3,7 @@
 // this lens, the close-ups, the figures, and the way to the next lens.
 import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
-import { lenses, matchedSet } from '../../content/lenses.js';
+import { lenses } from '../../content/lenses.js';
 
 // The large transparent shot for each lens (wide, standard, long).
 const SHOT = { shaniwar: 'lens-1', parvati: 'lens-2', sinhagad: 'lens-3' };
@@ -56,7 +56,7 @@ export function lensHTML(l, i) {
       <h1 class="lens__name" id="${id}-title" tabindex="-1">${esc(l.name)}</h1>
       <p class="lens__mm">${figure(spec(l, 'Focal length'))} <span class="lens__mm-role">${esc(l.role)}</span></p>
       <p class="lens__line">${esc(l.line)}</p>
-      <p class="lens__set"><strong>${esc(matchedSet.title)}.</strong> ${esc(matchedSet.line)}</p>
+      <p class="lens__set">${esc(l.shape)}</p>
       ${viewerTools(`${id}-viewer`, { hint: 'Drag to turn the lens. Pinch, or use the buttons, to zoom.' })}
       <details class="enquire lens__enq">
         <summary class="btn btn--solid">Enquire about ${esc(l.name)}</summary>

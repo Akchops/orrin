@@ -11,7 +11,7 @@
 // finished lens reads without JavaScript; kessel/src/site/craft.js then
 // steps through the stages and moves the iris, the light and the pen.
 //
-// The lens is the matched body all three Kessel lenses share (black
+// The lens is the standard Kessel body (black
 // anodised barrel, knurled focus ring, engraved distance scale, bare
 // machined edges, stainless PL mount), drawn as Parvati, the standard:
 // amber ring, 50 mm. It lies on its side, front to the left, the top half

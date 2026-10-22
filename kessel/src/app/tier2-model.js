@@ -71,6 +71,31 @@ export const PARTS = [
     ['T', 'T', 'T', 'T'], { n: 2, a0: k * 90 + 22.9 - 9.5, span: 19 })),
 ];
 
+// The hoods and the tripod collar of the other two models (lens.js):
+// drawn only while S.model is near their model and the lens is whole.
+// Shaniwar's petal hood is drawn here as a round flared hood.
+export const EXTRAS = [
+  // Shaniwar (model 0): a small hood flaring out round the big front element.
+  part('barrel-front', 0,
+    [[41.2, -2.6], [42, 1.5], [43.1, 5], [44.6, 8], [44.3, 8.3], [43.5, 8.6], [42.4, 5.4], [41.1, 1.6], [40.3, -2.3], [41.2, -2.6]],
+    ['A', 'A', 'A', 'B', 'A', 'F', 'F', 'F', 'Ac'], { model: 0 }),
+  // Sinhagad (model 2): a long pull-out tube hood with a bare lip.
+  part('barrel-front', 0,
+    [[41.9, -2.6], [41.9, 27.4], [41.6, 28], [40.4, 28], [40.4, -2.4], [41.9, -2.6]],
+    ['A', 'B', 'A', 'F', 'Ac'], { model: 2 }),
+  // Sinhagad: the tripod collar, its post and the foot below.
+  part('barrel', 3,
+    [[43.4, -86.4], [43.4, -80.1], [42.8, -79.5], [37.2, -79.5], [37.2, -87], [42.8, -87], [43.4, -86.4]],
+    ['A', 'B', 'A', 'Ac', 'A', 'B'], { model: 2 }),
+  part('barrel', 3,
+    [[43, -86.4], [43, -80], [60.4, -80], [60.4, -86.4], [43, -86.4]],
+    ['Ac', 'A', 'Ac', 'A'], { model: 2, n: 2, a0: 270 - 7, span: 14 }),
+  part('barrel', 3,
+    [[60.4, -98.2], [60.4, -68.2], [63.6, -68.2], [63.6, -98.2], [60.4, -98.2]],
+    ['A', 'A', 'B', 'A'], { model: 2, n: 4, a0: 270 - 12, span: 24 }),
+];
+
+
 // The camera body's throat behind the mount: dark walls and four baffles,
 // in z measured from the sensor. Seen only from inside, on the axis.
 export const THROAT = part(null, 4,

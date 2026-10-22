@@ -16,15 +16,20 @@ import { scaleTexture, frontRingTexture, rearBarrelTexture } from './textures.js
 import { createState } from './story.js';
 
 const DEG = Math.PI / 180;
-// The stills' pose (src/app/stills.js lens-1..3): camera angles, the
-// half-height in mm that fills the frame, and the point it aims at. The
-// three lenses are a matched set, one body, so they share it.
-const POSE = [0, 1, 2].map(() => ({ az: 38, el: 11, frame: 54, ty: 0, tz: -50 }));
-// Lens length in mm, mount to front, the same for all three.
-const LEN = [99, 99, 99];
+// The stills' poses (src/app/stills.js lens-1..3): camera angles, the
+// half-height in mm that fills the frame, and the point it aims at (the
+// middle of each lens with its hood and collar). Each frame holds its lens
+// whole at every angle of the slow turn.
+const POSE = [
+  { az: 38, el: 11, frame: 66, ty: 0, tz: -26 },
+  { az: 38, el: 11, frame: 54, ty: 0, tz: -50 },
+  { az: 38, el: 11, frame: 80, ty: -9.5, tz: -52 },
+];
+// Lens length in mm, mount to front (lens.js LEN_K of 99 mm).
+const LEN = [71.3, 99, 143.6];
 // The lineup: where each lens stands across the still, as a share of its
 // width (the label columns on #lenses follow the same three places).
-const LINEUP_X = [0.1594, 0.5, 0.8406];
+const LINEUP_X = [0.1791, 0.5242, 0.8734];
 const SLUG = ['shaniwar', 'parvati', 'sinhagad'];
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -105,9 +110,9 @@ export function mountViewer(el, L, caps, { font }) {
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
     if (lineup) {
-      // One frame for all three (they are the same height), with a margin;
-      // the mounts stand on one line near the bottom.
-      frame = 68;
+      // One frame, one scale for all three, set by the tallest (Sinhagad
+      // with its hood), with a margin; the mounts stand on one line.
+      frame = 106;
       const halfW = frame * camera.aspect;
       items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 7, 0));
     } else frame = pose.frame;

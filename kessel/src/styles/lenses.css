@@ -34,10 +34,14 @@
    every width, so no lens is cut by an edge and no word is hidden. */
 #lenses .lx-hero__stage { position: relative; z-index: 1; margin-top: clamp(0.75rem, 2vw, 2rem); padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad)); }
 #lenses .lx-hero__fig img { width: 100%; max-width: none; margin: 0; }
+/* At one scale the long lens stands tallest: the lineup is never more than
+   70% of the screen tall (the still is 1800 x 1138). */
+#lenses .lx-hero__fig, #lenses .lx-hero__labels { max-width: calc(var(--vh) * 0.7 * 1800 / 1138); margin-inline: auto; }
 #lenses .lx-hero__labels {
-  list-style: none; margin: 0; padding: 0; display: grid; align-items: start;
-  /* Columns follow the three lenses in the still (cut by the edges). */
-  grid-template-columns: 30.7fr 4.6fr 29.4fr 4.6fr 30.7fr;
+  list-style: none; margin: 0 auto; padding: 0; display: grid; align-items: start;
+  /* Columns follow the three lenses in the still (kessel/scripts/lineup.py:
+     each lens's width, the gaps between them). */
+  grid-template-columns: 34.39fr 5.37fr 25.25fr 5.37fr 29.61fr;
   margin-top: clamp(0.75rem, 2vw, 1.75rem);
 }
 #lenses .lx-hero__label:nth-child(2) { grid-column: 3; }
@@ -229,6 +233,6 @@
   html:not(.js) #lenses .lx-hero { padding-top: calc(var(--safe-t) + var(--head) + 3.5rem); }
 }
 
-/* The matched-set note under the table. */
+/* How the three shapes differ, under the table. */
 #lenses .lx-set { color: var(--dim); max-width: 60ch; margin-top: 1.2rem; line-height: 1.55; }
 #lenses .lx-set strong { color: var(--engrave); font-weight: 600; }

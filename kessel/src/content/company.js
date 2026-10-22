@@ -1,5 +1,5 @@
 // The company page. Fixed facts: Pune, founded 2017, one optician builds
-// and signs each lens, three models that share one body (names are
+// and signs each lens, three models, each its own shape (names are
 // proposals). Everything else is sample content for this concept, and the
 // page says so in every section that has any: no names, awards, customers
 // or prices, roles only, and every year after 2017 is a sample date.
@@ -15,7 +15,7 @@ export const company = {
     hintJs: 'Tap a number on the bench to see who does what.',
     hintNoJs: 'The numbers on the bench are explained under the drawing.',
     // Read by screen readers in place of the drawing.
-    alt: 'A workshop bench at dusk. Through the window behind it, Pune: a hill with a fort, the city lit for the evening. A lamp hangs over the bench and pools warm light on a work mat. On the mat, left to right: a loupe on a cloth beside a lens element, an iris ring with a fine pin spanner, a lens lying on V-blocks with a pen signing its rear barrel, and a tray holding the three finished lenses of the set, alike but for their blue, amber and green rings.',
+    alt: 'A workshop bench at dusk. Through the window behind it, Pune: a hill with a fort, the city lit for the evening. A lamp hangs over the bench and pools warm light on a work mat. On the mat, left to right: a loupe on a cloth beside a lens element, an iris ring with a fine pin spanner, a lens lying on V-blocks with a pen signing its rear barrel, and a tray holding the three finished lenses, short, medium and long, with blue, amber and green rings.',
     // One note per hotspot, in the order of the markers. Roles only.
     notes: [
       { title: 'The loupe', role: 'Glass and coatings',
@@ -25,7 +25,7 @@ export const company = {
       { title: 'The signing pen', role: 'The optician',
         body: 'One optician builds each lens, start to finish. When every check has passed they sign the rear barrel: the last thing that happens at the bench, and the name to ask for if the lens ever comes back.' },
       { title: 'The finished lens tray', role: 'The inspector',
-        body: 'A second pair of eyes reads the test chart and can send any lens back to the bench. What passes waits here, capped: three lenses on one body, told apart by the engraving, the distance scale and the ring.' },
+        body: 'A second pair of eyes reads the test chart and can send any lens back to the bench. What passes waits here, capped: the short wide lens, the plain standard and the long one, each with its own engraving, distance scale and ring.' },
     ],
   },
 
@@ -44,9 +44,9 @@ export const company = {
       { year: 2021, short: 'Workshop', icon: 'workshop', title: 'A larger workshop',
         line: 'The work moves to a larger workshop in Pune, with a clean bench for the glass and room for a test chart.' },
       { year: 2023, short: 'Wide', icon: 'shaniwar', title: 'The wide model joins',
-        line: 'The wide model, proposed as Shaniwar, is built on the same body as the first, so the two swap on a rig.' },
-      { year: 2025, short: 'Long', icon: 'sinhagad', title: 'Three: a matched set',
-        line: 'The long model, proposed as Sinhagad, makes three: a matched set, and no plans for a fourth.' },
+        line: 'The wide model, proposed as Shaniwar, joins: short and stubby, with a big curved front and a small petal hood.' },
+      { year: 2025, short: 'Long', icon: 'sinhagad', title: 'Three lenses',
+        line: 'The long model, proposed as Sinhagad, makes three, with a long hood and a tripod collar, and no plans for a fourth.' },
     ],
   },
 
@@ -87,7 +87,7 @@ export const company = {
       { q: 'What does the signature mean?',
         a: 'It says who built the lens and who answers for it. It goes on only after the lens has passed every check, so it is also a record that the checks were done.' },
       { q: 'Why only three models?',
-        a: 'Wide, standard and long cover most of what one camera needs, and all three share one body: the same barrel, focus ring and mount, so they swap on a rig without changing anything else. A short range means each lens is built the same careful way every time.' },
+        a: 'Wide, standard and long cover most of what one camera needs, and each is shaped for its job: the wide short with a petal hood, the standard plain, the long with a hood and a tripod collar. A short range means each lens is built the same careful way every time.' },
       { q: 'Is every lens really built by one person?',
         a: 'Yes. Others grind the glass, machine the barrel and check the work, but one optician assembles each lens from start to finish.' },
       { q: 'How do I ask about a lens?',

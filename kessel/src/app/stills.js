@@ -27,17 +27,21 @@ const POSES = {
   // Site imagery, rendered with a transparent background so it sits on the
   // page with no box. Close crops on details the scene already has.
   'hero-lens': { s: 16.5, irisEven: true, az: 26, el: 9, frame: 64, tx: 0, ty: 0, tz: -44, iris: 0.5, sx: 0, sy: 0 },
-  // The three lenses: a matched set, one body, so one pose; the iris is
-  // stopped down evenly, as a real one closes. The lineup profiles share
-  // one frame, so lineup.py stands them side by side at the same scale.
-  ...[1, 2, 3].reduce((o, k) => Object.assign(o, {
-    [`lens-${k}`]: { s: 16.5, model: k - 1, az: 38, el: 11, frame: 54, tx: 0, ty: 0, tz: -50, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
-    [`lineup-${k}`]: { s: 16.5, model: k - 1, az: 90, el: 0, frame: 56, tx: 0, ty: 0, tz: -49, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
-    // Each lens's own front label and distance scale, for its page.
-    // Wide enough to take in the whole front ring and its engraved label.
-    [`d-glass-${k}`]: { s: 0, model: k - 1, az: 4, el: 6, frame: 43, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
-    [`d-scale-${k}`]: { s: 16.5, model: k - 1, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -27, focus: 0.62, light: 0, sx: 0, sy: 0 },
-  }), {}),
+  // The three lenses, each framed whole (with its hood and collar) as the
+  // live viewer frames it; the iris stopped down evenly, as a real one
+  // closes. The lineup profiles share one frame, so lineup.py stands them
+  // side by side at one scale.
+  ...[1, 2, 3].reduce((o, k) => {
+    const P = [{ frame: 66, ty: 0, tz: -26 }, { frame: 54, ty: 0, tz: -50 }, { frame: 80, ty: -9.5, tz: -52 }][k - 1];
+    const fr = [1.2, 1, 0.86][k - 1], lz = [0.72, 1, 1.45][k - 1];
+    return Object.assign(o, {
+      [`lens-${k}`]: { s: 16.5, model: k - 1, az: 38, el: 11, frame: P.frame, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+      [`lineup-${k}`]: { s: 16.5, model: k - 1, az: 90, el: 0, frame: 76, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+      // Each lens's own front label and distance scale, for its page.
+      [`d-glass-${k}`]: { s: 0, model: k - 1, az: 4, el: 6, frame: 43 * fr, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
+      [`d-scale-${k}`]: { s: 16.5, model: k - 1, az: 86, el: 2, frame: 21, tx: 38 * fr, ty: 0, tz: -27 * lz, focus: 0.62, light: 0, sx: 0, sy: 0 },
+    });
+  }, {}),
   // The iris as the film catches it, blades opening one at a time with
   // light behind them, framed inside the front ring.
   'd-iris': { s: 1.9, az: 0, el: 0, frame: 25, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },

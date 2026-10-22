@@ -60,7 +60,7 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   rim2.position.set(150, -90, -60);
   scene.add(rim2, rim2.target);
 
-  // One scale and one front label per lens of the matched set. Parvati's
+  // One scale and one front label per lens. Parvati's
   // front label is the one the film's hero frame shows close up, so only
   // it gets the full size on desktops.
   const textures = {

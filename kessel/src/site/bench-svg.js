@@ -27,19 +27,19 @@ export const SPOTS = [
 
 // --------------------------------------------------------------- the pen
 const n = (v) => Math.round(v * 10) / 10;
-// An affine pen: shapes drawn in local units, moved to ox oy, scaled by s
-// and turned by rot degrees. Every closed shape runs clockwise, so shapes
+// An affine pen: shapes drawn in local units, stretched by sx and sy,
+// moved to ox oy, scaled by s and turned by rot degrees. Every closed shape runs clockwise, so shapes
 // merged into one path never cut holes in each other.
-function pen(ox = 0, oy = 0, s = 1, rot = 0) {
+function pen(ox = 0, oy = 0, s = 1, rot = 0, sx = 1, sy = 1) {
   const r = rot * Math.PI / 180, c = Math.cos(r), si = Math.sin(r);
-  const at = (x, y) => [ox + s * (x * c - y * si), oy + s * (x * si + y * c)];
+  const at = (x0, y0) => { const x = x0 * sx, y = y0 * sy; return [ox + s * (x * c - y * si), oy + s * (x * si + y * c)]; };
   const p = (x, y) => at(x, y).map(n).join(' ');
   const t = {
     s, rot, at,
     M: (x, y) => `M${p(x, y)}`,
     L: (x, y) => `L${p(x, y)}`,
     C: (a, b, cx, cy, x, y) => `C${p(a, b)} ${p(cx, cy)} ${p(x, y)}`,
-    A: (rx, ry, large, sweep, x, y) => `A${n(rx * s)} ${n(ry * s)} ${n(rot)} ${large} ${sweep} ${p(x, y)}`,
+    A: (rx, ry, large, sweep, x, y) => `A${n(rx * s * sx)} ${n(ry * s * sy)} ${n(rot)} ${large} ${sweep} ${p(x, y)}`,
   };
   t.R = (x, y, w, h) => t.M(x, y) + t.L(x + w, y) + t.L(x + w, y + h) + t.L(x, y + h) + 'Z';
   t.E = (cx, cy, rx, ry = rx) => t.M(cx - rx, cy) + t.A(rx, ry, 1, 1, cx + rx, cy) + t.A(rx, ry, 1, 1, cx - rx, cy) + 'Z';
@@ -70,14 +70,15 @@ function list() {
 }
 
 // ---------------------------------------------------------- the lens set
-// The matched set: one body for all three. Black anodised barrel, knurled
-// focus ring, engraved distance scale, bare machined edges, stainless PL
-// mount. Only the engraving, the scale's numerals, the ring colour and the
-// front label differ. Names are proposals; focal lengths sample figures.
+// The three lenses: black anodised barrel, knurled focus ring, engraved
+// distance scale, bare machined edges, stainless PL mount; each its own
+// shape (fr: front width, lz: length, as src/app/lens.js FRONT_K and
+// LEN_K), engraving, scale numerals, ring colour and front label. Names
+// are proposals; focal lengths sample figures.
 export const SET = [
-  { id: 'shaniwar', name: 'SHANIWAR', mm: 24, ring: 'ringB', nums: ['.3', '.5', '1', '3', '∞'] },
-  { id: 'parvati', name: 'PARVATI', mm: 50, ring: 'ringA', nums: ['.45', '1', '2', '5', '∞'] },
-  { id: 'sinhagad', name: 'SINHAGAD', mm: 100, ring: 'ringG', nums: ['1', '1.5', '3', '10', '∞'] },
+  { id: 'shaniwar', name: 'SHANIWAR', mm: 24, ring: 'ringB', fr: 1.2, lz: 0.72, nums: ['.3', '.5', '1', '3', '∞'] },
+  { id: 'parvati', name: 'PARVATI', mm: 50, ring: 'ringA', fr: 1, lz: 1, nums: ['.45', '1', '2', '5', '∞'] },
+  { id: 'sinhagad', name: 'SINHAGAD', mm: 100, ring: 'ringG', fr: 0.86, lz: 1.45, nums: ['1', '1.5', '3', '10', '∞'] },
 ];
 export const setById = (id) => SET.find((l) => l.id === id);
 // The body, upright, mount face at y 0 and the front up: [top, bottom, radius].
@@ -410,13 +411,14 @@ function bench() {
   o.fill(PN.R(108, -7.6, 52, 2.4), 'steelHi');
   o.glow(tx, ty, 9, 9, 'lit', 0.8);
 
-  // 4. The finished lens tray: the matched set, capped and ready.
+  // 4. The finished lens tray: the three lenses, short, medium and long,
+  // capped and ready.
   o.glow(1125, 792, 140, 12, 'void', 0.6);
   o.fill(B.P([[1020, 698], [1230, 698], [1240, 760], [1010, 760]]), 'trayHi');
   o.fill(B.P([[1027, 704], [1223, 704], [1232, 760], [1018, 760]]), 'foam');
-  const X = [1062, 1125, 1188];
-  o.fill(X.map((x) => B.E(x, 757, 30, 9)).join(''), 'void', { a: 0.5 });
-  SET.forEach((l, i) => lens(o, pen(X[i], 766, 0.68), l, { text: true }));
+  const X = [1067, 1133, 1190];
+  o.fill(X.map((x, i) => B.E(x, 757, 28 * SET[i].fr, 9)).join(''), 'void', { a: 0.5 });
+  SET.forEach((l, i) => lens(o, pen(X[i], 766, 0.62, 0, l.fr, l.lz), l, { text: true }));
   o.fill(B.R(1010, 760, 230, 30), 'tray');
   o.fill(B.R(1010, 760, 230, 2.6), 'trayHi');
   o.fill(B.R(1098, 770, 54, 10), 'trayLo');

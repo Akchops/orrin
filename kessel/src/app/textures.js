@@ -1,6 +1,6 @@
 // Engraving textures, drawn at boot. Nothing is downloaded.
 
-// The matched set: one body and one focus throw (160 degrees), each lens
+// The three lenses: one focus throw (160 degrees), each lens
 // with its own distance scale, from infinity down to its close focus
 // (0.25, 0.45 and 1 m; sample figures). Real focus throws are close to
 // linear in dioptres (1/distance), which is why the marks bunch up toward

@@ -75,7 +75,7 @@
   --cb-mat: color-mix(in srgb, var(--anodise-2) 84%, var(--coat-2));
   --cb-matLine: color-mix(in srgb, var(--cb-mat) 72%, var(--coat-2));
   --cb-matEdge: color-mix(in srgb, var(--cb-mat) 55%, var(--coat-2));
-  /* Metal and glass: the matched set. */
+  /* Metal and glass: the three lenses. */
   --cb-anod: color-mix(in srgb, var(--void) 86%, var(--line-2));
   --cb-anod2: color-mix(in srgb, var(--anodise) 82%, var(--line-2));
   --cb-knurl: color-mix(in srgb, var(--anodise-2) 74%, var(--line-2));

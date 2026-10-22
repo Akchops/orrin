@@ -31,13 +31,13 @@ export const film = {
   models: {
     num: '05 · Lenses', title: 'Three lenses', note: 'The names and roles below are proposals for this concept.',
     list: [
-      { name: 'Shaniwar', still: 'model-1', alt: 'The wide lens of the matched set, with a blue ring.',
+      { name: 'Shaniwar', still: 'model-1', alt: 'The wide lens: short, with a big curved front, a small petal hood and a blue ring.',
         short: 'The wide one, for rooms, streets and landscapes.',
         body: 'The wide one. For rooms, streets and landscapes, where everything in front of you belongs in the frame.' },
-      { name: 'Parvati', still: 'model-2', alt: 'The standard lens of the matched set, with an amber ring.',
+      { name: 'Parvati', still: 'model-2', alt: 'The standard lens: plain, with no hood and an amber ring.',
         short: 'The standard one, close to the way your eye frames a scene.',
         body: 'The standard one. Frames a scene close to the way your eye does.' },
-      { name: 'Sinhagad', still: 'model-3', alt: 'The long lens of the matched set, with a green ring.',
+      { name: 'Sinhagad', still: 'model-3', alt: 'The long lens: the longest, with a long hood, a tripod collar and a green ring.',
         short: 'The long one, for faces and details, the background let go.',
         body: 'The long one. For faces and details at a distance, with the background let go.' },
     ],
