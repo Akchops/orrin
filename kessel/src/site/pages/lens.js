@@ -1,19 +1,12 @@
-// One lens: the detail page for each proposal. The lens itself is the page:
-// a full-bleed shot with the name set enormous behind it, a strip of tight
-// crops on the parts, the figures as readouts, then the way to the next lens.
+// One lens: the detail page for each proposal. It opens on the whole lens,
+// turning, with its name and line beside it; then the street viewer set to
+// this lens, the close-ups, the figures, and the way to the next lens.
 import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
 import { lenses, matchedSet } from '../../content/lenses.js';
 
 // The large transparent shot for each lens (wide, standard, long).
 const SHOT = { shaniwar: 'lens-1', parvati: 'lens-2', sinhagad: 'lens-3' };
-// Width of each name in em, set in Saira at the hero's weight and stretch,
-// so the name can be sized to run edge to edge. Unknown names fall back to
-// an estimate from their length.
-const EM = { shaniwar: 5.06, parvati: 3.74, sinhagad: 5.1 };
-// Where the top of the barrel sits in each shot, as a share of its height,
-// so the barrel crosses the name at the same place on every page.
-const SIL = { 'lens-1': 0.053, 'lens-2': 0.091, 'lens-3': 0.119 };
 const spec = (l, key) => (l.specs.find(([k]) => k === key) || [key, ''])[1];
 // "50 mm" -> 50 with a small unit; "f/1.8" and "PL" stay as they are.
 function figure(v) {
@@ -26,7 +19,6 @@ export function lensHTML(l, i) {
   const id = lensRoute(l);
   const prev = lenses[(i + lenses.length - 1) % lenses.length], next = lenses[(i + 1) % lenses.length];
   const shot = SHOT[l.slug] || `lens-${i + 1}`;
-  const em = EM[l.slug] || +(l.name.length * 0.65).toFixed(2);
 
   const tile = (kind, still, key, label) => `
     <figure class="lens__tile lens__tile--${kind}">
@@ -50,17 +42,19 @@ export function lensHTML(l, i) {
 
   return route(id, `${l.name} (proposal) · ${site.name}`, `
 <div class="lens" data-band="${l.band}">
-  <div class="lens__hero" style="--em: ${em}; --sil: ${SIL[shot] ?? 0.09}">
+  <div class="lens__hero">
     <div class="lens__bar">
       <nav class="crumbs lens__crumbs" aria-label="Breadcrumb"><a href="#lenses">Lenses</a><span aria-hidden="true">/</span><span aria-current="page">${esc(l.name)}</span></nav>
       <p class="eyebrow lens__eyebrow"><span>${two(i + 1)} &middot; ${esc(l.role)} lens</span>${proposalTag}</p>
     </div>
-    <div class="lens__title">
-      <h1 class="lens__name" id="${id}-title" tabindex="-1">${esc(l.name)}</h1>
+    <!-- The whole lens, turning slowly, with its name and line beside it
+         (under it on phones); never cropped, never under the type. -->
+    <div class="lens__stage">
       <div class="lens__shot" id="${id}-viewer" data-viewer="${i}">${img(shot, { lazy: false })}</div>
-      <p class="lens__name lens__name--ghost" aria-hidden="true">${esc(l.name)}</p>
     </div>
     <div class="lens__foot">
+      <h1 class="lens__name" id="${id}-title" tabindex="-1">${esc(l.name)}</h1>
+      <p class="lens__mm">${figure(spec(l, 'Focal length'))} <span class="lens__mm-role">${esc(l.role)}</span></p>
       <p class="lens__line">${esc(l.line)}</p>
       <p class="lens__set"><strong>${esc(matchedSet.title)}.</strong> ${esc(matchedSet.line)}</p>
       ${viewerTools(`${id}-viewer`, { hint: 'Drag to turn the lens. Pinch, or use the buttons, to zoom.' })}

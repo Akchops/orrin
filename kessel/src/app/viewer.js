@@ -91,7 +91,7 @@ export function mountViewer(el, L, caps, { font }) {
   const camera = new T.PerspectiveCamera(26, 1, 1, 6000);
   // View state: yaw (turn, degrees) and pitch, their velocities, the zoom
   // and where it is easing to, and a slow idle sway.
-  const v = { yaw: 0, pitch: 0, vy: 0, vp: 0, zoom: 1, zoomTo: 1, hx: 0, hy: 0, hxTo: 0, hyTo: 0 };
+  const v = { yaw: 0, pitch: 0, vy: 0, vp: 0, zoom: 1, zoomTo: 1, hx: 0, hy: 0, hxTo: 0, hyTo: 0, spin: 0 };
   let W = 1, H = 1, frame = 1, lastInput = performance.now(), dragging = null, hover = -1;
   const pose = POSE[models[0]];
 
@@ -137,7 +137,7 @@ export function mountViewer(el, L, caps, { font }) {
       // The lens turns under the lights (not the camera round it): yaw
       // about the vertical, pitch about the camera's own horizontal.
       right.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
-      qa.setFromAxisAngle(Y, (v.yaw + v.hx) * DEG);
+      qa.setFromAxisAngle(Y, (v.yaw + v.spin + v.hx) * DEG);
       qb.setFromAxisAngle(right, (v.pitch + v.hy) * DEG);
       items[0].pivot.quaternion.multiplyQuaternions(qb, qa);
     }
@@ -213,7 +213,7 @@ export function mountViewer(el, L, caps, { font }) {
     reset();
   }, { passive: false });
   const clampZoom = (z) => Math.min(2.4, Math.max(0.75, z));
-  const clampPitch = (p) => Math.min(lineup ? 26 : 50, Math.max(lineup ? -6 : -50, p));
+  const clampPitch = (p) => Math.min(lineup ? 26 : 25, Math.max(lineup ? -6 : -25, p));
 
   // Lineup: the lens nearest the pointer across, within its own width.
   const pv = new T.Vector3();
@@ -274,9 +274,16 @@ export function mountViewer(el, L, caps, { font }) {
       }
     } else moving = true;
     const idle = (now - lastInput) / 1000;
-    const sway = (1 - smooth(22, 30, idle)) * smooth(2, 4, idle);
-    if (sway > 0.001) { v.hx += (Math.sin(now / 2300) * 9 * sway - v.hx) * 0.05; moving = true; }
-    else { const k = 1 - Math.pow(0.85, dt * 60); v.hx += (v.hxTo - v.hx) * k; }
+    if (!lineup) {
+      // A lens page: the lens turns slowly on its own, easing back in
+      // after a drag; the hover tilt still applies.
+      if (!dragging) { v.spin += dt * 9 * smooth(0.5, 2.5, idle); moving = true; }
+      const k = 1 - Math.pow(0.85, dt * 60); v.hx += (v.hxTo - v.hx) * k;
+    } else {
+      const sway = (1 - smooth(22, 30, idle)) * smooth(2, 4, idle);
+      if (sway > 0.001) { v.hx += (Math.sin(now / 2300) * 9 * sway - v.hx) * 0.05; moving = true; }
+      else { const k = 1 - Math.pow(0.85, dt * 60); v.hx += (v.hxTo - v.hx) * k; }
+    }
     v.hy += (v.hyTo - v.hy) * (1 - Math.pow(0.85, dt * 60));
     v.zoom += (v.zoomTo - v.zoom) * (1 - Math.pow(0.84, dt * 60));
     for (const it of items) { it.lift += (it.liftTo - it.lift) * 0.2; if (Math.abs(it.liftTo - it.lift) > 0.02) moving = true; }

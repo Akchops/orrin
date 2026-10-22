@@ -28,10 +28,10 @@ function lensSection(l, i) {
   const no = String(i + 1).padStart(2, '0');
   return `<article class="lx-lens lx-lens--${kinds[i % 3]}" data-band="${l.band}" id="${id}" aria-labelledby="${id}-name">
   <div class="lx-lens__fig">${img(`lens-${i + 1}`)}</div>
-  <p class="lx-lens__mm" aria-hidden="true">${esc(mm)}<small>${esc(unit)}</small></p>
   <div class="lx-lens__copy">
     <p class="lx-lens__kicker"><span class="lx-lens__no">${no}</span> <span>${esc(l.role)} &middot; ${esc(spec(l, 'Focal length'))} &middot; ${esc(spec(l, 'Maximum aperture'))}</span> ${proposalTag}</p>
     <h2 class="lx-lens__name" id="${id}-name">${esc(l.name)}</h2>
+    <p class="lx-lens__mm" aria-hidden="true">${esc(mm)}<small>${esc(unit)}</small></p>
     <p class="lx-lens__line">${esc(l.line)}</p>
     <a class="lx-lens__more" href="#${lensRoute(l)}">View lens<span class="sr-only">: ${esc(l.name)}</span> <span class="lx-lens__arrow" aria-hidden="true">&rarr;</span></a>
   </div>

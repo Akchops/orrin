@@ -89,32 +89,38 @@
 }
 
 /* ---------------------------------------------------------- lens sections */
-#lenses .lx-lens { display: grid; grid-template-columns: minmax(0, 1fr); }
+/* Each lens whole, front glass to mount, inside its frame with room on
+   every side and never taller than 70% of the screen; its name, figures
+   and link beside it on wide screens (alternating sides) and under it on
+   phones, never over the barrel. */
+#lenses .lx-lens {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1rem, 3vw, 2.5rem); align-items: center;
+  width: 100%; max-width: calc(1320px + var(--gutter-l) + var(--gutter-r)); margin-inline: auto;
+  padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad));
+}
+#lenses .lx-lens__fig { display: grid; place-items: center; min-width: 0; padding: clamp(0.5rem, 2vw, 1.5rem); }
 #lenses .lx-lens__fig img {
-  width: 100%; transform-origin: 40% 50%;
-  transition: transform 0.9s var(--lx-ease), filter 0.6s ease;
-  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 97%);
-  mask-image: linear-gradient(to bottom, #000 70%, transparent 97%);
+  display: block; width: auto; max-width: 100%; height: auto; max-height: calc(var(--vh) * 0.7);
+  object-fit: contain; transition: transform 0.9s var(--lx-ease), filter 0.6s ease;
 }
-#lenses .lx-lens__mm {
-  font-family: var(--display); font-stretch: 125%; font-weight: 100; line-height: 0.8;
-  font-size: clamp(5rem, 1rem + 12.5vw, 14rem); color: var(--band); letter-spacing: -0.02em; max-width: none;
-}
-#lenses .lx-lens__mm small { font-size: 0.16em; font-weight: 400; letter-spacing: 0.16em; margin-left: 0.4em; color: var(--dim); text-transform: uppercase; vertical-align: 0.4em; }
-#lenses .lx-lens__copy { display: grid; gap: 1.1rem; justify-items: start; align-content: end; z-index: 2; }
+#lenses .lx-lens__copy { container-type: inline-size; display: grid; gap: 0.9rem; justify-items: start; align-content: center; min-width: 0; }
 #lenses .lx-lens__kicker {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; max-width: none;
   font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
 }
 #lenses .lx-lens__no { color: var(--band); font-weight: 600; }
 #lenses .lx-lens__name {
-  font-size: clamp(3.3rem, 0.6rem + 11.4vw, 12.5rem); font-weight: 200; font-stretch: 125%;
-  line-height: 0.86; letter-spacing: -0.012em; text-wrap: nowrap; transition: color 0.5s ease;
-  text-shadow: 0 0.04em 0.4em rgba(21, 23, 28, 0.55);
+  font-size: clamp(2.4rem, 16cqi, 6.5rem); font-weight: 200; font-stretch: 125%;
+  line-height: 0.9; letter-spacing: -0.012em; max-width: 100%; transition: color 0.5s ease;
 }
+#lenses .lx-lens__mm {
+  font-family: var(--display); font-stretch: 125%; font-weight: 100; line-height: 0.85;
+  font-size: clamp(2.6rem, 14cqi, 6rem); color: var(--band); letter-spacing: -0.02em; max-width: none;
+}
+#lenses .lx-lens__mm small { font-size: 0.24em; font-weight: 400; letter-spacing: 0.16em; margin-left: 0.4em; color: var(--dim); text-transform: uppercase; vertical-align: 0.35em; }
 #lenses .lx-lens__line {
   font-family: var(--body); font-style: italic; font-weight: 400;
-  font-size: clamp(1.25rem, 1rem + 1vw, 1.95rem); line-height: 1.32; max-width: 25ch; color: var(--engrave);
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.6rem); line-height: 1.35; max-width: 28ch; color: var(--engrave);
 }
 #lenses .lx-lens__more {
   position: static; display: inline-flex; align-items: center; gap: 0.7rem; min-height: 48px; margin-top: 0.3rem;
@@ -124,84 +130,32 @@
               linear-gradient(var(--line-2), var(--line-2)) left calc(100% - 0.55rem) / 100% 1px no-repeat;
   transition: background-size 0.5s var(--lx-ease), color 0.3s ease;
 }
-/* The whole section is the link's hit area (the stills, the name). */
+#lenses .lx-lens { position: relative; }
+/* The whole section is the link's hit area. */
 #lenses .lx-lens__more::after { content: ""; position: absolute; inset: 0; z-index: 3; }
 #lenses .lx-lens__arrow { display: inline-block; color: var(--band); transition: transform 0.35s var(--lx-ease); }
 #lenses .lx-lens__more:focus-visible { outline: none; }
 #lenses .lx-lens__more:focus-visible::after { outline: 2px solid var(--coat); outline-offset: -6px; }
 @media (hover: hover) {
-  #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__more { background-size: 100% 1px, 100% 1px; color: var(--engrave); }
+  #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__more { background-size: 100% 1px, 100% 1px; }
   #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__arrow { transform: translateX(8px); }
   #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__name { color: var(--band); }
-  #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__fig img { transform: scale(1.02); filter: brightness(1.12); }
+  #lenses .lx-lens:has(.lx-lens__more:hover) .lx-lens__fig img { transform: scale(1.02); filter: brightness(1.1); }
 }
-#lenses .lx-lens:has(.lx-lens__more:focus-visible) .lx-lens__more { background-size: 100% 1px, 100% 1px; }
-#lenses .lx-lens:has(.lx-lens__more:focus-visible) .lx-lens__arrow { transform: translateX(8px); }
 #lenses .lx-lens:has(.lx-lens__more:focus-visible) .lx-lens__name { color: var(--band); }
-#lenses .lx-lens:has(.lx-lens__more:focus-visible) .lx-lens__fig img { transform: scale(1.02); filter: brightness(1.12); }
-
-/* Phones: the still first, bleeding off one side; the name rides up over it. */
-@media (max-width: 899px) {
-  #lenses .lx-lens > * { grid-column: 1; }
-  #lenses .lx-lens__copy { padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad)); }
-  #lenses .lx-lens__fig { grid-row: 2; margin-top: -7vw; }
-  #lenses .lx-lens__mm { grid-row: 1; align-self: start; z-index: 0; padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad)); }
-  #lenses .lx-lens__copy { grid-row: 3; margin-top: -15vw; }
-  #lenses .lx-lens__fig { padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad)); }
-  #lenses .lx-lens--b .lx-lens__mm { justify-self: end; text-align: right; }
+@media (min-width: 900px) {
+  #lenses .lx-lens { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  /* B: the copy on the left, the lens on the right. */
+  #lenses .lx-lens--b { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  #lenses .lx-lens--b .lx-lens__fig { order: 2; }
   #lenses .lx-lens--b .lx-lens__copy { justify-items: end; text-align: right; }
   #lenses .lx-lens--b .lx-lens__kicker { justify-content: flex-end; }
-}
-
-/* Wide: three compositions. */
-@media (min-width: 900px) {
-  #lenses .lx-lens { grid-template-areas: "s"; --lx-x: max(calc(var(--gutter-l) + var(--lx-pad)), calc((100% - 1320px) / 2 + var(--lx-pad))); }
-  #lenses .lx-lens > * { grid-area: s; }
-
-  /* A: the still on the right, whole; the focal length and the copy in a
-     column on the left, one under the other; the name reaches over the
-     glass. */
-  #lenses .lx-lens--a { grid-template-areas: none; grid-template-columns: var(--lx-x) minmax(0, 38%) minmax(0, 1fr) var(--lx-x); grid-template-rows: auto auto; align-items: center; }
-  #lenses .lx-lens--a > * { grid-area: auto; }
-  #lenses .lx-lens--a .lx-lens__fig { grid-column: 3; grid-row: 1 / span 2; }
-  #lenses .lx-lens--a .lx-lens__mm { grid-column: 2; grid-row: 1; align-self: end; margin: 0 0 1rem; }
-  #lenses .lx-lens--a .lx-lens__copy { grid-column: 2 / 4; grid-row: 2; align-self: start; padding: 0; }
-
-  /* B: the still on the left, whole; the name is set behind the barrel,
-     the copy at the right. */
-  #lenses .lx-lens--b { margin-top: -4vw; grid-template-areas: none; grid-template-columns: minmax(0, 1fr) minmax(0, 40%) var(--lx-x); grid-template-rows: 1fr repeat(5, auto) 1fr; }
-  #lenses .lx-lens--b > *, #lenses .lx-lens--b .lx-lens__copy > * { grid-area: auto; grid-column: 2; justify-self: end; text-align: right; z-index: 2; }
-  #lenses .lx-lens--b .lx-lens__fig { grid-column: 1 / -1; grid-row: 1 / -1; justify-self: start; align-self: center; width: 58%; margin-left: var(--lx-x); z-index: 1; }
-  #lenses .lx-lens--b .lx-lens__copy { display: contents; }
-  #lenses .lx-lens--b .lx-lens__kicker { grid-row: 2; justify-content: flex-end; }
-  #lenses .lx-lens--b .lx-lens__mm { grid-row: 3; z-index: 0; font-size: clamp(6rem, 1rem + 27vw, 28rem); margin: 0.04em -0.04em -0.07em 0; opacity: 0.92; }
-  #lenses .lx-lens--b .lx-lens__name { grid-row: 4; }
-  #lenses .lx-lens--b .lx-lens__line { grid-row: 5; margin-top: 1.4rem; }
-  #lenses .lx-lens--b .lx-lens__more { grid-row: 6; margin-top: 0.9rem; }
-}
-
-/* C (all widths): the long lens, whole and wide under its name, which
-   spans the frame above it. */
-#lenses .lx-lens--c .lx-lens__copy { display: contents; }
-#lenses .lx-lens--c > *, #lenses .lx-lens--c .lx-lens__copy > * { grid-area: auto; grid-column: 1 / -1; }
-#lenses .lx-lens--c { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; }
-#lenses .lx-lens--c .lx-lens__kicker { grid-row: 1; justify-self: center; justify-content: center; text-align: center; padding-inline: var(--gutter-l) var(--gutter-r); }
-#lenses .lx-lens--c .lx-lens__name { grid-row: 2; justify-self: center; z-index: 2; margin-top: 1.2rem; font-size: clamp(3.3rem, 0.2rem + 15.6vw, 16rem); }
-#lenses .lx-lens--c .lx-lens__fig {
-  grid-row: 3; position: relative; z-index: 1; width: min(100% - 2 * var(--gutter-l), 62rem); justify-self: center; margin-top: clamp(-5rem, -4vw, -1rem);
-}
-#lenses .lx-lens--c .lx-lens__fig img {
-  width: 100%; height: auto; transform-origin: 50% 50%;
-}
-#lenses .lx-lens--c .lx-lens__mm { grid-row: 3; z-index: 2; align-self: end; justify-self: end; margin: 0 var(--gutter-r) 6% 0; padding-right: var(--lx-pad); font-size: clamp(4rem, 1rem + 9vw, 10rem); }
-#lenses .lx-lens--c .lx-lens__line { grid-row: 4; justify-self: center; text-align: center; margin-top: 1rem; padding-inline: var(--gutter-l) var(--gutter-r); }
-#lenses .lx-lens--c .lx-lens__more { grid-row: 5; justify-self: center; }
-@media (hover: hover) {
-  #lenses .lx-lens--c:has(.lx-lens__more:hover) .lx-lens__fig img { transform: scale(1.02); }
-}
-#lenses .lx-lens--c:has(.lx-lens__more:focus-visible) .lx-lens__fig img { transform: scale(1.02); }
-@media (max-width: 899px) {
-  #lenses .lx-lens--c .lx-lens__mm { margin-bottom: 4%; }
+  /* C: the lens across the middle, its copy centred under it. */
+  #lenses .lx-lens--c { grid-template-columns: minmax(0, 1fr); }
+  #lenses .lx-lens--c .lx-lens__copy { justify-items: center; text-align: center; }
+  #lenses .lx-lens--c .lx-lens__kicker { justify-content: center; }
+  #lenses .lx-lens--c .lx-lens__name { font-size: clamp(2.4rem, 7cqi, 6.5rem); }
+  #lenses .lx-lens--c .lx-lens__mm { font-size: clamp(2.6rem, 6cqi, 6rem); }
 }
 
 /* ------------------------------------------------------- side by side */

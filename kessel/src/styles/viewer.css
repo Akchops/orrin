@@ -12,12 +12,6 @@
 [data-viewer] > img { transition: opacity 0.5s ease 0.15s; }
 [data-viewer].is-live > img { opacity: 0; }
 #lenses .lx-hero__fig { position: relative; }
-/* The lens pages settle the shot into the page below: the canvas takes
-   the same mask as the still under it. */
-.route--lens .lens__shot .viewer__gl {
-  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
-  mask-image: linear-gradient(#000 78%, transparent 99%);
-}
 
 /* The controls: a hint, then turn and zoom buttons. */
 .viewer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
