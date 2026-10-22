@@ -164,6 +164,30 @@ function compareBeat(el) {
   render(0);
 }
 
+// ------------------------------------------------ Contact: which lens?
+function contactPick(el) {
+  const chips = [...el.querySelectorAll('.chip')];
+  const fig = el.querySelector('.ct-pick__mail'), subj = el.querySelector('.ct-pick__subj');
+  const body = el.querySelector('.ct-pick__body'), go = el.querySelector('.ct-pick__go');
+  const to = (go.getAttribute('href') || '').replace(/^mailto:/, '').split('?')[0];
+  let cur = -1;
+  function choose(i) {
+    if (i === cur) return;
+    cur = i;
+    const c = chips[i], name = c.dataset.lens;
+    chips.forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+    const s = name ? `Enquiry: ${name} (${c.dataset.mm})` : 'Enquiry from the Kessel site';
+    const b = name ? `Hello, I would like to know more about ${name}, the ${c.dataset.role} lens.` : 'Hello, I would like to know more about your lenses.';
+    put(subj, s); put(body, b);
+    go.href = `mailto:${to}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;
+    if (name) { fig.dataset.lens = name; fig.dataset.band = c.dataset.band; } else { delete fig.dataset.lens; delete fig.dataset.band; }
+  }
+  chips.forEach((c, i) => c.addEventListener('click', () => { beat.mine(); choose(i); }));
+  // Scroll: through the three lenses; reduced motion waits on "Not sure".
+  const beat = addBeat(el, { drive: (t, still) => choose(still || t < 0.08 ? chips.length - 1 : Math.min(2, Math.floor(((t - 0.08) / 0.84) * 3))) });
+  choose(chips.length - 1);
+}
+
 // ------------------------------------------------- the Lenses page tint
 function tint(page) {
   const lx = page.querySelector('.lx');
@@ -189,6 +213,7 @@ export function startLab() {
   document.querySelectorAll('.lab--ap').forEach(apertureBeat);
   document.querySelectorAll('.lab--sees').forEach(seesBeat);
   document.querySelectorAll('.cmp').forEach(compareBeat);
+  document.querySelectorAll('.ct-pick').forEach(contactPick);
   const lensesPage = document.getElementById('lenses');
   if (lensesPage) tint(lensesPage);
   // A 3D viewer is something to try only once it is live (the still is

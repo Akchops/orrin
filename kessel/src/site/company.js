@@ -5,6 +5,8 @@
 // close with an eased height. Without this script every part still reads:
 // the notes listed under the drawing, every year listed, real checkboxes
 // and native <details>.
+import { addBeat } from './beats.js';
+
 const page = document.getElementById('company');
 const $ = (s, el = page) => el.querySelector(s);
 const $$ = (s, el = page) => [...el.querySelectorAll(s)];
@@ -96,6 +98,23 @@ function bench() {
   addEventListener('resize', place, { passive: true });
   addEventListener('kessel:route', () => close(false));
   root.classList.add('is-live');
+
+  // A beat: scroll opens the notes one after another (no focus, no
+  // scrolling) until the visitor taps a number.
+  const peek = (i) => {
+    if (i === open) return;
+    if (open >= 0) close(false);
+    if (i < 0) return;
+    open = i;
+    spots[i].setAttribute('aria-expanded', 'true');
+    notes[i].classList.add('is-open');
+    place();
+  };
+  const beatEl = root.closest('.beat');
+  if (beatEl) {
+    const beat = addBeat(beatEl, { drive: (t, still) => peek(still || t < 0.1 ? -1 : Math.min(spots.length - 1, Math.floor(((t - 0.1) / 0.9) * spots.length))) });
+    spots.forEach((b) => b.addEventListener('click', () => beat.mine()));
+  }
 }
 
 // ---------------------------------------------------------- timeline
@@ -150,6 +169,25 @@ function timeline() {
   $('.tl__help', tl).hidden = false;
   snap(0, false);
   tl.classList.add('is-ready');
+
+  // A beat: scroll moves the index along the years until it is dragged.
+  let idle = 0;
+  const scrub = (p) => {
+    tl.classList.add('is-dragging');
+    scale.style.setProperty('--at', p);
+    input.value = String(Math.round(p * 1000));
+    show(nearest(p), false);
+    clearTimeout(idle);
+    idle = setTimeout(() => tl.classList.remove('is-dragging'), 200);
+  };
+  const beatEl = tl.closest('.beat');
+  if (beatEl) {
+    const beat = addBeat(beatEl, { drive: (t, still) => (still ? snap(Math.floor(P.length / 2), false) : scrub(P[0] + (P[P.length - 1] - P[0]) * t)) });
+    const mine = () => beat.mine();
+    input.addEventListener('pointerdown', mine);
+    input.addEventListener('keydown', mine);
+    input.addEventListener('input', (e) => { if (e.isTrusted) mine(); });
+  }
 }
 
 // ------------------------------------------------------------ checks
@@ -178,12 +216,16 @@ function checks() {
     inputs.forEach((i) => i.closest('.ck-tile').classList.remove('is-running'));
   }
 
+  const tiles = inputs.map((i) => i.closest('.ck-tile'));
+  const unfill = () => tiles.forEach((t) => t.style.removeProperty('--fill'));
   run.addEventListener('click', () => {
     if (box.classList.contains('is-running')) return;
     stop();
+    unfill();
     const t = token;
-    const todo = inputs.filter((i) => !i.checked);
-    if (!todo.length) { inputs.forEach((i) => { i.checked = false; }); update(); return; }
+    let todo = inputs.filter((i) => !i.checked);
+    // All passed: "Run it again" clears them and runs all six.
+    if (!todo.length) { inputs.forEach((i) => { i.checked = false; }); update(); todo = inputs.slice(); }
     if (reduce.matches) { todo.forEach((i) => { i.checked = true; }); update(); return; }
     box.classList.add('is-running');
     update();
@@ -203,10 +245,25 @@ function checks() {
     };
     next(0);
   });
-  inputs.forEach((i) => i.addEventListener('change', () => { stop(); update(); }));
+  inputs.forEach((i) => i.addEventListener('change', () => { stop(); unfill(); update(); }));
   run.hidden = false;
   box.classList.add('is-ready');
   update();
+
+  // A beat: scroll runs the checks one by one, each tile filling as the
+  // page moves and ticking when full, until the visitor ticks or runs them.
+  const scrub = (p) => {
+    if (box.classList.contains('is-running')) return;
+    const n = inputs.length;
+    inputs.forEach((inp, k) => { const f = Math.min(1, Math.max(0, p * n - k)); tiles[k].style.setProperty('--fill', f.toFixed(3)); inp.checked = f >= 1; });
+    update();
+  };
+  const beatEl = box.closest('.beat');
+  if (beatEl) {
+    const beat = addBeat(beatEl, { drive: (t, still) => scrub(still ? 0.5 : t) });
+    run.addEventListener('click', () => beat.mine());
+    inputs.forEach((i) => i.addEventListener('change', () => beat.mine()));
+  }
 }
 
 // --------------------------------------------------------- questions

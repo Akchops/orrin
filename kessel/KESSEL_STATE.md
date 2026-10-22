@@ -15,8 +15,8 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 | 3 | Street viewer as centrepiece (already built in the last follow-up: verify) | done |
 | 4 | Lens pages as pinned, scroll-led experiences (focus pull, aperture and bokeh, what it sees, specs and enquire); Lenses hover tint, bokeh preview, compare strip | done |
 | 5 | Craft and Company illustrated centrepieces (already built: verify, vary layouts) | done |
-| 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | in progress |
-| 7 | Final QA at every width, reduced motion, no-JS | next |
+| 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | done |
+| 7 | Final QA at every width, reduced motion, no-JS | in progress |
 
 ## Notes for resuming
 - Each step ends with: build, smoke test, commit, push, republish the
@@ -77,3 +77,17 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
   2017-2025 timeline scrub, the PUNE / 2017 / THREE strip, the six checks
   and the FAQ; every invented part says "Sample content for this
   concept"; layouts differ section to section. Audit 64 of 64.
+- 6 done: every interactive piece on Lenses, the lens pages, Craft,
+  Company and Contact is a beat. Craft's build-up and Company's bench open
+  their pages and pin at the top (scroll builds the lens stage by stage;
+  opens the bench notes one by one); the timeline and the six checks pin
+  under the masthead (scroll moves the year index; fills each check tile
+  and ticks it, then "Run it again" reruns all six). Contact gains "Which
+  lens is it about?": scroll walks the three lenses into an email preview
+  (subject and first line), tap to choose, "Write this email" (mailto).
+  "Your turn" pills on every instruction line, glow on every handle, one
+  pulse and one nudge, "n of m tried" on every page. Checked: soft snap
+  when scrolling down only, nudge once after 4 s, a tap takes over and
+  scroll leaves the visitor's value alone. Pieces taller than the screen
+  (e.g. checks at 1280x800, most pieces on phones) play in the flow.
+  Audit 64 of 64 (Contact fixed and re-audited); smoke passed.

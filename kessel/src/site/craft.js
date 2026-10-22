@@ -8,6 +8,7 @@
 // narrowing with them; entering the signing draws the signature with the
 // pen. With reduced motion every change is instant and nothing moves.
 import { irisFace, irisSide, rayClears, IRIS } from '../app/craft-lens.js';
+import { addBeat } from './beats.js';
 
 const root = document.getElementById('craft-build');
 
@@ -132,4 +133,15 @@ if (root) {
   say.hidden = false;
   set(1, { instant: true });
   root.classList.add('is-live');
+
+  // A beat (src/site/beats.js): scroll builds the lens stage by stage
+  // until the visitor takes the steps or the slider.
+  const beatEl = root.closest('.beat');
+  if (beatEl) {
+    const beat = addBeat(beatEl, { drive: (t, still) => { const n = still ? 3 : 1 + Math.round(t * (N - 1)); if (n !== stage) set(n); } });
+    const mine = () => beat.mine();
+    steps.forEach((b) => b.addEventListener('click', mine));
+    range.addEventListener('input', mine);
+    ctl.querySelector('.ckx__steps').addEventListener('keydown', mine);
+  }
 }

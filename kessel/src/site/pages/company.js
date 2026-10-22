@@ -38,12 +38,13 @@ function bench() {
         <p class="bn__note-p">${esc(nt.body)}</p>
       </div>
     </li>`).join('\n    ');
-  return `<header class="bn" id="workshop" data-bench>
+  return `<div class="beat beat--open" data-beat="bench">
+<header class="bn beat__pin" id="workshop" data-bench>
   <div class="bn__copy">
     <div class="bn__meta"><p class="eyebrow">${esc(H.eyebrow)}</p>${sample}</div>
     <h1 id="company-title" tabindex="-1">${H.title.map((l) => `<span class="bn__l">${esc(l)}</span>`).join(' ')}</h1>
     <p class="bn__lead">${esc(H.lead)}</p>
-    <p class="bn__hint"><span class="bn__hint-js">${esc(H.hintJs)}</span><span class="bn__hint-nojs">${esc(H.hintNoJs)}</span></p>
+    <p class="bn__hint"><span class="turn" aria-hidden="true">Your turn &middot; Try it</span><span class="bn__hint-js">${esc(H.hintJs)}</span><span class="bn__hint-nojs">${esc(H.hintNoJs)}</span></p>
   </div>
   <div class="bn__stage" data-crop="scene">
     <div class="bn__world">
@@ -54,7 +55,8 @@ function bench() {
   <ol class="bn__notes" aria-label="Notes on the bench">
     ${notes}
   </ol>
-</header>`;
+</header>
+</div>`;
 }
 
 // ---------------------------------------------------------- timeline
@@ -85,7 +87,8 @@ function timeline() {
           <p class="tl__tag">${i === 0 ? 'Founding year' : 'Sample date'}</p>
         </div>
       </li>`).join('\n      ');
-  return `<section class="co-sec tl wrap" id="${T.id}" aria-labelledby="${T.id}-title" data-tl>
+  return `<div class="beat co-beat" data-beat="timeline">
+<section class="co-sec tl wrap beat__pin" id="${T.id}" aria-labelledby="${T.id}-title" data-tl>
   ${head(T, `\n    <p class="co-note">${esc(T.note)}</p>`)}
   <div class="tl__body">
     <div class="tl__scale" style="--at:0">
@@ -100,14 +103,15 @@ function timeline() {
       <input class="tl__in" id="${T.id}-in" type="range" min="0" max="1000" step="1" value="0" hidden>
     </div>
     <div class="tl__read">
-      <p class="tl__help" hidden>${esc(T.help)}</p>
+      <p class="tl__help" hidden><span class="turn" aria-hidden="true">Your turn &middot; Drag me</span>${esc(T.help)}</p>
       <ol class="tl__list">
       ${items}
       </ol>
     </div>
     <p class="sr-only tl__live" aria-live="polite"></p>
   </div>
-</section>`;
+</section>
+</div>`;
 }
 
 // ------------------------------------------------------------- facts
@@ -134,7 +138,8 @@ function checks() {
         </label>
       </li>`).join('\n      ');
   const gauge = K.list.map(() => '<li></li>').join('');
-  return `<section class="co-sec ck wrap" id="${K.id}" aria-labelledby="${K.id}-title">
+  return `<div class="beat co-beat" data-beat="checks">
+<section class="co-sec ck wrap beat__pin" id="${K.id}" aria-labelledby="${K.id}-title">
   ${head(K)}
   <div class="ck__panel" data-co-checks>
     <figure class="ck__fig">
@@ -143,7 +148,7 @@ function checks() {
     </figure>
     <div class="ck__side">
       <div class="ck__top">
-        <p class="ck__help">${esc(K.help)}</p>
+        <p class="ck__help"><span class="turn" aria-hidden="true">Your turn &middot; Try it</span>${esc(K.help)}</p>
         <button class="ck__run btn" type="button" data-run="${esc(K.run)}" data-busy="${esc(K.busy)}" data-again="${esc(K.again)}" hidden>${esc(K.run)}</button>
       </div>
       <ol class="ck__list" aria-labelledby="${K.id}-title">
@@ -155,7 +160,8 @@ function checks() {
       </div>
     </div>
   </div>
-</section>`;
+</section>
+</div>`;
 }
 
 // --------------------------------------------------------------- faq

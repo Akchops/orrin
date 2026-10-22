@@ -5,6 +5,41 @@
 // scale.
 import { site, esc, img, footer, route } from '../parts.js';
 import { contact } from '../../content/contact.js';
+import { lenses } from '../../content/lenses.js';
+
+// Which lens is it about? Picking one starts the email: the lens in the
+// subject and the first line (src/site/lab.js makes it live; without JS
+// the plain address above is the way to write).
+const mm = (l) => (l.specs.find(([k]) => k === 'Focal length') || ['', ''])[1];
+function pick() {
+  const chips = lenses.map((l) => `<button type="button" class="chip" data-band="${l.band}" data-lens="${esc(l.name)}" data-role="${esc(l.role.toLowerCase())}" data-mm="${esc(mm(l))}" aria-pressed="false">${esc(l.name)} <small>${esc(mm(l))}</small></button>`).join('');
+  const pics = lenses.map((l, i) => `<span class="ct-pick__img" data-lens="${esc(l.name)}" data-band="${l.band}">${img(`model-${i + 1}`, { alt: '' })}</span>`).join('');
+  const subj = 'Enquiry from the Kessel site';
+  const body = 'Hello, I would like to know more about your lenses.';
+  return `<section class="beat ct-pick" data-beat="pick" aria-labelledby="contact-pick-title">
+  <div class="beat__pin ct-pick__pin">
+    <div class="ct-pick__copy">
+      <p class="eyebrow">Before you write</p>
+      <h2 id="contact-pick-title">Which lens is it about?</h2>
+      <p class="ct-pick__lead">Pick one and the email starts itself, with the lens in the subject line.</p>
+      <div class="ctl ct-pick__ctl">
+        <p class="ctl__say"><span class="ctl__cue">Try it</span> <span class="ctl__how">Tap a lens.</span></p>
+        <div class="ct-pick__chips lab__targets" role="group" aria-label="Which lens">${chips}<button type="button" class="chip" data-lens="" aria-pressed="true">Not sure yet</button></div>
+      </div>
+    </div>
+    <figure class="ct-pick__mail">
+      <div class="ct-pick__pics" aria-hidden="true">${pics}</div>
+      <dl class="ct-pick__head">
+        <div><dt>To</dt><dd>${mail(site.email)}</dd></div>
+        <div><dt>Subject</dt><dd class="ct-pick__subj" aria-live="polite">${esc(subj)}</dd></div>
+      </dl>
+      <p class="ct-pick__body">${esc(body)}</p>
+      <a class="btn btn--solid ct-pick__go" href="mailto:${esc(site.email)}?subject=${encodeURIComponent(subj)}&amp;body=${encodeURIComponent(body)}">Write this email</a>
+      <figcaption class="note">Names are proposals for this concept.</figcaption>
+    </figure>
+  </div>
+</section>`;
+}
 
 // The address may only break after the @, never mid-word.
 const mail = (s) => esc(s).replace('@', '@<wbr>');
@@ -42,6 +77,8 @@ export function contactHTML() {
     </div>
   </dl>
 </div>
+
+${pick()}
 
 <section class="ct-help" aria-labelledby="contact-help-title">
   <figure class="ct-help__img" data-crop="background">${img(C.helpImage)}</figure>

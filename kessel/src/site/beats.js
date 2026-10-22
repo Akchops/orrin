@@ -1,6 +1,8 @@
 // Beats: every interactive piece on the inner pages is a .beat, a section
-// one screen taller than its .beat__pin, which sticks under the masthead
-// while the page scrolls through that extra screen. While it holds, scroll
+// about one screen taller than its .beat__pin, which sticks under the
+// masthead while the page scrolls through that extra screen (a page's
+// opening piece, .beat--open, already sits under the masthead and sticks
+// at the very top). While it holds, scroll
 // drives the control (drive(t), t 0..1): the slider travels, the ring
 // turns, the iris closes. Near the end the beat says "Your turn" and the
 // handle pulses once; untouched for 4 s more, it nudges once. The first
@@ -43,14 +45,20 @@ export function addBeat(el, { drive, key, mid = 0.5 } = {}) {
 
 // ------------------------------------------------------------- layout
 function measureHead() { const m = document.querySelector('.masthead'); head = m ? m.offsetHeight : 64; }
+const topOf = (b) => (b.open ? 0 : head);
 function layout() {
   measureHead();
   const vh = innerHeight;
   for (const b of beats) {
     if (!b.pin || routeOf(b.el) !== route()) continue;
+    b.open = b.el.classList.contains('beat--open');
     b.el.classList.remove('beat--flow');
-    b.flow = reduce.matches || b.pin.offsetHeight > vh - head + 2;
+    b.el.style.height = '';
+    b.flow = reduce.matches || b.pin.offsetHeight > vh - topOf(b) + 2;
     b.el.classList.toggle('beat--flow', b.flow);
+    // The pin, then about one screen of scroll while it holds.
+    if (!b.flow) b.el.style.height = `${b.pin.offsetHeight + Math.round(vh * 0.9)}px`;
+    b.p = -1;
   }
   tick();
 }
@@ -67,9 +75,10 @@ function tick() {
     if (box.bottom < -vh || box.top > vh * 2) continue;
     let p;
     // In the flow: from its top passing 70% of the screen to its bottom
-    // coming into view.
-    if (b.flow) p = (vh * 0.7 - box.top) / Math.max(200, vh * 0.7 - (vh - box.height));
-    else p = (head - box.top) / Math.max(1, b.el.offsetHeight - b.pin.offsetHeight);
+    // coming into view (an opening piece: from the top of the page).
+    if (b.flow && b.open) p = -box.top / Math.max(200, box.height - vh * 0.5);
+    else if (b.flow) p = (vh * 0.7 - box.top) / Math.max(200, vh * 0.7 - (vh - box.height));
+    else p = (topOf(b) - box.top) / Math.max(1, b.el.offsetHeight - b.pin.offsetHeight);
     p = Math.min(1, Math.max(0, p));
     if (p === b.p) continue;
     b.p = p;
@@ -98,7 +107,7 @@ function snap() {
   if (reduce.matches || touching || dir <= 0 || performance.now() < snapping) return;
   const vh = innerHeight, r = route();
   for (const b of beats) {
-    if (b.flow || routeOf(b.el) !== r) continue;
+    if (b.flow || b.open || routeOf(b.el) !== r) continue;
     const d = b.el.getBoundingClientRect().top - head;
     if (d > 3 && d < vh * 0.2) {
       const y = scrollY + d, lenis = window.__kessel && window.__kessel.lenis;
@@ -135,7 +144,7 @@ function paintTried() {
     pill.setAttribute('aria-live', 'polite');
     document.body.appendChild(pill);
   }
-  if (keys.length < 2) { pill.hidden = true; return; }
+  if (!keys.length) { pill.hidden = true; return; }
   const n = keys.filter((k) => done[r] && done[r].has(k)).length;
   pill.hidden = false;
   pill.innerHTML = `<span class="tried__dots" aria-hidden="true">${keys.map((k) => `<i${done[r] && done[r].has(k) ? ' class="on"' : ''}></i>`).join('')}</span><span class="tried__t"><b>${n}</b><span class="tried__long"> of ${keys.length} tried</span><span class="tried__short">/${keys.length} tried</span></span>`;

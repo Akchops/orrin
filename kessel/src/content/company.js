@@ -71,7 +71,7 @@ export const company = {
     ],
     run: 'Run the checks',
     busy: 'Checking…',
-    again: 'Start again',
+    again: 'Run it again',
     waiting: 'Signed once every check has passed',
     signed: 'Signed. Ready to leave the workshop.',
   },

@@ -34,7 +34,8 @@ export function craftHTML() {
   const first = C.stages[0];
   const next = C.next.map((n) => `<a href="#${n.route}"><span class="craft-end__k">${esc(n.label)}</span><span class="craft-end__t">${esc(n.text)} <span class="craft-end__nw">${esc(n.last)} <span class="craft-end__go" aria-hidden="true">&rarr;</span></span></span></a>`).join('\n  ');
   return route('craft', `Craft · ${site.name}`, `
-<div class="ckx" id="craft-build" data-stage="${N}">
+<div class="beat beat--open" data-beat="build">
+<div class="ckx beat__pin" id="craft-build" data-stage="${N}">
   <header class="ckx__head">
     <p class="eyebrow">${esc(C.eyebrow)}</p>
     <h1 id="craft-title" tabindex="-1">${esc(C.title)}</h1>
@@ -48,7 +49,7 @@ export function craftHTML() {
     </div>
   </div>
   <div class="ckx__ctl" hidden>
-    <label class="ckx__dl" for="craft-range">${esc(C.control)} <span>&middot; ${esc(C.controlHint)}</span></label>
+    <label class="ckx__dl" for="craft-range"><span class="turn" aria-hidden="true">Your turn &middot; Drag me</span>${esc(C.control)} <span>&middot; ${esc(C.controlHint)}</span></label>
     <div class="ckx__steps" role="group" aria-label="The five stages">
       ${C.stages.map(step).join('\n      ')}
     </div>
@@ -61,6 +62,7 @@ export function craftHTML() {
   <ol class="ckx__list" aria-label="The five stages">
     ${C.stages.map(item).join('\n    ')}
   </ol>
+</div>
 </div>
 <section class="ckm wrap" aria-labelledby="craft-close-title">
   <div class="ckm__head">
