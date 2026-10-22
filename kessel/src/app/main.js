@@ -20,11 +20,19 @@ const FONT = '"Saira", "Arial Narrow", Arial, sans-serif';
 let state = 'booting';
 let teardown = null;
 
-function setTier(kind, why = '') {
+// The badge reports the film on the home page and the lens viewer on the
+// pages that have one (src/app/viewer.js); the film's state is kept while
+// a viewer page is shown, and comes back with the home page.
+const filmBadge = { kind: 'stills', why: '' };
+function paint(kind, why) {
   badge.dataset.kind = kind;
   kindEl.textContent = kind === 'live' ? 'LIVE 3D' : kind === '2d' ? '2D FALLBACK' : 'STILLS';
   whyEl.textContent = why;
+}
+function setTier(kind, why = '') {
+  filmBadge.kind = kind; filmBadge.why = why;
   root.dataset.tier = kind;
+  if (!root.classList.contains('has-viewer')) paint(kind, why);
 }
 
 // Stills are a reported state, never a silent default: the badge and a
@@ -151,5 +159,28 @@ function viewers(route) {
     try { showViewers(root.dataset.route, window.__kesselLibs(), viewerCaps, { font: FONT }); } catch { /* the stills stay */ }
   });
 }
-addEventListener('kessel:route', (e) => viewers(e.detail.route));
+let viewerFail = '';
+function viewerBadge(route) {
+  const sec = document.getElementById(route);
+  const has = !!(sec && sec.querySelector('[data-viewer]')) && !params.get('still');
+  root.classList.toggle('has-viewer', has);
+  if (!has) { paint(filmBadge.kind, filmBadge.why); return; }
+  if (sec.querySelector('[data-viewer].is-live')) {
+    paint('live', viewerCaps && viewerCaps.qa ? 'software WebGL, forced for testing (?gl=force)' : '');
+    return;
+  }
+  let why = 'starting the 3D model…';
+  if (params.has('static')) why = 'still frames were requested in the address (?static).';
+  else if (reduce.matches) why = 'reduced motion is on in your system settings.';
+  else if (params.get('tier') === '2') why = 'the 2D version was requested (?tier=2), and the 3D model needs WebGL.';
+  else if (viewerCaps && !viewerCaps.ok) why = viewerCaps.reason + ', so the 3D model shows as a still.';
+  else if (viewerFail) why = viewerFail;
+  paint('stills', why);
+}
+addEventListener('kessel:viewer', (e) => {
+  if (!e.detail.live) viewerFail = e.detail.why;
+  viewerBadge(root.dataset.route);
+});
+addEventListener('kessel:route', (e) => { viewers(e.detail.route); viewerBadge(e.detail.route); });
 viewers(root.dataset.route);
+viewerBadge(root.dataset.route);

@@ -81,7 +81,7 @@ export function filmHTML() {
         <p class="cap__long">${esc(m.body)}</p>
       </li>`).join('');
   return `<div class="film" id="film">
-  <section class="hero" id="top" aria-labelledby="home-title">
+  <section class="hero" id="home-hero" aria-labelledby="home-title">
     <figure class="hero__still">
       <picture>
         <source media="(max-width: 799px), (orientation: portrait) and (max-width: 1100px)" srcset="%%STILL:hero-tall%%" width="${media['hero-tall'].w}" height="${media['hero-tall'].h}">

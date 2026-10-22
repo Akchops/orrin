@@ -287,3 +287,32 @@ FAQ and checks scripted at 1440 and 390; no-JS lists; overflow audit.
   its box (it ran out at 768). The live lineup and lens viewers follow
   the stills they cover.
 - Result: all 64 page-and-width combinations pass.
+
+### 5. QA at every width — fixes so far
+
+Reviewed by agents (Home with reduced motion and no-JS; Lenses and the
+lens pages) at 390-1728 and in a framed pane; each finding reproduced
+here before fixing. No real GPU: the live 3D was only seen on software
+WebGL (forced), where it animates from scroll.
+- The footer's Teardown link landed at the end of the teardown: links
+  into a pinned section now go to the start of its pin.
+- The desktop badge never showed its reason (the page counted as past
+  the film from the first frame, its end marker had gone): fixed, so the
+  reason shows during the film and the skip button returns.
+- With reduced motion or without JavaScript, opening #top scrolled the
+  STILLS badge and notice out of view: #top is now the very top of the
+  page; the hero is #home-hero.
+- The teardown rail could not be reached by Tab: its chips stay in the
+  tab order, and focusing one brings the film to the teardown.
+- At 1024 the close-up caption card ran under the rail: it now ends
+  before the rail, sliding over the part's edge if it must.
+- The focus readout sat under the desktop caption shade (2.4:1): moved
+  to the right on desktop.
+- Lenses: the big "Three" ran into the lead at 900: title and lead sit
+  side by side only from 1100.
+- Lens pages: a leftover margin left a 330-440 px gap under the shot at
+  768-1024; the front-label close-ups were framed too tight to show the
+  label (re-rendered wider, now SHANIWAR 24 mm etc. read on each).
+- The badge now also shows on the pages with a 3D viewer (Lenses and the
+  lens pages), saying whether the viewer is live or a still and why; on
+  phones it sits bottom left there, clear of the page's labels.

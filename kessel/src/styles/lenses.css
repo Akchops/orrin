@@ -78,7 +78,9 @@
 @media (max-width: 479px) {
   #lenses .lx-hero__name span { display: none; }
 }
-@media (min-width: 900px) {
+/* Title and lead side by side only once the title fits its column (at
+   900 the big "Three" ran into the lead). */
+@media (min-width: 1100px) {
   #lenses .lx-hero__head { grid-template-columns: minmax(0, 1fr) minmax(15rem, 22rem); grid-template-areas: "eye aside" "title aside"; }
   #lenses .lx-hero__eyebrow { grid-area: eye; }
   #lenses .lx-hero__title { grid-area: title; }

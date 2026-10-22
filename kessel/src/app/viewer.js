@@ -286,13 +286,13 @@ export function mountViewer(el, L, caps, { font }) {
       place();
       renderer.render(scene, camera);
       dirty = false;
-      if (first) { first = false; el.classList.add('is-live'); if (tools) tools.hidden = false; }
+      if (first) { first = false; el.classList.add('is-live'); if (tools) tools.hidden = false; tell(true); }
       // A slow GPU: drop the resolution once, then give the still back.
       frames++;
       if (frames > 8 && performance.now() - t0 > 60) slow++; else slow = Math.max(0, slow - 1);
       if (slow > 12) {
         if (dpr > 1) { dpr = 1; renderer.setPixelRatio(1); layout(); slow = 0; }
-        else { destroy(); return; }
+        else { destroy('the GPU was too slow for the 3D model.'); return; }
       }
     }
     if (moving) raf = requestAnimationFrame(tick);
@@ -302,7 +302,7 @@ export function mountViewer(el, L, caps, { font }) {
   ro.observe(img);
   const io = new IntersectionObserver((es) => { visible = es[es.length - 1].isIntersecting; if (visible) { dirty = true; wake(); } });
   io.observe(el);
-  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); destroy(); });
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); destroy('the 3D model lost its graphics context.'); });
 
   el.appendChild(canvas);
   layout();
@@ -317,9 +317,15 @@ export function mountViewer(el, L, caps, { font }) {
   }
   start();
 
-  function destroy() {
+  // The tier badge (src/app/main.js) says whether the viewer is live, and
+  // why not when it falls back to its still.
+  function tell(live, why = '') { dispatchEvent(new CustomEvent('kessel:viewer', { detail: { live, why } })); }
+  // why: set when the viewer gives up (the still comes back); leaving the
+  // route destroys it quietly.
+  function destroy(why) {
     if (!alive) return;
     alive = false;
+    if (why) tell(false, why);
     cancelAnimationFrame(raf);
     ro.disconnect(); io.disconnect();
     el.classList.remove('is-live');

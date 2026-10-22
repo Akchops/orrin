@@ -34,7 +34,8 @@ const POSES = {
     [`lens-${k}`]: { s: 16.5, model: k - 1, az: 38, el: 11, frame: 54, tx: 0, ty: 0, tz: -50, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
     [`lineup-${k}`]: { s: 16.5, model: k - 1, az: 90, el: 0, frame: 56, tx: 0, ty: 0, tz: -49, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
     // Each lens's own front label and distance scale, for its page.
-    [`d-glass-${k}`]: { s: 0, model: k - 1, az: 6, el: 5, frame: 29, tx: 0, ty: 0, tz: -6, iris: 0.06, sx: 0, sy: 0 },
+    // Wide enough to take in the whole front ring and its engraved label.
+    [`d-glass-${k}`]: { s: 0, model: k - 1, az: 4, el: 6, frame: 43, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
     [`d-scale-${k}`]: { s: 16.5, model: k - 1, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -27, focus: 0.62, light: 0, sx: 0, sy: 0 },
   }), {}),
   // The iris as the film catches it, blades opening one at a time with

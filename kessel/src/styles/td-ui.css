@@ -7,9 +7,12 @@
 .td-rail { display: none; }
 .live .film .td-rail {
   display: block; position: fixed; z-index: 4;
-  opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s;
+  /* Hidden outside the teardown but still in the tab order: a chip that
+     takes focus brings the film to the teardown (live.js), so the rail
+     shows; it is never clickable while unseen. */
+  opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
 }
-.live .film .td-rail.is-on { opacity: 1; visibility: visible; }
+.live .film .td-rail.is-on, .live .film .td-rail:focus-within { opacity: 1; pointer-events: auto; }
 .td-rail ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.35rem; }
 .td-chip {
   appearance: none; display: flex; align-items: center; gap: 0.55rem; width: 100%;

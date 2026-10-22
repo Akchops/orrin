@@ -102,17 +102,20 @@ p { margin: 0; max-width: 60ch; }
    layout, on a screen that is tall or has a mouse. */
 @media (min-width: 800px) and (orientation: landscape) and (min-height: 501px), (min-width: 800px) and (orientation: landscape) and (pointer: fine), (min-width: 800px) and (orientation: landscape) and (pointer: none),
   (min-width: 1101px) and (min-height: 501px), (min-width: 1101px) and (pointer: fine), (min-width: 1101px) and (pointer: none) {
-  .js.past-film .tier:not(.is-open):not(:hover):not(:focus-within) .tier__why,
-  .js.past-film .tier:not(.is-open):not(:hover):not(:focus-within) .tier__play { display: none; }
+  .js.past-film:not(.has-viewer) .tier:not(.is-open):not(:hover):not(:focus-within) .tier__why,
+  .js.past-film:not(.has-viewer) .tier:not(.is-open):not(:hover):not(:focus-within) .tier__play { display: none; }
   .js .tier { grid-auto-flow: column; grid-auto-columns: auto; align-items: center; column-gap: 0.8rem; max-width: min(44rem, calc(100vw - 32px)); }
   .js .tier__why { max-width: 30rem; }
   .js .tier__play { margin-top: 0; }
-  .js.past-film .tier__toggle:not([hidden]) { display: block; position: absolute; inset: 0; appearance: none; background: none; border: 0; cursor: pointer; }
+  .js.past-film:not(.has-viewer) .tier__toggle:not([hidden]) { display: block; position: absolute; inset: 0; appearance: none; background: none; border: 0; cursor: pointer; }
   .js .tier__play:not([hidden]) { position: relative; z-index: 2; }
 }
-/* The badge belongs to the home page only. */
-html[data-route]:not([data-route="home"]) .tier { display: none; }
-html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .tier { display: none; }
+/* The badge belongs to the home page (the film) and to the pages with a
+   3D lens viewer (src/app/main.js sets .has-viewer); the film's play
+   button stays on the home page. */
+html[data-route]:not([data-route="home"]):not(.has-viewer) .tier { display: none; }
+html.has-viewer .tier__play { display: none !important; }
+html:not(.js):has(.route:not(#home):not(:has([data-viewer])):target, .route:not(#home):not(:has([data-viewer])) :target) .tier { display: none; }
 
 /* Phones (and anything using the film's narrow layout, whose captions sit
    low across the full width), and phones held sideways: a small pill, top
@@ -144,6 +147,10 @@ html:not(.js):has(.route:not(#home):target, .route:not(#home) :target) .tier { d
   .js .tier.is-open .tier__toggle:not([hidden]) { top: 0; margin-top: -9px; }
   .js .tier__toggle:focus-visible { outline: none; }
   .js .tier:has(.tier__toggle:focus-visible) { outline: 2px solid var(--coat); outline-offset: 2px; }
+  /* On the lens viewer pages the top right holds the page's own labels:
+     the pill sits bottom left there, and opens upward. */
+  .js.has-viewer .tier { top: auto; right: auto; left: var(--gutter-l); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .js.has-viewer .tier.is-open .tier__toggle:not([hidden]) { top: auto; bottom: 0; margin-top: 0; margin-bottom: -9px; }
 }
 /* Still frames (no JS, reduced motion, or a reported failure, which is when
    the notice is up): the page is a plain document, so the badge sits in the

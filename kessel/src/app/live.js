@@ -54,9 +54,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     e.preventDefault();
     // Long jumps (the nav, the hero buttons) land at once instead of
     // fast-forwarding through the whole film; short ones glide.
-    const y = el === 0 ? 0 : el.getBoundingClientRect().top + window.scrollY;
+    // A pinned section (the teardown) is measured by its pin spacer: seen
+    // from below, the section itself sits at the end of its pin.
+    const box = el === 0 ? 0 : (el.closest('.pin-spacer') || el);
+    const y = box === 0 ? 0 : box.getBoundingClientRect().top + window.scrollY;
     if (Math.abs(y - window.scrollY) > innerHeight * 2.5) lenis.scrollTo(y, { immediate: true, force: true });
-    else lenis.scrollTo(el, { duration: 1.6 });
+    else lenis.scrollTo(y, { duration: 1.6 });
   });
   document.addEventListener('focusin', (e) => {
     const r = e.target.getBoundingClientRect?.();
@@ -397,6 +400,12 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     `<span class="td-chip__no">${String(i + 1).padStart(2, '0')}</span><span class="td-chip__name">${names.get(id) || id}</span></button></li>`).join('') + '</ol>';
   const chips = new Map([...rail.querySelectorAll('.td-chip')].map((b) => [b.dataset.part, b]));
   tdSection && tdSection.appendChild(rail);
+  // Tabbing onto a chip from outside the teardown brings the film there.
+  rail.addEventListener('focusin', () => {
+    if (rail.classList.contains('is-on') || !tdSection) return;
+    const box = tdSection.closest('.pin-spacer') || tdSection;
+    lenis.scrollTo(box.getBoundingClientRect().top + window.scrollY, { immediate: true, force: true });
+  });
   // One Back button, moved into whichever caption is open.
   const back = document.createElement('button');
   back.type = 'button';
@@ -607,12 +616,19 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
       const el = tdCaps.get(sel), W = innerWidth, H = innerHeight;
       const cx = W / 2 - 0.17 * W, rpx = (Math.min(W, H) / 2) / 1.3;
       const railL = rail.getBoundingClientRect().left || W;
-      const w = Math.min(352, railL - (cx + rpx * 0.75) - 40);
+      // The card always ends 16 px short of the rail: up to 352 px wide,
+      // down to 220; when even that does not fit beside the part (about
+      // 1024 to 1200 px wide), it slides left over the part's edge rather
+      // than under the rail.
+      const right = railL - 16;
+      let x = Math.max(cx + rpx * 0.75 + 24, W * 0.5);
+      const w = Math.max(220, Math.min(352, right - x));
+      x = Math.min(x, right - w);
       const key = W + 'x' + H + ':' + sel;
       if (el && key !== td.capKey) {
         td.capKey = key;
-        el.style.setProperty('--card-x', Math.max(cx + rpx * 0.75 + 24, W * 0.5) - lo.left + 'px');
-        el.style.setProperty('--card-w', Math.max(260, w) + 'px');
+        el.style.setProperty('--card-x', x - lo.left + 'px');
+        el.style.setProperty('--card-w', w + 'px');
         el.style.setProperty('--card-y', (H / 2 - 0.02 * H) - lo.top + 'px');
       }
     }

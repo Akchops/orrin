@@ -132,6 +132,11 @@ html.live:not([data-route="home"]) .stage { display: none; }
 }
 .stage__readout small { display: block; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--amber); font-weight: 500; }
 .stage__readout.is-on { opacity: 1; }
+/* Desktop: the caption band and its shade are on the left, so the readout
+   stands on the right, clear of the shade (under it, it read at 2.4:1). */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .stage__readout { left: auto; right: var(--gutter-r); text-align: right; }
+}
 
 /* Short and full caption text: phones in the live film read the short line,
    desktop and the stills (reduced motion, no JS) read the full text. */

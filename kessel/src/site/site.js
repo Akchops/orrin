@@ -167,7 +167,10 @@ if (toggle) {
 // ------------------------------------------------ past the film (home)
 // The header turns solid and the skip button goes once the site has
 // taken over from the film.
-const after = document.getElementById('after');
+// The film ends where the home page's footer begins (#after was the old
+// marker; without it the page counted as past the film from the start, so
+// the desktop badge hid its reason and the skip button never showed).
+const after = document.getElementById('after') || document.querySelector('#home .page-end');
 let ticking = false;
 function past() {
   const r = current === 'home' && after ? after.getBoundingClientRect().top : -1;

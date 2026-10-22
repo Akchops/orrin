@@ -77,8 +77,8 @@
 
 .route--lens .lens__foot {
   position: relative; z-index: 4; display: grid; gap: 1.1rem; justify-items: start; align-content: start;
-  /* Phones: clear the part of the shot that is still bright. */
-  margin-top: calc(var(--shot-w) * 0.75 * (0.76 - var(--sil, 0.09)) - var(--fs) * 0.8 * (1 - var(--cross)));
+  /* Stacked, the shot is in the flow above: the copy simply follows it. */
+  margin-top: 0;
 }
 .route--lens .lens__line {
   font-family: var(--body); font-style: italic; font-weight: 400;
