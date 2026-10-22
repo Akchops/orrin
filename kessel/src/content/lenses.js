@@ -16,6 +16,7 @@ export const lenses = [
     thumb: 'model-1',
     band: 'blue',
     shape: 'Short and stubby: a wide front with a big curved glass under a small petal hood.',
+    use: 'Reach for it in rooms, streets and landscapes, when the place matters as much as the person standing in it.',
     specs: [
       ['Focal length', '24 mm'],
       ['Maximum aperture', 'T2.1'],
@@ -39,6 +40,7 @@ export const lenses = [
     thumb: 'model-2',
     band: 'amber',
     shape: 'Medium and plain: a clean, simple front and no hood.',
+    use: 'Reach for it when a scene should look the way it felt to stand there: conversations, walks, everyday stories.',
     specs: [
       ['Focal length', '50 mm'],
       ['Maximum aperture', 'T2.1'],
@@ -62,6 +64,7 @@ export const lenses = [
     thumb: 'model-3',
     band: 'green',
     shape: 'The longest: a narrower barrel, a long hood and a tripod collar.',
+    use: 'Reach for it for faces and details from across the street, when the background should fall away.',
     specs: [
       ['Focal length', '100 mm'],
       ['Maximum aperture', 'T2.1'],

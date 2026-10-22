@@ -105,6 +105,12 @@ function enhance(root) {
   dial.hidden = false;
   draw();
   root.classList.add('is-live');
+  // For the page's beats (src/site/lab.js): scroll sweeps the focal length,
+  // t 0..1 from the widest to the longest.
+  root.__fov = {
+    scrub(t) { cancelAnimationFrame(anim); lm = L0 + (L1 - L0) * Math.min(1, Math.max(0, t)); draw(); },
+    go,
+  };
 }
 
 export function startFov(scope = document) {

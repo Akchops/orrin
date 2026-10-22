@@ -1,0 +1,245 @@
+/* ================================================================ BEATS
+   Interactive pieces on the inner pages (src/site/beats.js): each beat is
+   one screen taller than its pin, which sticks under the masthead while
+   scroll plays the piece, then hands it over. Without JS, with reduced
+   motion, or when the pin would not fit the screen, beats sit in the flow. */
+.beat { position: relative; }
+.beat__pin { position: relative; }
+.js .beat:not(.beat--flow) { height: calc(var(--vh) * 2 - var(--head)); }
+.js .beat:not(.beat--flow) > .beat__pin {
+  position: sticky; top: calc(var(--safe-t) + var(--head));
+  min-height: calc(var(--vh) - var(--head) - var(--safe-t));
+  display: grid; align-content: center;
+  padding-block: clamp(0.75rem, 2.4vh, 1.75rem);
+}
+.beat--flow > .beat__pin, html:not(.js) .beat__pin { padding-block: clamp(2.5rem, 6vw, 5rem); }
+@media (prefers-reduced-motion: reduce) {
+  .js .beat { height: auto !important; }
+  .js .beat > .beat__pin { position: relative !important; min-height: 0 !important; }
+}
+
+/* ----------------------------------------------------- the lens's colour
+   --band comes from data-band on .lens (or the cell); every glow, track,
+   handle and highlight takes it. */
+.lab, .cmp { --glow: rgba(171, 155, 255, 0.14); --glow: color-mix(in srgb, var(--band) 16%, transparent); --soft: color-mix(in srgb, var(--band) 30%, transparent); }
+.lab__pin {
+  padding-inline: calc(var(--gutter-l) + clamp(0px, 3vw - 8px, 40px)) calc(var(--gutter-r) + clamp(0px, 3vw - 8px, 40px));
+  background: radial-gradient(60% 55% at 72% 52%, var(--glow), transparent 72%);
+}
+.lab__pin.wrap { padding-inline: calc(var(--gutter-l) + clamp(0px, 3vw - 8px, 40px)) calc(var(--gutter-r) + clamp(0px, 3vw - 8px, 40px)); }
+.lab__head { display: grid; gap: 0.45rem; max-width: 40rem; }
+.lab__eyebrow { margin: 0; color: var(--band); }
+.lab__no { display: inline-block; min-width: 1.9em; color: var(--dim); font-feature-settings: "tnum"; }
+.lab__h { margin: 0; font-family: var(--display); font-weight: 300; font-stretch: 112%; font-size: clamp(1.7rem, 1.1rem + 2.4vw, 3.3rem); line-height: 1.02; color: var(--engrave); }
+.lab__lead { margin: 0; color: var(--dim); font-size: clamp(0.98rem, 0.92rem + 0.3vw, 1.15rem); line-height: 1.45; max-width: 46ch; }
+.lab__cap { margin: 0.45rem 0 0; color: var(--dim); font-family: var(--display); font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.5; }
+.lab__stage { margin: 0; min-width: 0; }
+.lab__street { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; border-radius: 4px; background: #0c0e12; box-shadow: 0 0 0 1px var(--line), 0 30px 80px -40px var(--soft, transparent); }
+
+/* The markers on the street: which distance is sharp. */
+.lab__mark circle { fill: none; stroke: var(--band); stroke-width: 1.6; opacity: 0.45; vector-effect: non-scaling-stroke; transition: opacity 0.3s ease, fill 0.3s ease; }
+.lab__mark text { font: 600 15px var(--display); letter-spacing: 1px; fill: var(--engrave); opacity: 0.55; paint-order: stroke; stroke: rgba(10, 12, 16, 0.8); stroke-width: 3px; transition: opacity 0.3s ease; }
+.lab__mark.is-sharp circle { opacity: 1; fill: var(--glow); stroke-width: 2.4; }
+.lab__mark.is-sharp text { opacity: 1; }
+@media (max-width: 599px) { .lab__mark text { display: none; } }
+.lab__disc { fill: #ffdcaa; mix-blend-mode: screen; stroke: rgba(255, 244, 222, 0.55); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+
+/* --------------------------------------------------------- controls */
+.ctl { display: grid; gap: 0.7rem; min-width: 0; }
+.ctl__say { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; }
+.ctl__cue { font-family: var(--display); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--band); }
+.ctl__how { color: var(--dim); font-size: 0.92rem; }
+/* "Your turn", once scroll has shown what the control does. */
+.ctl__say::before {
+  content: "Your turn"; order: -1; display: none; padding: 0.2rem 0.55rem; border-radius: 999px;
+  background: var(--band); color: var(--void); font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.beat.is-turn:not(.is-mine) .ctl__say::before { display: inline-block; }
+.ctl__read { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.9rem; }
+.ctl__read output { font-family: var(--display); font-weight: 300; font-stretch: 110%; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.6rem); line-height: 1; color: var(--engrave); font-feature-settings: "tnum"; }
+.ctl__read > span { color: var(--dim); font-size: 0.92rem; line-height: 1.4; }
+.ctl__read .lab__ft { color: var(--amber); font-size: clamp(1.1rem, 0.9rem + 0.8vw, 1.6rem); }
+.ctl__read .lab__in, .ctl__read .lab__open { font-family: var(--display); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--band); }
+.ctl__read .lab__blades { flex-basis: 100%; }
+
+/* The handle: large, with a soft glow ring in the lens's colour. */
+.ctl__handle {
+  position: absolute; z-index: 2; pointer-events: none; border-radius: 999px;
+  background: var(--engrave);
+  box-shadow: 0 0 0 7px var(--soft, rgba(171, 155, 255, 0.3)), 0 0 26px 4px var(--soft, rgba(171, 155, 255, 0.3)), 0 2px 6px rgba(0, 0, 0, 0.6);
+  transition: box-shadow 0.25s ease;
+}
+.is-dragging .ctl__handle, [role="slider"]:focus-visible .ctl__handle { box-shadow: 0 0 0 10px var(--soft, rgba(171, 155, 255, 0.3)), 0 0 34px 8px var(--soft, rgba(171, 155, 255, 0.3)), 0 2px 6px rgba(0, 0, 0, 0.6); }
+@keyframes ctl-pulse { 0% { scale: 1; } 30% { scale: 1.22; } 60% { scale: 0.96; } 100% { scale: 1; } }
+@keyframes ctl-nudge { 0%, 100% { translate: 0 0; } 25% { translate: 12px 0; } 55% { translate: -8px 0; } 80% { translate: 4px 0; } }
+.beat.is-turn:not(.is-mine) .ctl__handle { animation: ctl-pulse 1.1s ease-out 1; }
+.beat.is-nudge:not(.is-mine) .ctl__handle { animation: ctl-nudge 1s ease-in-out 1; }
+[role="slider"]:focus-visible { outline: 2px solid var(--band); outline-offset: 5px; }
+
+/* The focus ring, unrolled: drag sideways, the scale moves with you. */
+.ring {
+  position: relative; height: 84px; margin-top: 16px; border-radius: 12px; touch-action: pan-y; cursor: ew-resize;
+  background: linear-gradient(180deg, #2a2e36, #17191e 60%, #121418); box-shadow: inset 0 0 0 1px var(--line-2), inset 0 10px 18px -12px rgba(255, 255, 255, 0.25);
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.ring::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(90deg, #121418, transparent 16%, transparent 84%, #121418); }
+.ring__svg { display: block; width: 100%; height: 100%; }
+.ring__ribs { fill: #3a3f49; }
+.ring__ticks { stroke: var(--engrave); stroke-width: 0.9; opacity: 0.8; }
+.ring__m text { font: 500 11px var(--display); fill: var(--engrave); text-anchor: middle; }
+.ring__ft text { font: 500 9px var(--display); fill: var(--amber); text-anchor: middle; }
+.ring__index { stroke: var(--band); stroke-width: 2; }
+@media (max-width: 599px) { .ring { height: 70px; margin-top: 14px; } .lab__h { font-size: 1.6rem; } }
+.ring__handle { left: 50%; top: -16px; width: 52px; height: 30px; margin-left: -26px; }
+.ring__handle::before, .ring__handle::after { content: ""; position: absolute; top: 9px; width: 0; height: 0; border: 6px solid transparent; }
+.ring__handle::before { left: 7px; border-right-color: var(--void); }
+.ring__handle::after { right: 7px; border-left-color: var(--void); }
+
+/* A slider: the handle goes where you point; thumb-sized everywhere. */
+.slider { position: relative; height: 56px; margin-bottom: 1.3rem; touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; --t: 0; }
+.slider__track { position: absolute; left: 22px; right: 22px; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; background: var(--line-2); }
+.slider__fill { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--band); }
+.slider__handle { width: 44px; height: 44px; top: 50%; left: calc(22px + (100% - 44px) * var(--t)); transform: translate(-50%, -50%); }
+.slider__ticks { position: absolute; left: 22px; right: 22px; top: calc(50% + 18px); height: 1rem; pointer-events: none; }
+.slider__ticks span { position: absolute; transform: translateX(-50%); font-family: var(--display); font-size: 0.66rem; letter-spacing: 0.06em; color: var(--dim); }
+.slider__ticks span:first-child { transform: none; }
+.slider__ticks span:last-child { transform: translateX(-100%); }
+
+.chip {
+  appearance: none; min-height: 44px; padding: 0 1rem; border: 1px solid var(--line-2); border-radius: 999px;
+  background: transparent; color: var(--engrave); cursor: pointer; font-family: var(--display); font-size: 0.82rem; letter-spacing: 0.06em;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.chip small { color: var(--dim); font-size: 0.72rem; margin-left: 0.3rem; }
+.chip[aria-pressed="true"] { border-color: var(--band); background: var(--glow); }
+.chip:focus-visible { outline: 2px solid var(--band); outline-offset: 2px; }
+@media (hover: hover) { .chip:hover { border-color: var(--band); } }
+.lab__targets { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Without JS the controls do nothing, so only their readouts show, as
+   captions of the first frame. */
+html:not(.js) .ctl__say, html:not(.js) .ring, html:not(.js) .slider, html:not(.js) .lab__targets { display: none; }
+
+/* --------------------------------------------------------- focus pull */
+.lab--focus .lab__pin { display: grid; gap: clamp(0.8rem, 2vh, 1.4rem); }
+@media (min-width: 900px) {
+  .lab--focus .lab__pin { grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); grid-template-areas: "head stage" "ctl stage"; column-gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+  .lab--focus .lab__head { grid-area: head; align-self: end; }
+  .lab--focus .lab__stage { grid-area: stage; }
+  .lab--focus .lab__ctl { grid-area: ctl; align-self: start; }
+  .lab--focus .lab__street { max-height: calc(var(--vh) - var(--head) - 6rem); width: auto; max-width: 100%; margin-inline: auto; }
+}
+
+/* ------------------------------------------------- aperture and bokeh */
+.lab--ap .lab__pin { display: grid; gap: clamp(0.8rem, 2vh, 1.4rem); }
+.lab__pair { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: clamp(0.75rem, 3vw, 2.5rem); align-items: center; min-width: 0; }
+.lab__lens { margin: 0; min-width: 0; }
+.lab__front { position: relative; width: min(100%, 360px); aspect-ratio: 1; margin-inline: auto; }
+.lab__iris-svg { display: block; width: 100%; height: 100%; }
+@media (min-width: 900px) {
+  .lab--ap .lab__pin { grid-template-columns: minmax(0, 5fr) minmax(0, 8fr); grid-template-areas: "head stage" "lens stage" "lens ctl"; column-gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+  .lab--ap .lab__head { grid-area: head; align-self: end; }
+  .lab--ap .lab__pair { display: contents; }
+  .lab--ap .lab__lens { grid-area: lens; align-self: start; }
+  .lab--ap .lab__stage { grid-area: stage; align-self: end; }
+  .lab--ap .lab__ctl { grid-area: ctl; align-self: start; }
+  .lab--ap .lab__front { width: min(100%, calc(var(--vh) * 0.36)); }
+  .lab--ap .lab__street { max-height: calc(var(--vh) * 0.52); width: auto; max-width: 100%; margin-inline: auto; }
+}
+@media (max-width: 899px) { .lab--ap .lab__lens .lab__cap { display: none; } }
+
+/* The lens front, face on. */
+.lf__body { fill: #121418; stroke: #30343c; stroke-width: 0.6; }
+.lf__band { fill: none; stroke: var(--band); stroke-width: 1.6; }
+.lf__ring { fill: #1a1c21; }
+.lf__engr { font: 600 4.1px var(--display); letter-spacing: 0.9px; fill: var(--engrave); opacity: 0.82; }
+.lf__bezel { fill: #08090b; }
+.lf__blades { fill: #262a31; fill-rule: evenodd; }
+.lf__edges { fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.45; }
+.lf__coat { fill: none; stroke: rgba(171, 155, 255, 0.5); stroke-width: 1.6; stroke-linecap: round; }
+.lf__coat--g { stroke: rgba(98, 220, 192, 0.45); }
+.lf__spec { fill: #fff; opacity: 0.8; }
+
+/* ------------------------------------------------ what it sees (beat) */
+.lab--sees .lab__pin { display: grid; gap: clamp(0.7rem, 1.8vh, 1.2rem); }
+.lab--sees .ctl--bare { gap: 0; }
+.lab--sees .fov__mm-in { touch-action: pan-y; }
+.lab--sees .fov__mm-in::-webkit-slider-thumb { box-shadow: 0 0 0 7px var(--soft, rgba(171, 155, 255, 0.3)), 0 0 22px 4px var(--soft, rgba(171, 155, 255, 0.3)); }
+.beat.is-turn:not(.is-mine) .fov__mm-in::-webkit-slider-thumb { animation: ctl-pulse 1.1s ease-out 1; }
+.beat.is-nudge:not(.is-mine) .fov__mm-in::-webkit-slider-thumb { animation: ctl-nudge 1s ease-in-out 1; }
+#lenses .lab--sees .lab__pin { background: none; }
+/* On a lens page: the title and the cue in one row over the viewer, the
+   screen no taller than the pin allows, so the whole beat holds. */
+@media (min-width: 900px) {
+  .route--lens .lab--sees .lab__pin { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head cue" "fov fov"; align-items: end; column-gap: 2rem; }
+  .route--lens .lab--sees .lab__head { grid-area: head; }
+  .route--lens .lab--sees .ctl--bare { grid-area: cue; justify-self: end; max-width: 26rem; }
+  .route--lens .lab--sees .fov { grid-area: fov; }
+  .route--lens .lab--sees .fov__screen { width: 100%; max-width: max(20rem, calc((var(--vh) - var(--head) - 23rem) * 1.5)); }
+  /* The overview stays in the page (the screen draws from its layers) but
+     out of sight here; the Lenses page shows the whole viewer. */
+  .route--lens .lab--sees .fov__map { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
+
+/* ------------------------------------------------------ compare strip */
+.cmp .cmp__pin { display: grid; gap: clamp(0.9rem, 2.4vh, 1.6rem); padding-inline: calc(var(--gutter-l) + clamp(0px, 3vw - 8px, 40px)) calc(var(--gutter-r) + clamp(0px, 3vw - 8px, 40px)); }
+.cmp__head { display: grid; gap: 0.45rem; max-width: 44rem; }
+.cmp__head h2 { margin: 0; font-family: var(--display); font-weight: 300; font-stretch: 112%; font-size: clamp(1.7rem, 1.1rem + 2.4vw, 3.3rem); line-height: 1.02; }
+.cmp__head .eyebrow { margin: 0; }
+.cmp__lead { margin: 0; color: var(--dim); line-height: 1.45; max-width: 52ch; }
+.cmp__row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(0.5rem, 3vw, 3rem); }
+.cmp__cell { display: grid; justify-items: center; gap: 0.4rem; min-width: 0; text-align: center; }
+.cmp__iris { display: block; width: min(100%, 240px, calc(var(--vh) * 0.28)); height: auto; aspect-ratio: 1; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5)); }
+.cmp__name { margin: 0; font-family: var(--display); font-size: clamp(0.95rem, 0.8rem + 0.6vw, 1.3rem); color: var(--engrave); }
+.cmp__name span { display: block; color: var(--band); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; }
+.cmp__disc { width: 52px; height: 52px; }
+.cmp__disc path { fill: var(--band); opacity: 0.85; }
+.cmp__ctl { max-width: 44rem; width: 100%; margin-inline: auto; }
+.cmp { --band: var(--coat); }
+
+/* ------------------------------------------- the Lenses page: the tint */
+#lenses .lx { position: relative; isolation: isolate; }
+#lenses .lx::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;
+  background: radial-gradient(110% 80% at 50% 45%, var(--tint, transparent), transparent 70%);
+}
+#lenses .lx[data-tint]::before { opacity: 1; }
+#lenses .lx[data-tint="blue"] { --tint: rgba(111, 168, 255, 0.16); }
+#lenses .lx[data-tint="amber"] { --tint: rgba(240, 166, 74, 0.15); }
+#lenses .lx[data-tint="green"] { --tint: rgba(98, 220, 192, 0.15); }
+#lenses .lx-lens__fig { cursor: pointer; }
+.lx-bokeh { margin: 0.4rem 0 0; display: grid; gap: 0.3rem; opacity: 0.55; transition: opacity 0.4s ease; }
+.lx-bokeh__svg { display: block; width: min(100%, 220px); height: auto; }
+.lx-bokeh__svg path { fill: var(--band); }
+.lx-bokeh__cap { font-family: var(--display); font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+.lx-bokeh__cap span { text-transform: none; letter-spacing: 0; }
+#lenses .lx-lens.is-picked .lx-bokeh, #lenses .lx-lens:focus-within .lx-bokeh { opacity: 1; }
+@media (hover: hover) { #lenses .lx-lens:hover .lx-bokeh { opacity: 1; } }
+
+/* ------------------------------------------------------ the lens page end */
+/* Each lens page in its own colour: buttons and focus rings too. */
+.route--lens .btn--solid { background: var(--band); border-color: var(--band); color: var(--void); }
+@media (hover: hover) { .route--lens .btn--solid:hover { background: var(--engrave); border-color: var(--engrave); } }
+.route--lens :focus-visible { outline-color: var(--band); }
+.lens__specs-h .tag--sample { color: var(--dim); border-color: var(--line-2); }
+.route--lens .lens__specs .lens__specs-h { flex-wrap: wrap; row-gap: 0.4rem; }
+.lens__enquire { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem; margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+.lens__enquire-t { margin: 0; font-family: var(--display); font-weight: 300; font-size: clamp(1.2rem, 1rem + 0.8vw, 1.7rem); }
+
+/* ------------------------------------------------------------- tried */
+.tried {
+  position: fixed; z-index: 35; right: var(--gutter-r); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); margin: 0;
+  display: flex; align-items: center; gap: 0.55rem; padding: 0.42rem 0.75rem; border: 1px solid var(--line-2); border-radius: 999px;
+  background: rgba(21, 23, 28, 0.88); color: var(--dim); pointer-events: none;
+  font-family: var(--display); font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.tried[hidden] { display: none; }
+.tried b { color: var(--engrave); font-weight: 600; }
+.tried__dots { display: flex; gap: 4px; }
+.tried__dots i { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--dim); }
+.tried__dots i.on { background: var(--coat-2); border-color: var(--coat-2); }
+.tried.is-all { border-color: var(--coat-2); }
+.tried__short { display: none; }
+@media (max-width: 599px) { .tried__long { display: none; } .tried__short { display: inline; } .tried { gap: 0.4rem; padding: 0.38rem 0.6rem; } }
+html:not(.js) .tried { display: none; }
+@media (prefers-reduced-motion: reduce) { .ctl__handle, .fov__mm-in::-webkit-slider-thumb { animation: none !important; } }

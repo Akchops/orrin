@@ -25,6 +25,14 @@ const POSE = [
   { az: 38, el: 11, frame: 54, ty: 0, tz: -50 },
   { az: 38, el: 11, frame: 80, ty: -9.5, tz: -52 },
 ];
+// data-pose="front": the lens face on, for the aperture beat on its page
+// (src/site/lab.js closes its iris through el.__lensSet). Framed to take in
+// the hood.
+const FRONT = [
+  { az: 3, el: 4, frame: 62, ty: 0, tz: 0 },
+  { az: 3, el: 4, frame: 48, ty: 0, tz: 0 },
+  { az: 3, el: 4, frame: 47, ty: 0, tz: 8 },
+];
 // Lens length in mm, mount to front (lens.js LEN_K of 99 mm).
 const LEN = [71.3, 99, 143.6];
 // The lineup: where each lens stands across the still, as a share of its
@@ -38,7 +46,10 @@ export function mountViewer(el, L, caps, { font }) {
   const T = L.THREE;
   const lineup = el.dataset.viewer === 'lineup';
   const models = lineup ? [0, 1, 2] : [Math.max(0, Math.min(2, +el.dataset.viewer || 0))];
-  const img = el.querySelector('img');
+  const front = el.dataset.pose === 'front';
+  const POSES = front ? FRONT : POSE;
+  // The still it lies over: a rendered image, or the iris drawing.
+  const img = el.querySelector('img, .lab__iris-svg');
   const quality = caps.tier === 'high' ? 'high' : 'medium';
 
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -85,12 +96,12 @@ export function mountViewer(el, L, caps, { font }) {
       lens.root.rotation.x = -Math.PI / 2;
       lens.root.position.y = LEN[m];
     } else {
-      const p = POSE[m];
+      const p = POSES[m];
       pivot.position.set(0, p.ty, p.tz);
       lens.root.position.set(0, -p.ty, -p.tz);
     }
     scene.add(pivot);
-    return { m, i, lens, pivot, lift: 0, liftTo: 0 };
+    return { m, i, lens, pivot, S, lift: 0, liftTo: 0 };
   });
 
   const camera = new T.PerspectiveCamera(26, 1, 1, 6000);
@@ -98,7 +109,7 @@ export function mountViewer(el, L, caps, { font }) {
   // and where it is easing to, and a slow idle sway.
   const v = { yaw: 0, pitch: 0, vy: 0, vp: 0, zoom: 1, zoomTo: 1, hx: 0, hy: 0, hxTo: 0, hyTo: 0, spin: 0 };
   let W = 1, H = 1, frame = 1, lastInput = performance.now(), dragging = null, hover = -1;
-  const pose = POSE[models[0]];
+  const pose = POSES[models[0]];
 
   function layout() {
     const r = img.getBoundingClientRect();
@@ -282,7 +293,7 @@ export function mountViewer(el, L, caps, { font }) {
     if (!lineup) {
       // A lens page: the lens turns slowly on its own, easing back in
       // after a drag; the hover tilt still applies.
-      if (!dragging) { v.spin += dt * 9 * smooth(0.5, 2.5, idle); moving = true; }
+      if (!dragging && !front) { v.spin += dt * 9 * smooth(0.5, 2.5, idle); moving = true; }
       const k = 1 - Math.pow(0.85, dt * 60); v.hx += (v.hxTo - v.hx) * k;
     } else {
       const sway = (1 - smooth(22, 30, idle)) * smooth(2, 4, idle);
@@ -318,6 +329,13 @@ export function mountViewer(el, L, caps, { font }) {
 
   el.appendChild(canvas);
   layout();
+  // The page sets the lens's state (the iris, on the aperture beat).
+  el.__lensSet = (o) => {
+    const it = items[0];
+    Object.assign(it.S, o);
+    it.lens.update(it.S, 0);
+    dirty = true; wake();
+  };
 
   async function start() {
     place();
@@ -337,6 +355,7 @@ export function mountViewer(el, L, caps, { font }) {
   function destroy(why) {
     if (!alive) return;
     alive = false;
+    delete el.__lensSet;
     if (why) tell(false, why);
     cancelAnimationFrame(raf);
     ro.disconnect(); io.disconnect();

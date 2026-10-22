@@ -3,6 +3,8 @@
 // this lens, the close-ups, the figures, and the way to the next lens.
 import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
+import { focusBeat, apertureBeat } from '../lab-svg.js';
+import { LENSES } from '../../app/fov.js';
 import { lenses } from '../../content/lenses.js';
 
 // The large transparent shot for each lens (wide, standard, long).
@@ -69,9 +71,23 @@ export function lensHTML(l, i) {
     </div>
   </div>
 
-  <div class="lens__fov">
-    ${fovHTML({ id: `${id}-fov`, lens: l.slug })}
-  </div>
+  <!-- The experiences: each a beat that holds while scroll plays it, then
+       hands it over (src/site/lab.js, src/site/beats.js). -->
+  ${focusBeat(l, i, id, `${id}-fov`)}
+  ${apertureBeat(l, i, id, `${id}-fov`)}
+  <section class="beat lab lab--sees" id="${id}-sees" data-beat="sees" data-lens="${i}" aria-labelledby="${id}-sees-t">
+    <div class="beat__pin lab__pin">
+      <header class="lab__head">
+        <p class="eyebrow lab__eyebrow"><span class="lab__no">03</span> What it sees</p>
+        <h2 class="lab__h" id="${id}-sees-t">${LENSES[i].deg}&deg; of the street</h2>
+        <p class="lab__lead">${esc(l.use)}</p>
+      </header>
+      <div class="lab__ctl ctl ctl--bare">
+        <p class="ctl__say"><span class="ctl__cue">Try it</span> <span class="ctl__how">Tap another lens, or drag the focal length.</span></p>
+      </div>
+      ${fovHTML({ id: `${id}-fov`, lens: l.slug, head: false })}
+    </div>
+  </section>
 
   <section class="lens__detail" aria-labelledby="${id}-detail">
     <h2 class="sr-only" id="${id}-detail">${esc(l.name)} up close</h2>
@@ -81,10 +97,20 @@ export function lensHTML(l, i) {
   </section>
 
   <section class="lens__specs" aria-labelledby="${id}-specs">
-    <h2 class="lens__specs-h" id="${id}-specs"><span>Specifications</span> ${proposalTag}</h2>
+    <h2 class="lens__specs-h" id="${id}-specs"><span class="lab__no">04</span> <span>Specifications</span> <span class="tag tag--sample">Sample figures</span> ${proposalTag}</h2>
     <dl class="lens__key">${readout('Focal length', ' lens__read--main')}${readout('Maximum aperture')}${readout('Weight')}
     </dl>
     <div class="lens__table">${specTable(l, `${l.name}: sample specifications`)}</div>
+    <div class="lens__enquire">
+      <p class="lens__enquire-t">Like what ${esc(l.name)} does?</p>
+      <details class="enquire lens__enq lens__enq--end">
+        <summary class="btn btn--solid">Enquire about ${esc(l.name)}</summary>
+        <div class="enquire__body">
+          <p>Write or call the studio in ${esc(site.city)} and mention ${esc(l.name)}.</p>
+          ${contactLines()}
+        </div>
+      </details>
+    </div>
   </section>
 
   <nav class="lens__pager" aria-label="Other lenses">

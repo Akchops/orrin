@@ -4,6 +4,8 @@
 // the side-by-side table set like an engraved scale.
 import { site, esc, lensRoute, img, proposalTag, footer, route, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
+import { compareStrip, bokehSwatch } from '../lab-svg.js';
+import { LENSES } from '../../app/fov.js';
 import { lenses, shapes } from '../../content/lenses.js';
 
 const spec = (l, key) => (l.specs.find(([k]) => k === key) || [key, ''])[1];
@@ -26,14 +28,18 @@ function lensSection(l, i) {
   const id = `lenses-${l.slug}`;
   const [mm, unit] = split(spec(l, 'Focal length'));
   const no = String(i + 1).padStart(2, '0');
-  return `<article class="lx-lens lx-lens--${kinds[i % 3]}" data-band="${l.band}" id="${id}" aria-labelledby="${id}-name">
+  return `<article class="lx-lens lx-lens--${kinds[i % 3]}" data-band="${l.band}" data-try="pick" id="${id}" aria-labelledby="${id}-name">
   <div class="lx-lens__fig">${img(`lens-${i + 1}`)}</div>
   <div class="lx-lens__copy">
     <p class="lx-lens__kicker"><span class="lx-lens__no">${no}</span> <span>${esc(l.role)} &middot; ${esc(spec(l, 'Focal length'))} &middot; ${esc(spec(l, 'Maximum aperture'))}</span> ${proposalTag}</p>
     <h2 class="lx-lens__name" id="${id}-name">${esc(l.name)}</h2>
     <p class="lx-lens__mm" aria-hidden="true">${esc(mm)}<small>${esc(unit)}</small></p>
     <p class="lx-lens__line">${esc(l.line)}</p>
-    <a class="lx-lens__more" href="#${lensRoute(l)}">View lens<span class="sr-only">: ${esc(l.name)}</span> <span class="lx-lens__arrow" aria-hidden="true">&rarr;</span></a>
+    <figure class="lx-bokeh">
+      ${bokehSwatch(LENSES[i], l.slug)}
+      <figcaption class="lx-bokeh__cap">Its bokeh: lights behind a person at T2.1 <span>(illustration)</span></figcaption>
+    </figure>
+    <a class="lx-lens__more" href="#${lensRoute(l)}">Open this lens<span class="sr-only">: ${esc(l.name)}</span> <span class="lx-lens__arrow" aria-hidden="true">&rarr;</span></a>
   </div>
 </article>`;
 }
@@ -61,11 +67,18 @@ export function lensesHTML() {
     </div>
   </header>
 
-  <div class="lx-fov wrap">
-    ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar' })}
-  </div>
+  <section class="beat lab lab--sees lx-fov" id="lenses-sees" data-beat="sees" aria-label="See the difference">
+    <div class="beat__pin lab__pin wrap">
+      ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar' })}
+      <div class="lab__ctl ctl ctl--bare">
+        <p class="ctl__say"><span class="ctl__cue">Try it</span> <span class="ctl__how">Tap a lens, or drag the focal length.</span></p>
+      </div>
+    </div>
+  </section>
 
   ${lenses.map(lensSection).join('\n\n  ')}
+
+  ${compareStrip(lenses)}
 
   <section class="lx-compare" aria-labelledby="lenses-compare-title">
     <div class="lx-compare__scale">${img('d-scale')}</div>

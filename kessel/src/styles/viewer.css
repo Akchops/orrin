@@ -10,7 +10,8 @@
 .viewer__gl:active { cursor: grabbing; }
 [data-viewer].is-live .viewer__gl { opacity: 1; }
 [data-viewer] > img { transition: opacity 0.5s ease 0.15s; }
-[data-viewer].is-live > img { opacity: 0; }
+[data-viewer].is-live > img, [data-viewer].is-live > .lab__iris-svg { opacity: 0; }
+[data-viewer] > .lab__iris-svg { transition: opacity 0.5s ease 0.15s; }
 #lenses .lx-hero__fig { position: relative; }
 
 /* The controls: a hint, then turn and zoom buttons. */

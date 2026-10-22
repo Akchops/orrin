@@ -138,9 +138,14 @@ const LAMP = {
 // -------------------------------------------------------------- the scene
 // Items: { d, f } a filled path, { d, s, lw } a stroke, { t, x, y, z, f }
 // a sign's lettering, { g: [cx, cy, rx, ry], f } a soft glow. `a` is an
-// alpha, `fine` marks detail the small SVG leaves out.
+// alpha, `fine` marks detail the small SVG leaves out. L.lights (not
+// enumerable, so the layer loops skip it) lists the points of light, for
+// the bokeh on the lens pages: { x, y, r, layer, a }.
 export function scene() {
   const L = { far: [], mid: [], subj: [], near: [] };
+  const lights = [];
+  Object.defineProperty(L, 'lights', { value: lights });
+  const light = (x, y, r, layer, a = 1) => lights.push({ x: n(x), y: n(y), r, layer, a });
   let cur;
   const fill = (d, f, o) => cur.push({ d, f, ...o });
   const line = (d, s, lw, o) => cur.push({ d, s, lw, ...o });
@@ -217,7 +222,9 @@ export function scene() {
       for (let c = 0; c < b.cols; c++) {
         const wx = b.x + gap + c * (ww + gap);
         if (b.jharokha && c === 1) continue;
-        (lit(b.x + 97, i * 5 + c) ? on : off).push((b.win === 'arch' ? A : R)(wx, wy, ww, wh));
+        const isLit = lit(b.x + 97, i * 5 + c);
+        (isLit ? on : off).push((b.win === 'arch' ? A : R)(wx, wy, ww, wh));
+        if (isLit) light(wx + ww / 2, wy + wh * 0.4, ww * 0.4, 'mid', 0.45);
         sill.push(R(wx - 2, wy + wh, ww + 4, 2.2));
       }
       if (off.length) fill(off.join(''), 'win');
@@ -236,6 +243,7 @@ export function scene() {
       const cx = b.x + b.w / 2, ft = BASE - GF - FL;
       fill(P([[cx - 30, ft + 8], [cx + 30, ft + 8], [cx + 26, ft + 16], [cx - 26, ft + 16]]) + R(cx - 24, ft + 16, 48, 46) + R(cx - 28, ft + 62, 56, 6), 'rail');
       fill(A(cx - 18, ft + 22, 16, 34) + A(cx + 2, ft + 22, 16, 34), 'lit');
+      light(cx - 10, ft + 36, 7, 'mid', 0.5); light(cx + 10, ft + 36, 7, 'mid', 0.5);
     }
     // Ground floor.
     if (b.door) {
@@ -243,6 +251,7 @@ export function scene() {
       fill(R(cx - 15, BASE - 82, 30, 82), 'rail');
       fill(R(cx - 12, BASE - 78, 24, 78), 'door');
       fill(A(cx - 12, BASE - 98, 24, 16), 'lit');
+      light(cx, BASE - 90, 8, 'mid', 0.5);
       fill(R(b.x + 10, BASE - 72, 14, 24) + R(b.x + b.w - 24, BASE - 72, 14, 24), 'win');
       continue;
     }
@@ -287,6 +296,7 @@ export function scene() {
         line(`M${n(bx)} 388V${by - 3}`, 'shade', 0.8, { fine: true });
         glow(bx, by, 16, 16, 'lit', 0.5);
         fill(E(bx, by, 2.6), 'bulb');
+        light(bx, by, 2.6, 'mid');
       }
     }
     glow(cx, 478, b.w * 0.55, 13, 'lit', 0.3);
@@ -317,6 +327,7 @@ export function scene() {
     line(place(LAMP.curl, x, 640, 1, fx), 'pole', 1.4, { fine: true });
     glow(x + fx * 48, 202, 56, 56, 'lit', 0.32);
     fill(place(LAMP.glass, x, 640, 1, fx), 'bulb');
+    light(x + fx * 48, 202, 5, 'near');
   }
   const sx = 165, sy = 600, ss = 0.8;
   glow(sx + 56, sy, 70, 6, 'shade', 0.6);
@@ -328,6 +339,7 @@ export function scene() {
   line(place('M104 -96L98 -108', sx, sy, ss), 'chrome', 1.2);
   fill(place(SCOOTER.mirror, sx, sy, ss), 'chrome');
   fill(place(SCOOTER.lamp, sx, sy, ss), 'bulb');
+  light(sx + 124.2 * ss, sy - 94 * ss, 4.2 * ss, 'near', 0.8);
   fill(place(SCOOTER.tail, sx, sy, ss), 'tail');
   return L;
 }
