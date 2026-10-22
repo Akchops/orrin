@@ -16,7 +16,7 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 | 4 | Lens pages as pinned, scroll-led experiences (focus pull, aperture and bokeh, what it sees, specs and enquire); Lenses hover tint, bokeh preview, compare strip | done |
 | 5 | Craft and Company illustrated centrepieces (already built: verify, vary layouts) | done |
 | 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | done |
-| 7 | Final QA at every width, reduced motion, no-JS | in progress |
+| 7 | Final QA at every width, reduced motion, no-JS | done |
 
 ## Notes for resuming
 - Each step ends with: build, smoke test, commit, push, republish the
@@ -91,3 +91,15 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
   scroll leaves the visitor's value alone. Pieces taller than the screen
   (e.g. checks at 1280x800, most pieces on phones) play in the flow.
   Audit 64 of 64 (Contact fixed and re-audited); smoke passed.
+- 7 done: audit 64 of 64 (eight pages at 390, 768, 900, 1024, 1280, 1440,
+  1728 and a 900 px framed pane: no horizontal scroll, nothing clipped);
+  contact sheets per page refreshed in kessel/screenshots/widths/. Every
+  slider, chip, hotspot and button at least 40 px on a phone (sliders 56,
+  ring 70 to 84). Reduced motion: nothing pins, drives, snaps or nudges;
+  controls wait at their middle value with the cue (fixed: the compare
+  strip drew T2.1 with its slider at the middle). No JS: every page reads
+  with captioned stills and each experience's first frame. Smoke passed.
+- Not done: no real GPU here, so the live 3D (film, viewers, the face-on
+  iris) was seen only in software WebGL (?gl=force); the Lenses page's full
+  street viewer, and several pieces on phones and short screens, are taller
+  than one screen and play in the flow instead of pinning.

@@ -161,7 +161,7 @@ function compareBeat(el) {
   }
   const c = control(slider, { value: 0, onInput: (t) => render(t), onTouch: () => beat.mine() });
   const beat = addBeat(el, { drive: (t, still) => c.set(still ? 0.5 : t), mid: 0.5 });
-  render(0);
+  render(c.value);
 }
 
 // ------------------------------------------------ Contact: which lens?
