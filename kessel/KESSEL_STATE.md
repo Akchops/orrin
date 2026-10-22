@@ -12,8 +12,8 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 |---|---|---|
 | 1 | Frame the whole lens; fix overflow; screenshot every page at every width | done |
 | 2 | Three different lenses again (restore silhouettes, hood, collar); lineup at one scale | done |
-| 3 | Street viewer as centrepiece (already built in the last follow-up: verify) | in progress |
-| 4 | Lens pages as pinned, scroll-led experiences (focus pull, aperture and bokeh, what it sees, specs and enquire); Lenses hover tint, bokeh preview, compare strip | next |
+| 3 | Street viewer as centrepiece (already built in the last follow-up: verify) | done |
+| 4 | Lens pages as pinned, scroll-led experiences (focus pull, aperture and bokeh, what it sees, specs and enquire); Lenses hover tint, bokeh preview, compare strip | in progress |
 | 5 | Craft and Company illustrated centrepieces (already built: verify, vary layouts) | next |
 | 6 | Scroll stops at every interactive milestone; handles, cues, nudges, progress; the checks run under scroll | next |
 | 7 | Final QA at every width, reduced motion, no-JS | next |
@@ -42,3 +42,11 @@ reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
   Company bench tray draws the three at their own sizes. Audit 64 of 64,
   smoke passed, live lineup and turning Sinhagad checked in software
   WebGL.
+- 3 done (checked, no code change): "See the difference" opens each lens
+  page with that lens chosen and leads the Lenses page; on Sinhagad the
+  shops behind the person blur (mid layer 5.0) and the readout says 20
+  degrees with the angle fan; switching to Shaniwar glides to 74 degrees
+  with no blur. Checked at 1440 and 390, no errors.
+- 4 notes: new files src/site/lab-math.js (depth of field, f-stops, iris,
+  discs) and src/site/lab-svg.js (beat markup); fov.js scene() now lists
+  its points of light (L.lights) for the bokeh.
