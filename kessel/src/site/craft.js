@@ -131,6 +131,19 @@ if (root) {
 
   ctl.hidden = false;
   say.hidden = false;
+  // The caption keeps the height of its longest stage, so the pinned
+  // screen never grows as the stages change.
+  function reserve() {
+    say.style.minHeight = '';
+    const keep = [out.sayName.textContent, out.sayText.textContent];
+    let h = 0;
+    texts.forEach((t, i) => { out.sayName.textContent = names[i]; out.sayText.textContent = t; h = Math.max(h, say.offsetHeight); });
+    [out.sayName.textContent, out.sayText.textContent] = keep;
+    say.style.minHeight = `${h}px`;
+  }
+  reserve();
+  addEventListener('resize', reserve);
+  if (document.fonts) document.fonts.ready.then(reserve);
   set(1, { instant: true });
   root.classList.add('is-live');
 
@@ -138,7 +151,8 @@ if (root) {
   // until the visitor takes the steps or the slider.
   const beatEl = root.closest('.beat');
   if (beatEl) {
-    const beat = addBeat(beatEl, { drive: (t, still) => { const n = still ? 3 : 1 + Math.round(t * (N - 1)); if (n !== stage) set(n); } });
+    // Five stops, one per stage, about a screen each; scroll back undoes them.
+    const beat = addBeat(beatEl, { drive: (t, still) => { const n = still ? 3 : 1 + Math.round(t * (N - 1)); if (n !== stage) set(n); }, stops: N, hold: 5 });
     const mine = () => beat.mine();
     steps.forEach((b) => b.addEventListener('click', mine));
     range.addEventListener('input', mine);

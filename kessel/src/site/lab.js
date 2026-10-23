@@ -67,13 +67,10 @@ function focusBeat(el) {
     if (cancel) cancel();
     cancel = animate(c.value, tpos[j], reduce.matches ? 0 : 700, (f) => c.set(f));
   }));
-  // Scroll: scooter, then the person, then the fort, with a breath at each.
-  const path = (t) => {
-    const [a, b2, d] = tpos;
-    const seg = (x0, x1, u) => x0 + (x1 - x0) * (u < 0 ? 0 : u > 1 ? 1 : u * u * (3 - 2 * u));
-    return t < 0.45 ? seg(a, b2, (t - 0.12) / 0.3) : seg(b2, d, (t - 0.58) / 0.32);
-  };
-  const beat = addBeat(el, { drive: (t, still) => c.set(still ? tpos[1] : path(t)), mid: 0.5 });
+  // Scroll: three stops, near (the scooter), mid (the person) and far (the
+  // fort), gliding between them; with reduced motion it waits at mid.
+  const path = (t) => (t <= 0.5 ? tpos[0] + (tpos[1] - tpos[0]) * (t / 0.5) : tpos[1] + (tpos[2] - tpos[1]) * ((t - 0.5) / 0.5));
+  const beat = addBeat(el, { drive: (t, still) => c.set(still ? tpos[1] : path(t)), mid: 0.5, stops: 3 });
   render(c.value);
 }
 
@@ -114,7 +111,8 @@ function apertureBeat(el) {
     slider.setAttribute('aria-valuetext', `${label}${t < 0.03 ? ', wide open' : ''}`);
   }
   const c = control(slider, { value: 0, onInput: (t) => render(t), onTouch: () => beat.mine() });
-  const beat = addBeat(el, { drive: (t, still) => c.set(still ? 0.5 : t), mid: 0.5 });
+  // Three stops: wide open, half way, stopped right down.
+  const beat = addBeat(el, { drive: (t, still) => c.set(still ? 0.5 : t), mid: 0.5, stops: 3 });
   // The 3D lens takes the iris as it goes live.
   addEventListener('kessel:viewer', () => requestAnimationFrame(() => render(c.value)));
   render(c.value);
@@ -168,7 +166,7 @@ function compareBeat(el) {
     slider.setAttribute('aria-valuetext', `T${nLabel(N)}`);
   }
   const c = control(slider, { value: 0, onInput: (t) => render(t), onTouch: () => beat.mine() });
-  const beat = addBeat(el, { drive: (t, still) => c.set(still ? 0.5 : t), mid: 0.5 });
+  const beat = addBeat(el, { drive: (t, still) => c.set(still ? 0.5 : t), mid: 0.5, stops: 3 });
   render(c.value);
 }
 
@@ -191,8 +189,9 @@ function contactPick(el) {
     if (name) { fig.dataset.lens = name; fig.dataset.band = c.dataset.band; } else { delete fig.dataset.lens; delete fig.dataset.band; }
   }
   chips.forEach((c, i) => c.addEventListener('click', () => { beat.mine(); choose(i); }));
-  // Scroll: through the three lenses; reduced motion waits on "Not sure".
-  const beat = addBeat(el, { drive: (t, still) => choose(still || t < 0.08 ? chips.length - 1 : Math.min(2, Math.floor(((t - 0.08) / 0.84) * 3))) });
+  // Scroll: a stop at each of the three lenses; reduced motion waits on
+  // the middle one.
+  const beat = addBeat(el, { drive: (t, still) => choose(still ? 1 : Math.round(t * 2)), stops: 3 });
   choose(chips.length - 1);
 }
 

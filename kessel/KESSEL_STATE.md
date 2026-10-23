@@ -15,8 +15,8 @@ Last passing commit before it: 91945ca (preview version 28).
 | 1 | Distance scale numerals: gutters, nothing clipped, collision rule, 2x texture, one closest-focus value in film and teardown | done |
 | 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | done |
 | 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | done |
-| 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | in progress |
-| 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | next |
+| 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | done (Company in Part 7, Contact layout in Part 8) |
+| 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | in progress |
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | next |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
 | 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
@@ -81,6 +81,30 @@ Last passing commit before it: 91945ca (preview version 28).
   and 390x844: pinned, every stop read back, nothing under the badge or
   past the screen; snapping, flick, toggle, reduced motion and no-JS
   checked at 1440x900 and 390x844. Evidence: kessel/screenshots/street/.
+  Audit 64 of 64; smoke passed.
+- 4 done: Craft's build-up fits one screen at every size (heading in one
+  row, the drawing about 55% of the screen, 2:1 with the caption beside it
+  on wider screens, the controls under it; the caption keeps the height of
+  its longest stage and the stage buttons their short names, so nothing
+  grows mid-scroll) and pins for about five screens with a stop at each
+  of 01 Glass, 02 Iris, 03 Barrel and focus ring, 04 Assembly and 05
+  Signing; scroll back undoes them; "Your turn" with the nudge at 05.
+  Lens pages: focus pull stops at near (scooter), mid (person) and far
+  (fort); aperture at wide open, half way and stopped right down; what it
+  sees at 24 / 50 / 100 mm then home (Part 3). Lenses page compare strip:
+  wide / mid / closed. Contact picker: a stop at each lens. Every pinned
+  pin keeps clear of the tier badge; a pin that grows a little into its
+  own bottom padding still pins. "Your turn" pills are dark text on the
+  bright pill everywhere (7.6:1; the Craft one was grey, overridden by its
+  label's span colour). Reduced motion: each control at its middle value
+  with the cue, nothing pinned (Craft: stage 3). No JS: unchanged stills
+  and captions. Tested (2D tier) at 2576x1105, 1920x1080, 1728x1117,
+  1440x900, 1280x720, 1024x768, 768x1024 and 390x844: Craft, focus,
+  aperture, sees, compare and the Contact picker pin and read back each
+  stop, nothing under the badge or past the screen, except the Contact
+  picker at 390x844, which is too tall to pin (974 px for 776) and plays
+  in the flow until Part 8 rebuilds that page. Company's beats are Part
+  7's (it gives them their own stops). Evidence: kessel/screenshots/beats/.
   Audit 64 of 64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 

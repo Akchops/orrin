@@ -40,11 +40,12 @@ export function addBeat(el, { drive, key, mid = 0.5, stops = 1, hold, rest = 1, 
   b.stops = stops;
   b.hold = hold ?? (stops > 1 ? 0.7 * stops : 0.9);
   const g = (i) => (glides && glides[i] != null ? glides[i] : glide);
+  const rs = (i) => (Array.isArray(rest) ? rest[i] ?? 1 : rest);
   let total = 0;
-  for (let i = 0; i < stops; i++) total += rest + (i < stops - 1 ? g(i) : 0);
+  for (let i = 0; i < stops; i++) total += rs(i) + (i < stops - 1 ? g(i) : 0);
   b.rests = [];
   let at = 0;
-  for (let i = 0; i < stops; i++) { b.rests.push([at / total, (at + rest) / total]); at += rest + (i < stops - 1 ? g(i) : 0); }
+  for (let i = 0; i < stops; i++) { b.rests.push([at / total, (at + rs(i)) / total]); at += rs(i) + (i < stops - 1 ? g(i) : 0); }
   if (!el.dataset.try) el.dataset.try = b.key;
   el.__beat = b;
   beats.push(b);
@@ -79,7 +80,10 @@ function layout() {
     b.open = b.el.classList.contains('beat--open');
     b.el.classList.remove('beat--flow');
     b.el.style.height = '';
-    b.flow = reduce.matches || b.pin.offsetHeight > vh - topOf(b) + 2;
+    // Growing a little into its own bottom padding (kept clear for the
+    // tier badge) still pins; past that it plays in the flow.
+    const pb = parseFloat(getComputedStyle(b.pin).paddingBottom) || 0;
+    b.flow = reduce.matches || b.pin.offsetHeight > vh - topOf(b) + 2 + Math.max(0, Math.min(32, pb - 24));
     b.el.classList.toggle('beat--flow', b.flow);
     // The pin, then the scroll it holds for (its stops).
     if (!b.flow) b.el.style.height = `${b.pin.offsetHeight + Math.round(vh * b.hold)}px`;

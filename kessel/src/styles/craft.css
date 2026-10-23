@@ -356,3 +356,47 @@
 @media (prefers-reduced-motion: reduce) {
   #craft .ckx__step, #craft .ckx__step::before, #craft .craft-end a::after, #craft .craft-end__go, #craft .craft-end__t { transition: none; }
 }
+
+/* ------------------------------------------------- one screen (with JS) */
+/* With the script the build-up fits one screen at every size, so it can
+   pin while scroll walks the five stages: the heading compact in one row,
+   the drawing about 55% of the screen tall (2:1 on wider screens, the
+   caption beside it; 3:2 or 4:3 on narrower ones, the caption under the
+   controls), clear of the tier badge at the foot. */
+.js #craft .ckx {
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "fig" "ctl" "say";
+  min-height: var(--vh); align-content: center; row-gap: clamp(0.5rem, 1.6vh, 1rem);
+  padding-top: calc(var(--safe-t) + var(--head) + clamp(0.5rem, 1.6vh, 1rem));
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+.js #craft .ckx__head {
+  grid-area: head; z-index: auto; max-width: none; padding: 0; align-self: auto;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 1.25rem;
+}
+.js #craft .ckx__head .eyebrow { flex-basis: 100%; margin: 0; }
+.js #craft .ckx__head h1 { font-size: clamp(1.6rem, 0.9rem + 1.8vw, 2.6rem); max-width: none; text-shadow: none; }
+.js #craft .ckx__fig { aspect-ratio: 4 / 3; width: min(100% + var(--gutter-l) + var(--gutter-r) + 2 * var(--ck-pad), calc(var(--vh) * 0.5 * 4 / 3)); justify-self: center; }
+.js #craft .ckx__ctl, .js #craft .ckx__say { margin-top: 0; }
+.js #craft .ckx__say-t { min-height: 0; }
+@media (min-width: 600px) {
+  .js #craft .ckx__fig { margin-inline: 0; width: min(100%, calc(var(--vh) * 0.52 * 4 / 3)); }
+}
+@media (min-width: 768px) {
+  .js #craft .ckx__fig { aspect-ratio: 3 / 2; width: min(100%, calc(min(var(--vh) * 0.5, var(--vh) - 26rem) * 3 / 2)); }
+}
+@media (min-width: 1024px) {
+  .js #craft .ckx {
+    grid-template-columns: minmax(0, calc(min(var(--vh) * 0.55, var(--vh) - 23.25rem) * 2)) minmax(15rem, 22rem);
+    grid-template-areas: "head head" "fig say" "ctl say"; grid-template-rows: auto auto 1fr;
+    justify-content: center; column-gap: clamp(1.5rem, 3vw, 3rem);
+  }
+  .js #craft .ckx__fig { aspect-ratio: 2 / 1; width: 100%; }
+  .js #craft .ckx__say { align-self: start; padding-left: clamp(1rem, 1.6vw, 1.5rem); }
+  .js #craft .ckx__say-t { font-size: clamp(0.98rem, 0.92rem + 0.2vw, 1.1rem); }
+}
+/* The stage buttons keep their short names (the caption has the full
+   one), and while "Your turn" shows, the label's hint gives it room, so
+   the controls never grow mid-scroll. */
+.js #craft .ckx__more { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.js #craft .beat.is-turn:not(.is-mine) .ckx__dl > span:not(.turn) { display: none; }
+@media (min-width: 1024px) { .js #craft .ckx__range { height: 36px; } }
