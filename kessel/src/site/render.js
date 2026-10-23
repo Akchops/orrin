@@ -15,11 +15,13 @@ import { contactHTML } from './pages/contact.js';
 
 // --------------------------------------------------------------- shell
 export function header() {
-  // The pages after the film; data-nav names the route each one opens,
-  // so the shell can mark the current page (lens pages count as Lenses).
-  const links = site.nav.map((n) => `<a href="${n.href}" data-nav="${n.href.slice(1)}">${esc(n.label)}</a>`).join('\n    ');
+  // Home, then the pages after the film; data-nav names the route each one
+  // opens, so the shell can mark the current page with aria-current (lens
+  // pages count as Lenses). The same links make the phone menu.
+  const links = site.nav.map((n) => `<a href="${n.href}" data-nav="${n.route || n.href.slice(1)}">${esc(n.label)}</a>`).join('\n    ');
   return `<header class="masthead">
   <a class="masthead__mark" href="#top" aria-label="${esc(site.name)}, back to the top">KESSEL<span> OPTICS</span></a>
+  <button class="masthead__menu" type="button" aria-controls="site-nav" aria-expanded="false" hidden>Menu</button>
   <nav class="masthead__nav" id="site-nav" aria-label="Main">
     ${links}
   </nav>

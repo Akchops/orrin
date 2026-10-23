@@ -25,7 +25,8 @@ export const contactLines = (cls = '') => `
 
 export const proposalTag = '<span class="tag">Proposal</span>';
 export function footer(topHref) {
-  const links = site.nav.map((n) => `<li><a href="${n.href}">${esc(n.label)}</a></li>`).join('');
+  // The footer has "The film" for home already.
+  const links = site.nav.filter((n) => n.route !== 'home').map((n) => `<li><a href="${n.href}">${esc(n.label)}</a></li>`).join('');
   const more = site.more.map((n) => `<a href="${n.href}">${esc(n.label)}</a>`).join('<span aria-hidden="true"> · </span>');
   return `<footer class="foot">
   <div class="wrap foot__grid">

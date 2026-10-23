@@ -6,7 +6,7 @@ Checks: `kessel/scripts/audit.mjs` (overflow at seven widths and a framed
 pane), the smoke test in the session scratchpad (film, teardown, badge,
 reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 
-## Follow-up "nine parts" (current)
+## Follow-up "nine parts" (done)
 
 Last passing commit before it: 91945ca (preview version 28).
 
@@ -20,7 +20,7 @@ Last passing commit before it: 91945ca (preview version 28).
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | done (Part 9's close-up half included) |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | done |
 | 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | done |
-| 9 | Home tab in the nav; automatic close-ups on every lens page | close-ups done in Part 6; Home tab next |
+| 9 | Home tab in the nav; automatic close-ups on every lens page | done (close-ups built in Part 6) |
 
 ### Part log
 
@@ -258,7 +258,42 @@ Last passing commit before it: 91945ca (preview version 28).
     answers a click under software WebGL).
 
   Evidence: kessel/screenshots/stage/ (Contact, hero 2D and live, no-JS,
-  close-ups before and after).
+  close-ups before and after). Commit d7d5a54, preview version 36.
+- 9 done: "Home" is the first link in the main nav (Home, Lenses, Craft,
+  Company, Contact). It goes to the film's first frame, as the wordmark
+  does. The current page's link carries aria-current="page" and is
+  underlined (Home on Home; Lenses on the lens pages). The footer keeps
+  "The film" rather than a second Home.
+
+  Below 600 px the five links do not fit beside the wordmark. A Menu
+  button (aria-expanded, aria-controls) opens them as one full-screen
+  list: Home first, the current page in violet with a violet rule, focus
+  on Home. Escape closes it and returns focus to the button. Picking a
+  page closes it, and the badge steps aside while it is open. From 600 px
+  the links stay in one row. Without JS there is no button and the row
+  scrolls sideways.
+
+  The close-ups (Part 6, built to this part's spec) are one pinned beat on
+  every lens page and on Craft, driven by scroll alone: whole, 01 Glass,
+  02 Iris, 03 Scale, 04 Mount, 05 Signed.
+
+  Tested:
+  - Nav at 2576x1105, 1920x1080, 1440x900, 1280x720, 1024x768, 768x1024
+    and 390x844, plus 320x640. On Home, Lenses, a lens page, Craft,
+    Company and Contact: Home first, exactly one link marked and the right
+    one, every link on screen and clear of the wordmark, no page overflow.
+    The phone menu opens with every link on screen, Escape closes it, Home
+    from Contact lands on the film's first frame, and Tab from a fresh load
+    reaches the wordmark and then Home (or Menu).
+  - The six stops at the seven sizes on Parvati's page and on Craft (2D
+    tier): pinned, the caption, list and still read back at each stop,
+    nothing under the badge or past the screen, and back to the whole
+    lens.
+  - Software WebGL at 1440x900: the live camera moved at every stop, with
+    the whole lens inside its stage.
+  - Audit 64 of 64; smoke passed; the stage guard passed in the build.
+
+  Evidence: kessel/screenshots/nav/.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

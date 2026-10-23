@@ -128,7 +128,7 @@ if (menuBtn) {
   menuBtn.hidden = false;
   menuBtn.addEventListener('click', () => setMenu(!root.classList.contains('menu-open')));
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('menu-open')) { setMenu(false); menuBtn.focus(); } });
-  matchMedia('(min-width: 800px)').addEventListener('change', () => setMenu(false));
+  matchMedia('(min-width: 600px)').addEventListener('change', () => setMenu(false));
 }
 
 // --------------------------------------------------------- copy buttons

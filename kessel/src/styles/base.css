@@ -203,7 +203,15 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: var(--safe
 .masthead__menu { appearance: none; background: none; color: var(--engrave); border: 1px solid var(--line-2); border-radius: 2px; min-height: 44px; min-width: 4.6rem; padding: 0 0.9rem; cursor: pointer; }
 .masthead__menu:hover { border-color: var(--coat); }
 .masthead__menu[hidden] { display: none; }
-@media (min-width: 800px) { .masthead__menu { display: none; } }
+/* Phones: five links do not fit beside the mark, so they open from a Menu
+   button as one full-screen list (Home first, the current page marked).
+   Without JS the row scrolls sideways instead. */
+@media (min-width: 600px) { .masthead__menu { display: none; } }
+@media (max-width: 599px) {
+  .js:not(.menu-open) .masthead__nav { display: none; }
+  html:not(.js) .masthead__nav { overflow-x: auto; scrollbar-width: none; }
+  html:not(.js) .masthead__nav::-webkit-scrollbar { display: none; }
+}
 @media (max-width: 799px) {
   .masthead__mark span { display: none; }
   .masthead__mark { letter-spacing: 0.26em; font-size: 0.85rem; }
@@ -215,8 +223,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: var(--safe
   }
   .js.menu-open .masthead__nav a { font-size: 2rem; font-stretch: 118%; font-weight: 300; letter-spacing: 0.02em; text-transform: none; color: var(--engrave); padding: 1rem 0; border-bottom: 1px solid var(--line); }
   .js.menu-open .masthead__nav a::after { display: none; }
-  .js.menu-open .masthead__nav a[aria-current] { color: var(--coat); }
-  .menu-open .skipfilm { visibility: hidden; }
+  .js.menu-open .masthead__nav a[aria-current] { color: var(--coat); border-bottom-color: var(--coat); }
+  .menu-open .skipfilm, .menu-open .tier, .menu-open .tried { visibility: hidden; }
 }
 @media (max-width: 359px) { .masthead__nav { gap: 0.7rem; letter-spacing: 0.06em; } }
 

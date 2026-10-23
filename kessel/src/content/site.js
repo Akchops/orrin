@@ -7,9 +7,11 @@ export const site = {
   founded: 2017,
   email: 'studio@kessel.example',
   phone: '+91 00000 00000',
-  // The main nav: the pages after the film. The logo goes home, to the
-  // film and the teardown; the footer also links the teardown.
+  // The main nav: Home (the film and the teardown, as the logo) first, then
+  // the pages after the film. route: the route a link marks as current when
+  // it is not the link's own address. The footer also links the teardown.
   nav: [
+    { href: '#top', label: 'Home', route: 'home' },
     { href: '#lenses', label: 'Lenses' },
     { href: '#craft', label: 'Craft' },
     { href: '#company', label: 'Company' },
