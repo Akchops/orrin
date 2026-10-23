@@ -13,6 +13,17 @@ export const craft = {
   // Shown with the stage buttons and the slider.
   control: 'Stage, 1 to 5',
   controlHint: 'tap a stage or drag',
+  // After the signing: the shell closes and the lens turns to face you.
+  sealed: {
+    name: 'Sealed',
+    text: 'The shell closes over the glass from the mount to the front, and the finished lens turns to face you, its front glass towards you.',
+    hint: 'Drag to open it up again',
+    inside: 'Show inside',
+    // The two stills shown without JavaScript.
+    capInside: 'Inside: all five stages finished, the top half cut away to show the glass, the iris and the barrel.',
+    capSealed: 'Sealed: the shell closed over the glass and the lens turned to face you, its front glass towards you.',
+    figTitle: 'The finished Kessel lens, sealed and face on',
+  },
   stages: [
     {
       key: 'glass', no: '01', name: 'Glass', more: '',

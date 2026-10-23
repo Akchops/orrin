@@ -16,8 +16,8 @@ Last passing commit before it: 91945ca (preview version 28).
 | 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | done |
 | 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | done |
 | 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | done (Company in Part 7, Contact layout in Part 8) |
-| 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | in progress |
-| 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | next |
+| 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | done |
+| 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | in progress |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
 | 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
 | 9 | Home tab in the nav; automatic close-ups on every lens page | next |
@@ -106,6 +106,29 @@ Last passing commit before it: 91945ca (preview version 28).
   in the flow until Part 8 rebuilds that page. Company's beats are Part
   7's (it gives them their own stops). Evidence: kessel/screenshots/beats/.
   Audit 64 of 64; smoke passed.
+- 5 done: after 05 the Craft beat runs about one and a half screens more,
+  scrubbed both ways. CLOSE: the shell (the cut half drawn from outside,
+  as the bottom half is) sweeps on from the mount to the front behind a
+  moving clip with a bright leading edge; the glass, iris, light, pen,
+  iris detail and labels go; the engraving, the amber ring, the scale,
+  KESSEL HAND ASSEMBLED PUNE and the signature stay. TURN: the sealed lens
+  turns about 90 degrees to face the viewer with a little perspective,
+  drawn in code section by section (craft-lens.js turnShapes: each ring an
+  ellipse r sin(yaw) by r, the far half the visible side, back to front;
+  the knurl, step faces and near-side marks go with it; the front, face on,
+  is the lens pages' drawing with its engraved ring and half-open iris),
+  ending centred and a little larger while the desk, lamp and window dim.
+  Then "Sealed" top left, "Your turn · Drag to open it up again"; dragging
+  the drawing sideways scrubs it (left opens, right closes and turns; let
+  go and it settles), the stage buttons and slider still work (from sealed
+  they animate it open). Fits one screen in the same frame. Reduced motion:
+  sealed, still, with a "Show inside" toggle. No JS: two captioned stills,
+  inside (all five stages) and sealed face on. Tested (2D tier) at
+  2576x1105, 1920x1080, 1440x900, 1280x720, 1024x768, 768x1024 and 390x844:
+  pinned, mid-close, sealed, mid-turn and final read back and nothing past
+  the screen; drag both ways, buttons from sealed, reduced and no-JS
+  checked at 1440x900. Evidence: kessel/screenshots/finale/. Audit 64 of
+  64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

@@ -6,7 +6,7 @@
 // stills as a mosaic, and the way on.
 import { site, esc, img, footer, route } from '../parts.js';
 import { craft } from '../../content/craft.js';
-import { craftSVG } from '../craft-svg.js';
+import { craftSVG, sealedSVG } from '../craft-svg.js';
 
 const C = craft;
 const N = C.stages.length;
@@ -45,11 +45,14 @@ export function craftHTML() {
     ${craftSVG({ id: 'craft-svg', title: C.figTitle, desc: C.figDesc })}
     <div class="ckx__hud" aria-hidden="true">
       <span class="ckx__corners"></span>
+      <p class="ckx__sealed" data-text="${esc(C.sealed.text)}" data-hint="${esc(C.sealed.hint)}">${esc(C.sealed.name)}</p>
       <p class="ckx__read"><span class="ckx__read-name">${esc(last.name)}</span> <span class="ckx__read-no">${last.no}</span><small>/ ${total}</small></p>
     </div>
+    <button class="ckx__inside" type="button" aria-pressed="false" hidden>${esc(C.sealed.inside)}</button>
   </div>
+  <p class="ckx__cap">${esc(C.sealed.capInside)}</p>
   <div class="ckx__ctl" hidden>
-    <label class="ckx__dl" for="craft-range"><span class="turn" aria-hidden="true">Your turn &middot; Drag me</span>${esc(C.control)} <span>&middot; ${esc(C.controlHint)}</span></label>
+    <label class="ckx__dl" for="craft-range"><span class="turn" aria-hidden="true">Your turn &middot; Drag me</span><span class="ckx__dl-t">${esc(C.control)}</span> <span>&middot; ${esc(C.controlHint)}</span></label>
     <div class="ckx__steps" role="group" aria-label="The five stages">
       ${C.stages.map(step).join('\n      ')}
     </div>
@@ -62,6 +65,10 @@ export function craftHTML() {
   <ol class="ckx__list" aria-label="The five stages">
     ${C.stages.map(item).join('\n    ')}
   </ol>
+  <figure class="ckx__still2">
+    <div class="ckx__still2-fig">${sealedSVG({ id: 'craft-sealed', title: C.sealed.figTitle })}</div>
+    <figcaption class="ckx__cap">${esc(C.sealed.capSealed)}</figcaption>
+  </figure>
 </div>
 </div>
 <section class="ckm wrap" aria-labelledby="craft-close-title">

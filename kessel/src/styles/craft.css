@@ -225,6 +225,7 @@
 #craft .ckx__ctl[hidden], #craft .ckx__say[hidden] { display: none; }
 #craft .ckx__dl { font-family: var(--display); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--engrave); }
 #craft .ckx__dl span { color: var(--dim); }
+#craft .ckx__dl .ckx__dl-t { color: inherit; }
 #craft .ckx__steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--g); }
 #craft .ckx__step {
   appearance: none; position: relative; display: grid; gap: 0.35rem; align-content: start; min-width: 0; min-height: 56px; margin: 0;
@@ -398,5 +399,65 @@
    one), and while "Your turn" shows, the label's hint gives it room, so
    the controls never grow mid-scroll. */
 .js #craft .ckx__more { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.js #craft .beat.is-turn:not(.is-mine) .ckx__dl > span:not(.turn) { display: none; }
+.js #craft .beat.is-turn:not(.is-mine) .ckx__dl > span:not(.turn, .ckx__dl-t) { display: none; }
+@media (max-width: 599px) { .js #craft .beat.is-turn:not(.is-mine) .ckx.is-sealed .ckx__dl-t { display: none; } }
 @media (min-width: 1024px) { .js #craft .ckx__range { height: 36px; } }
+
+/* ------------------------------------------------------------ the finale */
+/* After the signing the shell sweeps on over the cut half, from the mount
+   to the front, then the lens turns to face the viewer and the room dims
+   (src/site/craft.js sets --close and --turn, 0 to 1, and --tv, the cross
+   fade to the turning drawing). The engraving, the ring, the scale, the
+   maker's mark and the signature stay; the light, the pen, the iris detail
+   and the labels go. */
+#craft .ck-dim, #craft .ck-turn { pointer-events: none; }
+#craft .ck-dim { fill: var(--void); opacity: 0; }
+#craft .ck-turn { opacity: 0; }
+#craft .ck-shell__edge { fill: var(--ck-edge); opacity: 0; }
+#craft .ckx.is-fin .ck-dim { opacity: calc(var(--turn) * 0.62); }
+#craft .ckx.is-fin .ck-turn { opacity: var(--tv); }
+#craft .ckx.is-fin .ck-lens { opacity: calc(1 - var(--tv)); }
+#craft .ckx.is-fin :is(.ck-p--rays, .ck-p--focus, .ck-p--pen, .ck-p--callout, .ck-labs) { opacity: calc(1 - var(--close)); transition: none; }
+#craft .ckx.is-fin :is(.ck-ghost, .ck-hl, .ck-hl-glow) { opacity: 0; }
+#craft .ckx.is-fin .ck-p--lamp { opacity: calc(1 - var(--turn)); transition: none; }
+#craft .ck-tb { stroke: var(--ck-cutEdge); stroke-width: 0.6; stroke-opacity: 0.5; }
+#craft .ck-tf { fill: var(--ck-anodHi); fill-rule: evenodd; stroke: var(--ck-edge); stroke-width: 0.6; stroke-opacity: 0.6; }
+#craft .ck-tk { fill: none; stroke: var(--ck-anodLo); stroke-width: 1.3; stroke-opacity: 0.9; }
+#craft .ck-tcap { --band: var(--ck-ring); }
+#craft .ck-turn__glow { opacity: calc(var(--turn, 1) * 0.5); }
+/* "Sealed", top left of the frame, once it is closed. */
+#craft .ckx__sealed {
+  position: absolute; left: clamp(1rem, 2.6vw, 1.7rem); top: clamp(0.8rem, 2.2vw, 1.5rem); margin: 0;
+  display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ck-hlc);
+  opacity: 0; transition: opacity 0.4s ease; text-shadow: 0 1px 10px color-mix(in srgb, var(--void) 80%, transparent);
+}
+#craft .ckx__sealed::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--ck-hlc); box-shadow: 0 0 10px var(--ck-hlc); }
+#craft .ckx.is-sealed .ckx__sealed { opacity: 1; }
+/* Drag the drawing sideways to open it up or close it again. */
+.js #craft .ckx.is-live .ckx__fig { touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none; }
+.js #craft .ckx.is-dragging .ckx__fig { cursor: grabbing; }
+/* With reduced motion the lens waits sealed, with a toggle to see inside. */
+#craft .ckx__inside { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js #craft .ckx__inside:not([hidden]) {
+    display: inline-flex; align-items: center; position: absolute; z-index: 3; left: clamp(1rem, 2.6vw, 1.7rem); bottom: clamp(0.8rem, 2.2vw, 1.5rem);
+    min-height: 44px; padding: 0 1rem; border: 1px solid var(--ck-hlc); border-radius: 999px; cursor: pointer;
+    background: color-mix(in srgb, var(--void) 72%, transparent); color: var(--engrave);
+    font-family: var(--display); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .js #craft .ckx__inside[aria-pressed="true"] { background: var(--ck-hlc); color: var(--void); }
+  .js #craft .ckx__inside:focus-visible { outline: 2px solid var(--ck-hlc); outline-offset: 3px; }
+}
+
+/* Without JavaScript: two captioned stills, inside (the drawing at the
+   last stage) and sealed, face on. */
+#craft .ckx__cap { grid-area: cap; margin: 0.6rem 0 0; color: var(--dim); font-size: 0.92rem; line-height: 1.5; max-width: 60ch; }
+#craft .ckx__still2 { grid-area: still2; margin: 2rem 0 0; display: grid; gap: 0.2rem; }
+#craft .ckx__still2-fig { position: relative; overflow: hidden; aspect-ratio: 4 / 3; background: var(--ck-wall1); }
+@media (min-width: 768px) { #craft .ckx__still2-fig { aspect-ratio: 2 / 1; } }
+#craft .ck--sealed .ck-turn { opacity: 1; }
+#craft .ck-sealed-bg { fill: color-mix(in srgb, var(--void) 62%, var(--ck-wall1)); }
+html:not(.js) #craft .ckx { grid-template-areas: "fig" "cap" "head" "ctl" "say" "list" "still2"; }
+@media (min-width: 1024px) { html:not(.js) #craft .ckx { grid-template-areas: "fig fig" "cap cap" "ctl say" "list list" "still2 still2"; } }
+.js #craft :is(.ckx__cap, .ckx__still2) { display: none; }
+#craft .ckx__still2 .ckx__cap { grid-area: auto; font-family: inherit; text-transform: none; letter-spacing: normal; }

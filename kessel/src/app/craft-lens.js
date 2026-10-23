@@ -157,6 +157,55 @@ export const GRADS = {
   irisLight: { r: [IRIS.cx, IRIS.cy, IRIS.field], stops: [[0, 'irisLight0'], [0.55, 'irisLight1'], [1, 'irisLight2']] },
 };
 
+// ------------------------------------------------------------- the marks
+// What is engraved and written on the outside: the distance scale with its
+// index, the front ring's name, the maker's mark on the rear barrel and the
+// signature (lens units, on the near side, drawn in the bottom half).
+const SIG = moveD(SIGN, ...SIGN_AT), UNDER_D = moveD(UNDER, ...SIGN_AT);
+export function marks() {
+  const out = { scale: [], name: [], rear: [], sign: [] };
+  let cur = out.scale;
+  const fill = (d, f, o) => cur.push({ d, f, ...o });
+  const line = (d, s, lw, o) => cur.push({ d, s, lw, ...o });
+  const text = (t, x, y, z, f, o) => cur.push({ t, x, y, z, f, ...o });
+  // The distance scale: metres in white, feet in amber, squeezed as the
+  // ring turns away; the index mark on the fixed ring.
+  // Parvati's own marks (textures.js SCALES), each at its place on the
+  // throw (10 to 72 degrees round the visible side); a label that would
+  // crowd the one before it is left out, as on the lens itself.
+  const at = (p) => { const th = (10 + 62 * p) * Math.PI / 180; return [AX + 168 * Math.sin(th), Math.cos(th)]; };
+  const short = (v) => (v === Infinity ? '∞' : String(v).replace(/^0\./, '.'));
+  const rowOf = (list, size) => {
+    const out = [];
+    for (const [v, p] of list) { const [y, sy] = at(p); const prev = out[out.length - 1]; if (!prev || y - prev.y >= size * Math.max(sy, prev.sy) * 0.9 + 1.5) out.push({ v, y, sy }); }
+    return out;
+  };
+  const SC = SCALES[FILM_SCALE];
+  const SCALE = rowOf(SC.m.map((m) => [m, throwPos(m, FILM_SCALE)]), 12.5);
+  const FEET = rowOf(SC.ft.map((f) => [f, throwPosFt(f, FILM_SCALE)]), 9.5);
+  const stTicks = [];
+  for (const { v, y, sy } of FEET) text(short(v), 755, y, 9.5, 'feet', { sy, w: 500 });
+  for (const { v, y, sy } of SCALE) {
+    text(short(v), 730, y, 12.5, 'engrave', { sy, w: 500 });
+    stTicks.push(R(706, y - 0.5 * sy, 9, Math.max(0.5, 1.2 * sy)));
+  }
+  fill(stTicks.join(''), 'engrave', { a: 0.85 });
+  const iy = AX + 168 * Math.sin(10 * Math.PI / 180);
+  fill(P([[778, iy - 4], [778, iy + 4], [769, iy]]), 'feet');
+  // The front ring's name, and the maker's mark on the rear barrel.
+  cur = out.name;
+  text(`${LENS.name}  ${LENS.mm}`, 570, AX + 80, 13, 'engrave', { rot: 90, ls: 2.6, w: 500 });
+  cur = out.rear;
+  text('KESSEL', 843, AX + 40, 18, 'engrave', { ls: 4.4, w: 600 });
+  text('HAND ASSEMBLED', 843, AX + 56, 7.4, 'engrave', { ls: 1.5, w: 500, a: 0.8 });
+  text('PUNE', 843, AX + 66, 7.4, 'engrave', { ls: 1.5, w: 500, a: 0.8 });
+
+  cur = out.sign;
+  line(SIG, 'sign', 1.8);
+  line(UNDER_D, 'sign', 1.2, { a: 0.9 });
+  return out;
+}
+
 // -------------------------------------------------------------- the scene
 // Parts, back to front. Each has the stage it arrives at (0: the bench,
 // always there) and its items; lens parts are drawn in lens units. For the
@@ -339,35 +388,10 @@ export function scene() {
   fill(edges.join(''), 'edge', { a: 0.45 });
   fill(R(540, AX - 1, 360, 2), 'edge', { a: 0.75 });
   fill(R(539.3, AX - 160, 1.4, 320), 'edge', { a: 0.5 });
-  // The distance scale: metres in white, feet in amber, squeezed as the
-  // ring turns away; the index mark on the fixed ring.
-  // Parvati's own marks (textures.js SCALES), each at its place on the
-  // throw (10 to 72 degrees round the visible side); a label that would
-  // crowd the one before it is left out, as on the lens itself.
-  const at = (p) => { const th = (10 + 62 * p) * Math.PI / 180; return [AX + 168 * Math.sin(th), Math.cos(th)]; };
-  const short = (v) => (v === Infinity ? '∞' : String(v).replace(/^0\./, '.'));
-  const rowOf = (list, size) => {
-    const out = [];
-    for (const [v, p] of list) { const [y, sy] = at(p); const prev = out[out.length - 1]; if (!prev || y - prev.y >= size * Math.max(sy, prev.sy) * 0.9 + 1.5) out.push({ v, y, sy }); }
-    return out;
-  };
-  const SC = SCALES[FILM_SCALE];
-  const SCALE = rowOf(SC.m.map((m) => [m, throwPos(m, FILM_SCALE)]), 12.5);
-  const FEET = rowOf(SC.ft.map((f) => [f, throwPosFt(f, FILM_SCALE)]), 9.5);
-  const stTicks = [];
-  for (const { v, y, sy } of FEET) text(short(v), 755, y, 9.5, 'feet', { sy, w: 500 });
-  for (const { v, y, sy } of SCALE) {
-    text(short(v), 730, y, 12.5, 'engrave', { sy, w: 500 });
-    stTicks.push(R(706, y - 0.5 * sy, 9, Math.max(0.5, 1.2 * sy)));
-  }
-  fill(stTicks.join(''), 'engrave', { a: 0.85 });
-  const iy = AX + 168 * Math.sin(10 * Math.PI / 180);
-  fill(P([[778, iy - 4], [778, iy + 4], [769, iy]]), 'feet');
-  // The front ring's name, and the maker's mark on the rear barrel.
-  text(`${LENS.name}  ${LENS.mm}`, 570, AX + 80, 13, 'engrave', { rot: 90, ls: 2.6, w: 500 });
-  text('KESSEL', 843, AX + 40, 18, 'engrave', { ls: 4.4, w: 600 });
-  text('HAND ASSEMBLED', 843, AX + 56, 7.4, 'engrave', { ls: 1.5, w: 500, a: 0.8 });
-  text('PUNE', 843, AX + 66, 7.4, 'engrave', { ls: 1.5, w: 500, a: 0.8 });
+  // The distance scale, the index mark, the front ring's name and the
+  // maker's mark (marks(), shared with the sealed lens as it turns).
+  const M = marks();
+  cur.push(...M.scale, ...M.name, ...M.rear);
 
   // ------------------------------------------------------ 4 · assembly
   // The retaining rings that seat each group in its cell, then the mount.
@@ -402,10 +426,8 @@ export function scene() {
 
   // ------------------------------------------------------- 5 · signing
   // The signature, then the pen, its nib at the end of the line.
-  const sig = moveD(SIGN, ...SIGN_AT), under = moveD(UNDER, ...SIGN_AT);
-  lens('sign', 5, { hl: sig, hlStroke: true });
-  line(sig, 'sign', 1.8, { cls: 'ck-sig' });
-  line(under, 'sign', 1.2, { cls: 'ck-sig', a: 0.9 });
+  lens('sign', 5, { hl: SIG, hlStroke: true });
+  cur.push(...M.sign.map((it) => ({ ...it, cls: 'ck-sig' })));
   const PEN = { nib: [[0, 0], [16, -4.6], [26, -6.6], [26, 6.6], [16, 4.6]], grip: [[26, -7.4], [50, -8.4], [50, 8.4], [26, 7.4]], body: [[50, -9.4], [214, -9.4], [222, -6], [222, 6], [214, 9.4], [50, 9.4]], band: [[50, -9.4], [58, -9.4], [58, 9.4], [50, 9.4]], hi: [[60, -7], [212, -7], [212, -4], [60, -4]] };
   lens('pen', 5, { from: [36, 26], at: [SIGN_AT[0] + 88, SIGN_AT[1] + 33] });
   const pen = (pts) => P(turn(pts, 0, 0, PEN_ANGLE));
@@ -462,4 +484,105 @@ export function sceneKeys(S = scene()) {
   for (const p of S.parts) for (const it of p.items) for (const k of [it.f, it.s, it.o]) if (k && !k.startsWith('g:')) keys.add(k);
   for (const g of Object.values(GRADS)) for (const s of g.stops) keys.add(s[1]);
   return [...keys];
+}
+
+// ------------------------------------------------------------ sealed
+// After the signing the lens is closed and turned to the viewer. The shell
+// is the cut (top) half seen from outside, as the bottom half is: the page
+// sweeps it on from the mount to the front with a clip.
+const high = (x0, x1, r0, r1) => R(x0, AX - r1, x1 - x0, r1 - r0);
+export function shell() {
+  const items = [];
+  const fill = (d, f, o) => items.push({ d, f, ...o });
+  const segs = OUT.filter(([, b]) => b <= 900);
+  // Down to just under the axis, so the cut line goes too.
+  fill(segs.filter((x) => x[3] !== 'ring').map(([a, b, r]) => high(a, b, -1.5, r)).join(''), 'anod');
+  fill(segs.filter((x) => x[3] === 'ring').map(([a, b, r]) => high(a, b, -1.5, r)).join(''), 'ring');
+  fill(segs.map(([a, b, r]) => high(a, b, r * 0.1, r * 0.28)).join(''), 'anodHi', { a: 0.42 });
+  fill(segs.map(([a, b, r]) => high(a, b, r * 0.56, r * 0.8)).join(''), 'anodLo', { a: 0.45 });
+  fill(segs.map(([a, b, r]) => high(a, b, r * 0.8, r)).join(''), 'anodLo', { a: 0.8 });
+  fill(segs.map(([a, b, r]) => high(a, b, r * 0.955, r * 0.97)).join(''), 'edge', { a: 0.3 });
+  fill(segs.filter((x) => x[3] === 'ring').map(([a, b, r]) => high(a, b, r * 0.1, r * 0.28)).join(''), 'ringHi', { a: 0.6 });
+  const ridge = [], ridgeHi = [];
+  for (let k = 1; k < 15; k++) {
+    const th = k * 6 * Math.PI / 180, y = AX - 176 * Math.sin(th), w = Math.max(0.7, 2.6 * Math.cos(th));
+    ridge.push(R(606, y - w, 84, w));
+    ridgeHi.push(R(606, y, 84, Math.max(0.4, 0.9 * Math.cos(th))));
+  }
+  fill(ridge.join(''), 'anodLo', { a: 0.9 });
+  fill(ridgeHi.join(''), 'anodHi', { a: 0.4 });
+  const edges = [];
+  for (let i = 1; i < segs.length; i++) { const [a, , r] = segs[i], rp = segs[i - 1][2]; edges.push(R(a - 0.7, AX - Math.max(r, rp), 1.4, Math.max(r, rp))); }
+  fill(edges.join(''), 'edge', { a: 0.45 });
+  const mo = [[900, 924, 132], [924, 950, 124], [950, 1000, 100]];
+  fill(mo.map(([a, b, r]) => high(a, b, -1.5, r)).join(''), 'steel');
+  fill(mo.map(([a, b, r]) => high(a, b, r * 0.1, r * 0.26)).join(''), 'steelHi', { a: 0.75 });
+  fill(mo.map(([a, b, r]) => high(a, b, r * 0.6, r)).join(''), 'steelLo', { a: 0.75 });
+  const grooves = [];
+  for (const x of [906, 912, 918]) grooves.push(high(x, x + 1, 0, 132));
+  for (let k = 1; k < 9; k++) { const y = 124 * Math.sin(k * 10 * Math.PI / 180); grooves.push(high(927, 947, y - 2, y + 2)); }
+  fill(grooves.join(''), 'steelLo', { a: 0.6 });
+  fill(R(900 - 0.7, AX - 152, 1.4, 152) + R(924 - 0.7, AX - 132, 1.4, 132) + R(950 - 0.7, AX - 124, 1.4, 124), 'edge', { a: 0.85 });
+  return items;
+}
+// The outer radius at x along the axis (for the shell's leading edge).
+export const outAt = (x) => (OUT.find(([a, b]) => x >= a && x < b) || OUT[OUT.length - 1])[2];
+
+// The sealed lens turning to face the viewer, u 0 (side on, as drawn) to 1
+// (face on): a yaw of u x 90 degrees about the lens's middle, the front
+// coming towards the viewer, with a little perspective. Each section of
+// the barrel is a cylinder: a ring at x with radius r shows as an ellipse
+// r sin(yaw) wide and r tall, of which the half away from the front is
+// the side you see. Back to front, so nearer parts cover farther ones.
+export const TURN = { cx: 770, d: 2000, front: 540, frontR: 160 };
+export const TURN_SEGS = OUT.slice().reverse();
+export function turnShapes(u) {
+  const th = u * Math.PI / 2, c = Math.cos(th), s = Math.sin(th), { cx, d } = TURN;
+  // Perspective from the depth along the axis only, so at u 0 the lens is
+  // exactly the drawing.
+  const k = (x) => d / (d + (x - cx) * s);
+  const X = (x) => cx + (x - cx) * c * k(x);
+  // Right half of the ring at x, top to bottom (dir 1) or back up (dir 0).
+  const half = (x, r, dir) => { const kk = k(x), rx = Math.max(0, r * s * kk), ry = r * kk; return `A${n(rx)} ${n(ry)} 0 0 ${dir} ${n(X(x))} ${n(AX + (dir ? ry : -ry))}`; };
+  const ell = (x, r) => { const kk = k(x), rx = r * s * kk, ry = r * kk, xx = X(x); return `M${n(xx)} ${n(AX - ry)}A${n(rx)} ${n(ry)} 0 1 1 ${n(xx)} ${n(AX + ry)}A${n(rx)} ${n(ry)} 0 1 1 ${n(xx)} ${n(AX - ry)}Z`; };
+  const sides = [], faces = [];
+  for (let i = 0; i < TURN_SEGS.length; i++) {
+    const [a, b, r] = TURN_SEGS[i];
+    sides.push(`M${n(X(a))} ${n(AX - r * k(a))}L${n(X(b))} ${n(AX - r * k(b))}${half(b, r, 1)}L${n(X(a))} ${n(AX + r * k(a))}${half(a, r, 0)}Z`);
+    // The step at its front end, where it is wider than the section in
+    // front of it: a ring face turned towards the viewer.
+    const fr = TURN_SEGS[i + 1];
+    faces.push(fr && r > fr[2] + 0.5 && s > 0.02 ? ell(a, r) + ell(a, fr[2]) : '');
+  }
+  // The knurl: ridges along the grip, round the side you see.
+  let knurl = '';
+  if (s > 0.02 || c > 0.02) {
+    for (let j = 1; j < 18; j++) {
+      const ph = -Math.PI + j * Math.PI / 18, sn = Math.sin(ph), cs = Math.cos(ph);
+      const P = (x) => [cx + ((x - cx) * c - 176 * sn * s) * k(x), AX + 176 * cs * k(x)];
+      const [x0, y0] = P(606), [x1, y1] = P(690);
+      knurl += `M${n(x0)} ${n(y0)}L${n(x1)} ${n(y1)}`;
+    }
+  }
+  // The marks on the near side go with it until they turn out of sight:
+  // one affine map per group, about where they sit (lens units).
+  // x moves in by cos(yaw) and out by off x sin(yaw) (off: how far round
+  // the barrel the group sits, which for the scale changes down its rows).
+  const near = (x0, off, skew = 0) => { const kk = k(x0); return [c * kk, 0, skew * s * kk, kk, n(cx - cx * c * kk + s * kk * (off - skew * AX)), n(AX * (1 - kk))]; };
+  const rear = near(843, 143.5), scale = near(735, 190, -0.86);
+  const fk = k(TURN.front);
+  return {
+    sides, faces, knurl,
+    marks: { rear, scale, a: Math.max(0, 1 - u / 0.55) },
+    cap: [n(s * fk * 1000) / 1000, 0, 0, n(fk * 1000) / 1000, n(X(TURN.front)), AX],
+    capOn: s > 0.01,
+  };
+}
+
+// Where the turning lens sits: as drawn at u 0; by the end its front, face
+// on, in the middle of the picture and a little larger (world units).
+export function turnPlace(u) {
+  const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  const p0 = [LT.tx + TURN.cx * LT.s, LT.ty + AX * LT.s], to = [WORLD.w / 2, WORLD.h / 2], k = 1 + 0.1 * e;
+  return `translate(${n(p0[0] + (to[0] - p0[0]) * e)} ${n(p0[1] + (to[1] - p0[1]) * e)}) scale(${n(k * 1000) / 1000}) translate(${n(-p0[0])} ${n(-p0[1])})`;
 }
