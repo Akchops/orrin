@@ -7,7 +7,7 @@
 // blade by blade, the camera dives through the barrel, turns at the back,
 // the focus scale rolls, and the lens comes apart and goes back together.
 import { IRIS_Z, SPREAD, LEN_K, FRONT_K } from './lens.js';
-import { SCALES, markLabel, throwPos, throwPosFt, THROW_DEG } from './textures.js';
+import { THROW_DEG, scaleLayout, FILM_SCALE } from './textures.js';
 import { TEAR_PARTS, TEAR_ANCHORS, tearProgress, tearOffset, bladeOffset, pickDrift } from './teardown.js';
 import { PARTS, EXTRAS, THROAT, GLASS, BLADE, EMPH, SECTION_MID, SEG } from './tier2-model.js';
 import { createShading, MATS, COAT, css, cssa, len2, len3 } from './tier2-shade.js';
@@ -18,8 +18,17 @@ const GROW = 0.45;     // px: every facet is grown so neighbours overlap and no 
 const FINE = 300;      // px: a part whose radius on screen is larger gets twice the facets
 // What an item draws.
 const FACET = 0, POLY = 1, TEXT = 2, GLASSD = 3, IRIS = 4, LIGHT = 5, BLOOM = 6, SENSOR = 7, SIGN = 8;
-// Distance scale (as textures.js lays it out): rows along the band, in z.
-const SC_R = 40.42, SC_M = -29.65, SC_FT = -34.73;
+// Distance scale, laid out as the 3D band (textures.js scaleLayout, in mm
+// from the band's front edge at z -26.8): the film's lens, Parvati, with
+// one scale whichever shape it morphs through.
+const SC_R = 40.42, SC = scaleLayout(FILM_SCALE), scZ = (v) => -26.8 - v;
+const SC_MID = (SC.t0 + SC.t1) / 2, SC_SPAN = SC.t1 - SC.t0;
+const TICK_Z = [
+  null,
+  [scZ(SC_MID - SC_SPAN * 0.18), scZ(SC_MID + SC_SPAN * 0.18)],   // short, all round
+  [scZ(SC.t0), scZ(SC_MID + SC_SPAN * 0.12)],                      // metres: reaching forward
+  [scZ(SC_MID - SC_SPAN * 0.12), scZ(SC.t1)],                      // feet: reaching back
+];
 // Ridges round the knurled grip and the aperture ring, and the shading
 // across one ridge as [fraction, brightness] (the knurl's lit and shaded
 // flanks are filled in per facet from the key light).
@@ -40,7 +49,9 @@ export function mount2D(container, { font }) {
   resize();
   const sh = createShading();
   const signature = signaturePaths();
-  const FONT_M = `500 31px ${font}`, FONT_U = `500 21px ${font}`, FONT_FL = `500 16px ${font}`;
+  // Text is drawn at 10 px per mm (putNumeral's frame).
+  const FONT_M = `500 ${(SC.hm * 10).toFixed(1)}px ${font}`, FONT_MU = `500 ${(SC.hm * 8).toFixed(1)}px ${font}`;
+  const FONT_F = `500 ${(SC.hf * 10).toFixed(1)}px ${font}`, FONT_FU = `500 ${(SC.hf * 8.5).toFixed(1)}px ${font}`;
 
   // ------------------------------------------------------------ geometry
   // Each part gets ring buffers (world, view and screen position of every
@@ -67,24 +78,23 @@ export function mount2D(container, { font }) {
     for (let i = 0; i < n; i++) { const a = (P.a0 + (i + 0.5) * step) * DEG; L.ccos[i] = Math.cos(a); L.csin[i] = Math.sin(a); }
     if (P.id === 'scale') {
       // One set of ticks, as on the 3D band: a short tick every 4 degrees
-      // all round, a long one exactly at each numeral (throw position p sits
-      // at -160p degrees), and no short tick beside a long one. Each tick
-      // goes on the facet that holds it.
-      // Each lens has its own scale (L.tickSets[k]).
-      L.tickSets = SCALES.map((sc, k) => {
-        const ticks = Array.from({ length: n }, () => []);
-        const longs = sc.m.map((m) => (((-throwPos(m, k) * THROW_DEG) % 360) + 360) % 360);
-        const put = (a, kind) => {
-          const i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step) % n;
-          ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind });
-        };
-        for (let m = 0; m < 90; m++) {
-          const a = m * 4;
-          if (!longs.some((b) => Math.abs((((a - b) % 360) + 540) % 360 - 180) < 1.6)) put(a, 1);
-        }
-        for (const b of longs) put(b, 2);
-        return ticks;
-      });
+      // all round, a longer one at each metre mark reaching forward and at
+      // each feet mark reaching back (throw position p sits at -160p
+      // degrees), and no short tick beside a long one. Each tick goes on
+      // the facet that holds it.
+      const ticks = Array.from({ length: n }, () => []);
+      const deg = (p) => (((-p * THROW_DEG) % 360) + 360) % 360;
+      const longs = [...SC.metres.map((x) => [deg(x.p), 2]), ...SC.feet.map((x) => [deg(x.p), 3])];
+      const put = (a, kind) => {
+        const i = Math.floor((((a - P.a0) % 360) + 360) % 360 / step) % n;
+        ticks[i].push({ c: Math.cos(a * DEG), s: Math.sin(a * DEG), kind });
+      };
+      for (let m = 0; m < 90; m++) {
+        const a = m * 4;
+        if (!longs.some(([b]) => Math.abs((((a - b) % 360) + 540) % 360 - 180) < 1.6)) put(a, 1);
+      }
+      for (const [b, kind] of longs) put(b, kind);
+      L.ticks = ticks;
     }
     return L;
   }
@@ -195,7 +205,7 @@ export function mount2D(container, { font }) {
       };
     }
     ni++;
-    it.kind = kind; it.d = d; it.part = part || ''; it.a = 1; it.tn = 0; it.lip = 0; it.mode = 0; it.ref = null; it.bh = 0;
+    it.kind = kind; it.d = d; it.part = part || ''; it.a = 1; it.align = ''; it.tn = 0; it.lip = 0; it.mode = 0; it.ref = null; it.bh = 0;
     return it;
   }
   // Polygon (PX, PY) into the item, grown by GROW px about its centre.
@@ -392,9 +402,8 @@ export function mount2D(container, { font }) {
     const vis = smooth(0.06, 0.32, ndv);
     if (vis <= 0.01) return;
     let n = 0;
-    for (const tk of L.tickSets[lensK][i]) {
-      const z1 = tk.kind === 2 ? -33.1 : tk.kind === 1 ? -32.5 : -32.25;
-      const z0 = -31.63;
+    for (const tk of L.ticks[i]) {
+      const [z0, z1] = TICK_Z[tk.kind];
       const va = local(SC_R * tk.c, SC_R * tk.s, z0, 0), vb = local(SC_R * tk.c, SC_R * tk.s, z1, 2);
       if (va < NEAR || vb < NEAR) continue;
       it.tk[n * 4] = SP[0]; it.tk[n * 4 + 1] = SP[1]; it.tk[n * 4 + 2] = SP[2]; it.tk[n * 4 + 3] = SP[3];
@@ -411,9 +420,10 @@ export function mount2D(container, { font }) {
   }
 
   // Numerals on the scale band, upright to a viewer at the side (as the
-  // texture in textures.js): metres white in front, feet amber behind.
+  // texture in textures.js): metres white in front, ending at their gutter;
+  // feet amber behind, starting at theirs.
   const WHITE = [0.95, 0.94, 0.91], AMBER = [0.94, 0.65, 0.29];
-  function putNumeral(label, p, z, fontStr, colour) {
+  function putNumeral(label, p, z, fontStr, colour, align) {
     const th = -p * THROW_DEG * DEG, c = Math.cos(th), s = Math.sin(th);
     if (local(SC_R * c, SC_R * s, z, 0) < NEAR) return;
     const nd = facing(c, s, 0);
@@ -426,14 +436,13 @@ export function mount2D(container, { font }) {
     it.m[4] = SP[0]; it.m[5] = SP[1];
     TMP[0] = colour[0]; TMP[1] = colour[1]; TMP[2] = colour[2];
     const k = sh.emph(TMP, 0, 'scale');
-    it.c0 = css(TMP[0], TMP[1], TMP[2]); it.a = smooth(0.14, 0.42, nd) * Math.min(1, k); it.txt = label; it.font = fontStr;
+    it.c0 = css(TMP[0], TMP[1], TMP[2]); it.a = smooth(0.14, 0.42, nd) * Math.min(1, k); it.txt = label; it.font = fontStr; it.align = align;
   }
   function scaleText() {
-    const k = lensK, sc = SCALES[k];
-    for (const m of sc.m) putNumeral(markLabel(m), throwPos(m, k), SC_M, FONT_M, WHITE);
-    putNumeral('m', 1.13, SC_M, FONT_U, WHITE);
-    for (const ft of sc.ft) putNumeral(markLabel(ft), throwPosFt(ft, k), SC_FT, FONT_U, AMBER);
-    putNumeral('ft', 1.13, SC_FT, FONT_FL, AMBER);
+    for (const x of SC.metres) putNumeral(x.t, x.p, scZ(SC.mEnd), FONT_M, WHITE, 'right');
+    putNumeral('m', SC.unitP, scZ(SC.mEnd), FONT_MU, WHITE, 'right');
+    for (const x of SC.feet) putNumeral(x.t, x.p, scZ(SC.fStart), FONT_F, AMBER, 'left');
+    putNumeral('ft', SC.unitP, scZ(SC.fStart), FONT_FU, AMBER, 'left');
   }
 
   // The fixed index mark on the iris barrel, on the +X side: a fine engraved
@@ -682,7 +691,9 @@ export function mount2D(container, { font }) {
   function drawText(it) {
     setM(it.m);
     ctx.globalAlpha = it.a; ctx.fillStyle = it.c0; ctx.font = it.font;
+    if (it.align) ctx.textAlign = it.align;
     ctx.fillText(it.txt, 0, 0);
+    ctx.textAlign = 'center';
     ctx.globalAlpha = 1;
     resetM();
   }

@@ -12,6 +12,7 @@
 // page's "See the difference" viewer already holds (#<fov id>-far, ...).
 import { esc } from './parts.js';
 import { LENSES } from '../app/fov.js';
+import { scaleLayout, emWidth } from '../app/textures.js';
 import { DEPTH, TARGETS, N_MIN, N_MAX, BLADES, coc, discD, discPath, irisPaths, openAt, throwAt, metres, feet, marks, nLabel,
   FOCUS_BOX, bokehBox, frameW, START_M, BOKEH_FOCUS, layerBlurs, discs, RING_W } from './lab-math.js';
 
@@ -70,11 +71,26 @@ export function bokehSwatch(l, slug) {
 // it (metres in white, feet in amber), the index line fixed in the middle.
 // The strip slides by the throw position: x = f * RING_W.
 function ringSVG(l, i, f0) {
-  const S = marks(i), ribs = [], ticks = [], m = [], ft = [];
+  // The same marks and rules as the engraved band (textures.js
+  // scaleLayout): a short tick every 4 degrees of throw, a long one at each
+  // metre mark; the numerals in their own row under the ticks with clear
+  // space, and of two labels that would crowd, only the more important.
+  const L = scaleLayout(i), step = RING_W * 4 / 160, ribs = [], ticks = [];
   for (let x = -40; x <= RING_W + 40; x += 7) ribs.push(`M${x} 4h3.6v20h-3.6z`);
-  for (let j = 0; j <= 40; j++) { const x = (j / 40) * RING_W; ticks.push(`M${r2(x)} 30v${j % 5 ? 4 : 7}`); }
-  for (const v of S.m) { const x = throwAt(v, i) * RING_W; m.push(`<text x="${r2(x)}" y="47">${v === Infinity ? '∞' : v}</text>`); }
-  for (const v of S.ft) { const x = throwAt(v === Infinity ? Infinity : v * 0.3048, i) * RING_W; ft.push(`<text x="${r2(x)}" y="60">${v === Infinity ? '∞' : v}</text>`); }
+  const longs = L.metres.map((x) => x.p * RING_W);
+  for (let x = 0; x <= RING_W + 0.01; x += step) if (!longs.some((q) => Math.abs(q - x) < step * 0.4)) ticks.push(`M${r2(x)} 28v4`);
+  for (const x of longs) ticks.push(`M${r2(x)} 28v7`);
+  const row = (list, size, gap) => {
+    const kept = [];
+    list.forEach((x, j) => {
+      const w = emWidth(x.t) * size, at = x.p * RING_W, prev = kept[kept.length - 1];
+      if (!prev || at - w / 2 >= prev.at + prev.w / 2 + gap) { kept.push({ x, at, w, end: j === 0 || j === list.length - 1 }); return; }
+      if (!prev.end && (j === list.length - 1 || x.t.length < prev.x.t.length)) kept[kept.length - 1] = { x, at, w, end: j === list.length - 1 };
+    });
+    return kept;
+  };
+  const m = row(L.metres, 11, 5).map((o) => `<text x="${r2(o.at)}" y="48">${o.x.t}</text>`);
+  const ft = row(L.feet, 9, 5).map((o) => `<text x="${r2(o.at)}" y="61">${o.x.t}</text>`);
   return `<svg class="ring__svg" viewBox="-170 0 340 66" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <g class="ring__strip" transform="translate(${r2(-f0 * RING_W)} 0)">
       <path class="ring__ribs" d="${ribs.join('')}"/>
@@ -82,7 +98,7 @@ function ringSVG(l, i, f0) {
       <g class="ring__m">${m.join('')}</g>
       <g class="ring__ft">${ft.join('')}</g>
     </g>
-    <path class="ring__index" d="M0 26v40"/>
+    <path class="ring__index" d="M0 25v12"/><path class="ring__index-tip" d="M-3.2 25h6.4L0 29.5z"/>
   </svg>`;
 }
 

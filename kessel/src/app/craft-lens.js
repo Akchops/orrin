@@ -18,6 +18,8 @@
 // cut away to show the glass and the iris, the bottom half seen from
 // outside.
 
+import { SCALES, FILM_SCALE, throwPos, throwPosFt } from './textures.js';
+
 export const WORLD = { w: 1600, h: 800 };
 export const LENS = { name: 'PARVATI', mm: 50 };
 
@@ -339,12 +341,23 @@ export function scene() {
   fill(R(539.3, AX - 160, 1.4, 320), 'edge', { a: 0.5 });
   // The distance scale: metres in white, feet in amber, squeezed as the
   // ring turns away; the index mark on the fixed ring.
-  const SCALE = [['∞', '∞', 10], ['5', '15', 20], ['3', '10', 28], ['2', '6', 36], ['1.5', '5', 44], ['1', '3', 53], ['.7', '2', 62], ['.45', '1.5', 72]];
+  // Parvati's own marks (textures.js SCALES), each at its place on the
+  // throw (10 to 72 degrees round the visible side); a label that would
+  // crowd the one before it is left out, as on the lens itself.
+  const at = (p) => { const th = (10 + 62 * p) * Math.PI / 180; return [AX + 168 * Math.sin(th), Math.cos(th)]; };
+  const short = (v) => (v === Infinity ? '∞' : String(v).replace(/^0\./, '.'));
+  const rowOf = (list, size) => {
+    const out = [];
+    for (const [v, p] of list) { const [y, sy] = at(p); const prev = out[out.length - 1]; if (!prev || y - prev.y >= size * Math.max(sy, prev.sy) * 0.9 + 1.5) out.push({ v, y, sy }); }
+    return out;
+  };
+  const SC = SCALES[FILM_SCALE];
+  const SCALE = rowOf(SC.m.map((m) => [m, throwPos(m, FILM_SCALE)]), 12.5);
+  const FEET = rowOf(SC.ft.map((f) => [f, throwPosFt(f, FILM_SCALE)]), 9.5);
   const stTicks = [];
-  for (const [m, ft, deg] of SCALE) {
-    const th = deg * Math.PI / 180, y = AX + 168 * Math.sin(th), sy = Math.cos(th);
-    text(m, 730, y, 12.5, 'engrave', { sy, w: 500 });
-    text(ft, 755, y, 9.5, 'feet', { sy, w: 500 });
+  for (const { v, y, sy } of FEET) text(short(v), 755, y, 9.5, 'feet', { sy, w: 500 });
+  for (const { v, y, sy } of SCALE) {
+    text(short(v), 730, y, 12.5, 'engrave', { sy, w: 500 });
     stTicks.push(R(706, y - 0.5 * sy, 9, Math.max(0.5, 1.2 * sy)));
   }
   fill(stTicks.join(''), 'engrave', { a: 0.85 });

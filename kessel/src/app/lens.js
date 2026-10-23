@@ -31,8 +31,8 @@ export const IRIS_Z = -48;
 export const SPREAD = 1.25;
 // The three lenses' proportions (Shaniwar, Parvati, Sinhagad): length along
 // the axis and diameter, as multiples of Parvati's.
-export const LEN_K = [0.72, 1, 1.45];
-export const FRONT_K = [1.2, 1, 0.86];
+export { LEN_K, FRONT_K } from './shape.js';
+import { LEN_K, FRONT_K } from './shape.js';
 const SECTIONS = [
   { id: 'front', mid: -5 },
   { id: 'focus', mid: -24 },
@@ -619,7 +619,7 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
   });
 
   // ---------------------------------------------------------------- update
-  let lastModel = -1;
+  let lastModel = -1, lastOwn = false;
   const ca = new T.Color(), cb = new T.Color();
   const tv = [0, 0, 0];
   function update(S, tSec) {
@@ -697,8 +697,8 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
     // own grip, colour ring, engraved name, distance scale and front label.
     // The hoods and collar grow out of the lens as the film morphs toward
     // their model; the engravings change at halfway.
-    if (Math.abs(S.model - lastModel) > 1e-4) {
-      lastModel = S.model;
+    if (Math.abs(S.model - lastModel) > 1e-4 || !!S.ownScale !== lastOwn) {
+      lastModel = S.model; lastOwn = !!S.ownScale;
       const m = S.model, i = Math.min(1, Math.floor(m)), f = m - i;
       const lz = LEN_K[i] + (LEN_K[i + 1] - LEN_K[i]) * f;
       const fr = FRONT_K[i] + (FRONT_K[i + 1] - FRONT_K[i]) * f;
@@ -715,7 +715,10 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
       knurls.forEach((k, j) => { k.visible = j === near; });
       nameTex.offset.y = (2 - near) / 3;
       if (textures.front[near]) swapFront.forEach((x) => { x.map = textures.front[near]; });
-      if (textures.scale[near]) swapScale.forEach((x) => { x.map = textures.scale[near]; });
+      // The film keeps one scale (stage3d.js passes only Parvati's); a
+      // still of one lens (S.ownScale) asks for that lens's own.
+      const scaleTex = S.ownScale && textures.scaleFor ? textures.scaleFor(near) : textures.scale[near];
+      if (scaleTex) swapScale.forEach((x) => { x.map = scaleTex; });
       emSig = '';
     }
     emphasis(S);

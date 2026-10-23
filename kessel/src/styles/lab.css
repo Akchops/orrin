@@ -91,7 +91,9 @@
 .ring__ticks { stroke: var(--engrave); stroke-width: 0.9; opacity: 0.8; }
 .ring__m text { font: 500 11px var(--display); fill: var(--engrave); text-anchor: middle; }
 .ring__ft text { font: 500 9px var(--display); fill: var(--amber); text-anchor: middle; }
+/* The index stops in the tick row, above the numerals, never across one. */
 .ring__index { stroke: var(--band); stroke-width: 2; }
+.ring__index-tip { fill: var(--band); }
 @media (max-width: 599px) { .ring { height: 70px; margin-top: 14px; } .lab__h { font-size: 1.6rem; } }
 .ring__handle { left: 50%; top: -16px; width: 52px; height: 30px; margin-left: -26px; }
 .ring__handle::before, .ring__handle::after { content: ""; position: absolute; top: 9px; width: 0; height: 0; border: 6px solid transparent; }

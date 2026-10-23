@@ -78,9 +78,11 @@ export function mountViewer(el, L, caps, { font }) {
   rim2.position.set(150, -90, -60);
   scene.add(key, key.target, rim, rim.target, rim2, rim2.target);
 
-  // Only the lenses on show get their scale and front label.
+  // Only the lenses on show get their scale and front label; the scale at
+  // twice the resolution where the GPU allows (sharp in close-ups).
+  const scaleRes = quality === 'high' && renderer.capabilities.maxTextureSize >= 8192 ? 2 : 1;
   const textures = {
-    scale: [0, 1, 2].map((k) => (models.includes(k) ? scaleTexture(T, font, k) : null)),
+    scale: [0, 1, 2].map((k) => (models.includes(k) ? scaleTexture(T, font, k, { res: scaleRes }) : null)),
     front: [0, 1, 2].map((k) => (models.includes(k) ? frontRingTexture(T, font, quality === 'high' && !lineup ? 2048 : 1024, k) : null)),
     rear: rearBarrelTexture(T, font),
   };

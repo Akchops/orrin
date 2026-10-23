@@ -12,6 +12,7 @@
 // here ships as script: the page gets the SVG markup only, and
 // kessel/src/site/company.js adds the interactions.
 import { esc } from './parts.js';
+import { someMarks } from '../app/textures.js';
 
 // The bench is 1600 x 900 units. The page shows all of it on wide screens
 // and a centred crop on narrow ones (company.css), so everything that
@@ -75,10 +76,12 @@ function list() {
 // shape (fr: front width, lz: length, as src/app/lens.js FRONT_K and
 // LEN_K), engraving, scale numerals, ring colour and front label. Names
 // are proposals; focal lengths sample figures.
+// Five of each lens's own marks (textures.js SCALES), close focus first.
+const nums = (k) => someMarks(k).map((v) => (v === Infinity ? '\u221e' : String(v).replace(/^0\./, '.')));
 export const SET = [
-  { id: 'shaniwar', name: 'SHANIWAR', mm: 24, ring: 'ringB', fr: 1.2, lz: 0.72, nums: ['.3', '.5', '1', '3', '∞'] },
-  { id: 'parvati', name: 'PARVATI', mm: 50, ring: 'ringA', fr: 1, lz: 1, nums: ['.45', '1', '2', '5', '∞'] },
-  { id: 'sinhagad', name: 'SINHAGAD', mm: 100, ring: 'ringG', fr: 0.86, lz: 1.45, nums: ['1', '1.5', '3', '10', '∞'] },
+  { id: 'shaniwar', name: 'SHANIWAR', mm: 24, ring: 'ringB', fr: 1.2, lz: 0.72, nums: nums(0) },
+  { id: 'parvati', name: 'PARVATI', mm: 50, ring: 'ringA', fr: 1, lz: 1, nums: nums(1) },
+  { id: 'sinhagad', name: 'SINHAGAD', mm: 100, ring: 'ringG', fr: 0.86, lz: 1.45, nums: nums(2) },
 ];
 export const setById = (id) => SET.find((l) => l.id === id);
 // The body, upright, mount face at y 0 and the front up: [top, bottom, radius].

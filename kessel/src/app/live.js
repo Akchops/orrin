@@ -3,7 +3,7 @@
 // with the libraries already started; it reports every tier change back
 // through `report`.
 import { buildStory, createState, STORY_END, FILM_END, TEAR_CAPTIONS } from './story.js';
-import { distanceAt } from './textures.js';
+import { distanceLabel, FILM_SCALE } from './textures.js';
 import { RAIL, TEAR_CLOSE, partCentre } from './teardown.js';
 import { createWatchdog } from './watchdog.js';
 
@@ -305,8 +305,8 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     const wantRead = sCur > 9.55 && sCur < 11.3;
     if (wantRead !== readOn) { readOn = wantRead; readout.classList.toggle('is-on', wantRead); }
     if (wantRead) {
-      const d = distanceAt(S.focus);
-      const txt = d === Infinity ? '∞' : (d >= 10 ? d.toFixed(0) : d.toFixed(1)) + ' m';
+      // The film's lens, Parvati: 0.45 m at the end of the stage, as engraved.
+      const txt = distanceLabel(S.focus, FILM_SCALE);
       if (txt !== lastRead) { lastRead = txt; readout.innerHTML = '<small>Focused at</small>' + txt; }
     }
     const am = Math.round(S.model);

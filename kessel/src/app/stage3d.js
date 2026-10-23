@@ -4,7 +4,7 @@
 // through the barrel, with its own yaw so it can turn round at the back.
 import { buildEnvironment } from './env.js';
 import { buildLens } from './lens.js';
-import { scaleTexture, frontRingTexture, rearBarrelTexture } from './textures.js';
+import { scaleTexture, frontRingTexture, rearBarrelTexture, FILM_SCALE } from './textures.js';
 
 const DEG = Math.PI / 180;
 
@@ -60,11 +60,19 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   rim2.position.set(150, -90, -60);
   scene.add(rim2, rim2.target);
 
-  // One scale and one front label per lens. Parvati's
-  // front label is the one the film's hero frame shows close up, so only
-  // it gets the full size on desktops.
+  // One front label per lens. Parvati's front label is the one the film's
+  // hero frame shows close up, so only it gets the full size on desktops.
+  // One distance scale only, Parvati's: the film and the teardown keep the
+  // same closest mark (0.45 m) whichever shape the lens morphs through
+  // (textures.js FILM_SCALE). At twice the resolution where the GPU takes
+  // 8192 px textures, so the numerals stay sharp in close-ups.
+  const res = quality === 'high' && renderer.capabilities.maxTextureSize >= 8192 ? 2 : 1;
+  const filmScale = scaleTexture(T, font, FILM_SCALE, { res }), ownScales = [];
   const textures = {
-    scale: [0, 1, 2].map((k) => scaleTexture(T, font, k)),
+    scale: [0, 1, 2].map((k) => (k === FILM_SCALE ? filmScale : null)),
+    // Stills of one lens (lens-k, lineup-k, d-scale-k) show its own scale,
+    // made the first time one is asked for.
+    scaleFor: (k) => (k === FILM_SCALE ? filmScale : (ownScales[k] = ownScales[k] || scaleTexture(T, font, k, { res }))),
     front: [0, 1, 2].map((k) => frontRingTexture(T, font, k === 1 && quality === 'high' ? 2048 : 1024, k)),
     rear: rearBarrelTexture(T, font),
   };

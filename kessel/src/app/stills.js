@@ -10,7 +10,8 @@ const POSES = {
   aperture: { s: 2.95 },
   through: { s: 4.9 },
   exit: { s: 9.0 },
-  focus: { s: 10.5 },
+  // The end of the focus stage: the closest mark, 0.45 m, at the index.
+  focus: { s: 11.1 },
   'model-1': { s: 12.4, sx: 0, sy: 0, light: 0 },
   'model-2': { s: 13.3, sx: 0, sy: 0, light: 0 },
   'model-3': { s: 14.15, sx: 0, sy: 0, light: 0 },
@@ -35,11 +36,11 @@ const POSES = {
     const P = [{ frame: 66, ty: 0, tz: -26 }, { frame: 54, ty: 0, tz: -50 }, { frame: 80, ty: -9.5, tz: -52 }][k - 1];
     const fr = [1.2, 1, 0.86][k - 1], lz = [0.72, 1, 1.45][k - 1];
     return Object.assign(o, {
-      [`lens-${k}`]: { s: 16.5, model: k - 1, az: 38, el: 11, frame: P.frame, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
-      [`lineup-${k}`]: { s: 16.5, model: k - 1, az: 90, el: 0, frame: 76, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+      [`lens-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 38, el: 11, frame: P.frame, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+      [`lineup-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 90, el: 0, frame: 76, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
       // Each lens's own front label and distance scale, for its page.
-      [`d-glass-${k}`]: { s: 0, model: k - 1, az: 4, el: 6, frame: 43 * fr, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
-      [`d-scale-${k}`]: { s: 16.5, model: k - 1, az: 86, el: 2, frame: 21, tx: 38 * fr, ty: 0, tz: -27 * lz, focus: 0.62, light: 0, sx: 0, sy: 0 },
+      [`d-glass-${k}`]: { s: 0, model: k - 1, ownScale: true, az: 4, el: 6, frame: 43 * fr, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
+      [`d-scale-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 86, el: 2, frame: 21, tx: 38 * fr, ty: 0, tz: -27 * lz, focus: 1, light: 0, sx: 0, sy: 0 },
     });
   }, {}),
   // The iris as the film catches it, blades opening one at a time with
@@ -49,7 +50,7 @@ const POSES = {
   // violet and green coatings and the pinhole of light read.
   'd-glass': { s: 0, az: 6, el: 5, frame: 29, tx: 0, ty: 0, tz: -6, iris: 0.06, sx: 0, sy: 0 },
   'd-knurl': { s: 16.5, az: 90, el: 5, frame: 15, tx: 40, ty: 0, tz: -24, focus: 0.5, light: 0, sx: 0, sy: 0 },
-  'd-scale': { s: 16.5, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -19, focus: 0.62, light: 0, sx: 0, sy: 0 },
+  'd-scale': { s: 16.5, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -19, focus: 1, light: 0, sx: 0, sy: 0 },
   'd-sign': { s: 16.5, model: 1, az: 90, el: 2, frame: 15, tx: 39, ty: 0, tz: -68, light: 0, sx: 0, sy: 0 },
   'd-mount': { s: 16.5, az: 162, el: 14, frame: 40, tx: 0, ty: 0, tz: -86, light: 0, sx: 0, sy: 0 },
   // One-page site: the hero (the film's first frame) and the teardown.

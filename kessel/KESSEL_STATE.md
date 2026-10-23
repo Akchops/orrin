@@ -6,7 +6,42 @@ Checks: `kessel/scripts/audit.mjs` (overflow at seven widths and a framed
 pane), the smoke test in the session scratchpad (film, teardown, badge,
 reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 
-## Follow-up "frame, three lenses, lens experiences, beats"
+## Follow-up "nine parts" (current)
+
+Last passing commit before it: 91945ca (preview version 28).
+
+| Part | What | State |
+|---|---|---|
+| 1 | Distance scale numerals: gutters, nothing clipped, collision rule, 2x texture, one closest-focus value in film and teardown | done |
+| 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | in progress |
+| 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | next |
+| 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | next |
+| 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | next |
+| 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | next |
+| 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
+| 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
+| 9 | Home tab in the nav; automatic close-ups on every lens page | next |
+
+### Part log
+
+- 1 done: one scale layout in millimetres on each lens (textures.js
+  scaleLayout), shared by the 3D texture, the 2D tier and the lens-page
+  ring: margin | metres (ending at their gutter) | gutter | ticks | gutter
+  | feet | margin; numerals sized to the band from Saira's measured
+  advances and drawn true to shape on each lens (Shaniwar's band is 0.72x
+  as long, Sinhagad's 1.45x); a label closer than 1.3 numeral heights to
+  its neighbour is dropped (ends kept); marks re-picked at nearly even
+  dioptre steps; texture at 2x (8192 px) where the GPU allows. The film and
+  teardown keep Parvati's scale only (closest mark 0.45 m) through the
+  three-lens morph; stills of one lens ask for its own (S.ownScale). The
+  "0.8" was the film's readout (toFixed(1)): it now reads the engraved
+  mark (0.45 m at the end). Focus still posed at the closest mark; close-
+  focus tiles at each lens's closest mark; the Craft and bench drawings take
+  their marks from the same tables. scripts/verify-scale.mjs runs in every
+  build and fails it if a numeral touches a tick, leaves its band or
+  crowds its neighbour. Evidence: kessel/screenshots/scale/. Audit 64 of
+  64; smoke passed.
+## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |
 |---|---|---|

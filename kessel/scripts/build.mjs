@@ -84,6 +84,9 @@ html = html.replace('/*%%CSS%%*/', () => css)
   .replace('/*%%APP%%*/', () => safe(app));
 const outArg = process.argv.find((a) => a.startsWith('--out='));
 const out = outArg ? outArg.slice(6) : join(k, 'index.html');
+// The engraved scale's rules: fail the build if a numeral would touch a
+// tick, leave its band or crowd its neighbour (scripts/verify-scale.mjs).
+await import(pathToFileURL(join(k, 'scripts/verify-scale.mjs')).href + '?t=' + Date.now());
 writeFileSync(out, html);
 const kb = (n) => (n / 1024).toFixed(0) + ' kB';
 if (missing.size) console.log('stills not rendered yet (grey frames):', [...missing].join(', '));
