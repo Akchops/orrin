@@ -1,0 +1,115 @@
+/* ================================================================ INSPECT
+   Inspect the lens (src/site/inspect-html.js, inspect-live.js): one stage
+   with the camera gliding to five details, a map of where the camera is
+   and the caption beside it, never over it. With JavaScript it fits one
+   screen and pins as a beat; without, the five stills stand in a row with
+   their captions. Each lens's colour comes from data-band (--band). */
+.insp { --insp-sw: min(100%, calc(var(--vh) * 0.47 * 4 / 3)); }
+.insp__pin { display: grid; gap: clamp(0.7rem, 1.8vh, 1.2rem); }
+.insp__head { display: grid; gap: 0.3rem 2rem; }
+.insp__head .eyebrow { margin: 0; color: var(--band); }
+.insp__head h2 { margin: 0; font-family: var(--display); font-weight: 300; font-stretch: 112%; font-size: clamp(1.7rem, 1rem + 2vw, 3rem); line-height: 1.02; }
+.insp__lead { margin: 0; color: var(--dim); line-height: 1.45; max-width: 52ch; }
+.insp__lead .note { display: block; margin-top: 0.3rem; font-size: 0.66rem; }
+.insp__no { font-family: var(--display); color: var(--band); font-variant-numeric: tabular-nums; }
+.insp__name { font-family: var(--display); }
+
+/* The stage: the same box at every stop. */
+.insp__stage { position: relative; width: var(--insp-sw); aspect-ratio: 4 / 3; justify-self: center; overflow: hidden; border-radius: 4px; background: radial-gradient(70% 70% at 50% 45%, color-mix(in srgb, var(--band) 9%, transparent), transparent 72%); }
+.insp__whole { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.insp__stage .viewer__gl { position: absolute; z-index: 2; touch-action: pan-y; cursor: grab; }
+.insp__shots { list-style: none; margin: 0; padding: 0; }
+.js .insp__shots { position: absolute; inset: 0; }
+.js .insp__shot { position: absolute; inset: 0; opacity: 0; }
+.js .insp__shot figure { margin: 0; position: absolute; inset: 0; }
+.js .insp__shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.js .insp__shot-cap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Live: the 3D lens is the stage; the stills step aside. */
+.insp__stage.is-live .insp__shots, .insp__stage.is-live .insp__whole { visibility: hidden; }
+.insp__corners {
+  position: absolute; inset: 0.6rem; z-index: 3; pointer-events: none; --k: 1.1rem;
+  background:
+    linear-gradient(var(--band), var(--band)) left top / var(--k) 1.5px, linear-gradient(var(--band), var(--band)) left top / 1.5px var(--k),
+    linear-gradient(var(--band), var(--band)) right top / var(--k) 1.5px, linear-gradient(var(--band), var(--band)) right top / 1.5px var(--k),
+    linear-gradient(var(--band), var(--band)) left bottom / var(--k) 1.5px, linear-gradient(var(--band), var(--band)) left bottom / 1.5px var(--k),
+    linear-gradient(var(--band), var(--band)) right bottom / var(--k) 1.5px, linear-gradient(var(--band), var(--band)) right bottom / 1.5px var(--k);
+  background-repeat: no-repeat; opacity: 0.7;
+}
+
+/* Beside it: the map, the caption, the list, the cue. */
+.insp__side { display: grid; gap: clamp(0.6rem, 1.4vh, 1rem); align-content: start; min-width: 0; }
+.insp__map { margin: 0; display: grid; gap: 0.2rem; }
+.insp__map svg { display: block; width: 100%; max-width: 20rem; height: auto; overflow: visible; }
+.insp__axis { fill: none; stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 4 4; }
+.insp__body { fill: color-mix(in srgb, var(--anodise-2) 70%, transparent); stroke: var(--dim); stroke-width: 1; }
+.insp__cone { fill: color-mix(in srgb, var(--band) 16%, transparent); stroke: color-mix(in srgb, var(--band) 60%, transparent); stroke-width: 1; }
+.insp__aim { fill: var(--band); }
+.insp__cam path { fill: var(--engrave); }
+.insp__spot circle { fill: var(--void); stroke: var(--dim); stroke-width: 1.2; }
+.insp__spot text { font: 600 9px var(--display); fill: var(--engrave); text-anchor: middle; }
+.insp__spot.is-on circle { fill: var(--band); stroke: var(--band); }
+.insp__spot.is-on text { fill: var(--void); }
+.js .insp.is-live .insp__spot { cursor: pointer; }
+.insp__map-cap { font-family: var(--display); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+.insp__say { display: grid; gap: 0.35rem; align-content: start; }
+.insp__k { margin: 0; display: flex; gap: 0.6rem; align-items: baseline; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.insp__k .insp__name { color: var(--engrave); }
+.insp__t { margin: 0; color: var(--engrave); font-size: clamp(0.98rem, 0.92rem + 0.25vw, 1.12rem); line-height: 1.5; max-width: 40ch; }
+.insp__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
+.insp__btn {
+  appearance: none; position: relative; display: flex; align-items: baseline; gap: 0.45rem; width: 100%; min-height: 44px; margin: 0; padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--dim); cursor: pointer;
+  font-family: var(--display); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: left;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.insp__btn[aria-current="true"] { border-color: var(--band); background: color-mix(in srgb, var(--band) 12%, transparent); color: var(--engrave); }
+.insp__btn:focus-visible { outline: 2px solid var(--band); outline-offset: 2px; }
+@media (hover: hover) { .insp__btn:hover { border-color: color-mix(in srgb, var(--band) 60%, var(--line)); color: var(--engrave); } }
+.insp .ctl__say::before { background: var(--band); }
+.beat.is-turn:not(.is-mine) .insp .ctl__cue { display: none; }
+.beat.is-turn:not(.is-mine) .insp__btn { animation: ctl-pulse 1.1s ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .insp__btn { animation: none !important; transition: none; } }
+
+/* Wider screens: the heading and its line in one row, the stage on the
+   left, the map and caption on the right. */
+@media (min-width: 900px) {
+  .insp { --insp-sw: min(100%, calc(min(var(--vh) * 0.55, var(--vh) - 21rem) * 4 / 3)); }
+  .insp__pin { grid-template-columns: minmax(0, var(--insp-sw)) minmax(14rem, 22rem); grid-template-areas: "head head" "stage side"; justify-content: center; column-gap: clamp(1.25rem, 3vw, 3rem); align-items: start; }
+  .insp__head { grid-area: head; grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: end; }
+  .insp__head .eyebrow { grid-column: 1; grid-row: 1; }
+  .insp__head h2 { grid-column: 1; grid-row: 2; font-size: clamp(1.6rem, 0.8rem + 1.5vw, 2.6rem); }
+  .insp__lead { grid-column: 2; grid-row: 1 / 3; font-size: clamp(0.92rem, 0.86rem + 0.15vw, 1.02rem); max-width: none; }
+  .insp__stage { grid-area: stage; width: 100%; }
+  .insp__side { grid-area: side; }
+  .insp__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .insp__btn { padding: 0.35rem 0.5rem; gap: 0.35rem; font-size: 0.66rem; }
+  .insp__map svg { max-width: min(15rem, calc(var(--vh) * 0.24 * 280 / 184)); }
+}
+/* Phones: the map small beside the caption, the six as a row of numbers. */
+@media (max-width: 899px) {
+  .insp__side { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); column-gap: 0.9rem; }
+  .insp__map { grid-row: 1 / 3; align-self: start; }
+  .insp__map-cap { display: none; }
+  .insp__say, .insp__ctl { grid-column: 2; }
+  .insp__list { grid-column: 1 / -1; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .insp__btn { justify-content: center; padding: 0.3rem 0.2rem; }
+  .insp__btn .insp__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .insp__lead { display: none; }
+  .insp__t { font-size: 0.92rem; }
+  .insp__ctl .ctl__how { font-size: 0.85rem; }
+}
+
+/* Without JavaScript: the five stills in a row (two on phones), each with
+   its number, name and line; the stage keeps the whole lens. */
+html:not(.js) .insp__side { display: none; }
+html:not(.js) .insp__stage { overflow: visible; aspect-ratio: auto; width: 100%; background: none; }
+html:not(.js) .insp__whole { position: relative; display: block; width: var(--insp-sw); height: auto; margin-inline: auto; aspect-ratio: 4 / 3; }
+html:not(.js) .insp__corners { display: none; }
+html:not(.js) .insp__shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+@media (min-width: 900px) { html:not(.js) .insp__shots { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+html:not(.js) .insp__shot figure { margin: 0; display: grid; gap: 0.4rem; }
+html:not(.js) .insp__shot img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; border-top: 2px solid var(--band); }
+html:not(.js) .insp__shot-cap { display: grid; gap: 0.2rem; font-size: 0.88rem; color: var(--dim); line-height: 1.45; }
+html:not(.js) .insp__shot-cap .insp__no, html:not(.js) .insp__shot-cap .insp__name { display: inline; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; }
+html:not(.js) .insp__shot-cap .insp__name { color: var(--engrave); }
+html:not(.js) .insp__pin { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "stage"; }

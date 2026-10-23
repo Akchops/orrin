@@ -2,11 +2,13 @@
 // drawing, the lens on the bench, that builds up stage by stage
 // (src/site/craft-svg.js); five stage buttons and a slider step through
 // it, with a short caption. Without JS the drawing shows the finished
-// lens and the five captions stand as a list under it. Then the close-up
-// stills as a mosaic, and the way on.
-import { site, esc, img, footer, route } from '../parts.js';
+// lens and the five captions stand as a list under it. Then the lens up
+// close (src/site/inspect-html.js), and the way on.
+import { site, esc, footer, route } from '../parts.js';
 import { craft } from '../../content/craft.js';
 import { craftSVG, sealedSVG } from '../craft-svg.js';
+import { inspectHTML } from '../inspect-html.js';
+import { lenses } from '../../content/lenses.js';
 
 const C = craft;
 const N = C.stages.length;
@@ -21,13 +23,6 @@ const step = (s, i) => `<button class="ckx__step" type="button" data-n="${i + 1}
 const item = (s) => `<li class="ckx__li" id="craft-${s.key}">
       <p class="ckx__li-k"><span>${s.no}</span> ${esc(s.name + s.more)}</p>
       <p class="ckx__li-t">${esc(s.text)}</p>
-    </li>`;
-
-const tile = (t) => `<li class="ckm__tile ckm__tile--${t.image}">
-      <figure>
-        ${img(t.image)}
-        <figcaption><span class="ckm__no">${t.no}</span> <span class="ckm__name">${esc(t.name)}</span> <span class="ckm__label">${esc(t.label)}</span></figcaption>
-      </figure>
     </li>`;
 
 export function craftHTML() {
@@ -71,15 +66,7 @@ export function craftHTML() {
   </figure>
 </div>
 </div>
-<section class="ckm wrap" aria-labelledby="craft-close-title">
-  <div class="ckm__head">
-    <p class="eyebrow">${esc(C.closeEyebrow)}</p>
-    <h2 id="craft-close-title">${esc(C.closeTitle)}</h2>
-  </div>
-  <ul class="ckm__grid">
-    ${C.close.map(tile).join('\n    ')}
-  </ul>
-</section>
+${inspectHTML({ id: 'craft-insp', k: 1, lens: lenses[1] })}
 <nav class="craft-end wrap" aria-label="Next">
   ${next}
 </nav>

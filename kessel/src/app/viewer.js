@@ -15,6 +15,7 @@ import { buildLens } from './lens.js';
 import { scaleTexture, frontRingTexture, rearBarrelTexture } from './textures.js';
 import { createState } from './story.js';
 import { sphereDistance, visibleBox, farthest } from './fit.js';
+import { inspectPoses, poseAt } from './inspect.js';
 
 const DEG = Math.PI / 180;
 // A lens page's camera angles (as the stills, src/app/stills.js lens-1..3).
@@ -47,6 +48,12 @@ export function mountViewer(el, L, caps, { font }) {
   const lineup = el.dataset.viewer === 'lineup';
   const models = lineup ? [0, 1, 2] : [Math.max(0, Math.min(2, +el.dataset.viewer || 0))];
   const front = el.dataset.pose === 'front';
+  // data-pose="inspect": the camera glides from the whole lens to its five
+  // details as the page scrolls (src/site/inspect-live.js sets the place,
+  // el.__inspect(q), q 0 to 5; src/app/inspect.js has the poses).
+  const inspect = el.dataset.pose === 'inspect';
+  const IP = inspect ? inspectPoses(models[0]) : null;
+  let iq = 0;
   const POSES = front ? FRONT : POSE;
   // The still it lies over: a rendered image, or the iris drawing.
   const img = el.querySelector('img, .lab__iris-svg');
@@ -101,6 +108,8 @@ export function mountViewer(el, L, caps, { font }) {
       lens.root.position.y = LEN[m];
       const b = visibleBox(T, pivot);
       it.hw = Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z); it.top = b.max.y;
+    } else if (inspect) {
+      // Posed in lens space, as the stills are: nothing to centre.
     } else if (front) {
       const p = POSES[m];
       pivot.position.set(0, p.ty, p.tz);
@@ -152,8 +161,20 @@ export function mountViewer(el, L, caps, { font }) {
 
   const target = new T.Vector3(), right = new T.Vector3(), qa = new T.Quaternion(), qb = new T.Quaternion(), Y = new T.Vector3(0, 1, 0);
   function place() {
-    const az = (lineup ? 0 : pose.az) * DEG, el0 = (lineup ? 7 : pose.el) * DEG;
     const t13 = Math.tan(13 * DEG), fit = Math.min(t13, t13 * camera.aspect);
+    if (inspect) {
+      // Each pose's view fitted to the canvas by both axes: the whole lens
+      // by its sphere, a detail by its half-height.
+      const p = poseAt(IP, iq, (ps) => (ps.r ? sphereDistance(ps.r, t13, t13 * camera.aspect, 1.06) : ps.frame / fit));
+      const it = items[0];
+      if (Math.abs(it.S.iris - p.iris) > 1e-3 || Math.abs(it.S.focus - p.focus) > 1e-3) { it.S.iris = p.iris; it.S.focus = p.focus; it.lens.update(it.S, 0); }
+      const a = (p.az + v.yaw) * DEG, e = (p.el + v.pitch) * DEG, d = p.dist / v.zoom;
+      target.set(p.t[0], p.t[1], p.t[2]);
+      camera.position.set(target.x + d * Math.sin(a) * Math.cos(e), target.y + d * Math.sin(e), target.z + d * Math.cos(a) * Math.cos(e));
+      camera.lookAt(target);
+      return;
+    }
+    const az = (lineup ? 0 : pose.az) * DEG, el0 = (lineup ? 7 : pose.el) * DEG;
     let dist;
     if (lineup) dist = (frame / v.zoom) / t13;                 // frame: half-height
     else if (front) dist = (frame / v.zoom) / fit;
@@ -220,7 +241,7 @@ export function mountViewer(el, L, caps, { font }) {
     dragging.moved += Math.abs(dx) + Math.abs(dy);
     dragging.x = e.clientX; dragging.y = e.clientY; dragging.t = e.timeStamp;
     const k = 300 / Math.max(240, r.width);
-    v.yaw += dx * k; v.vy = (dx * k) / dt * 16;
+    v.yaw = clampYaw(v.yaw + dx * k); v.vy = (dx * k) / dt * 16;
     // Touch keeps vertical moves for scrolling the page (touch-action:
     // pan-y); a mouse also tilts.
     if (e.pointerType === 'mouse') { v.pitch = clampPitch(v.pitch + dy * k * 0.6); v.vp = (dy * k * 0.6) / dt * 16; }
@@ -253,7 +274,8 @@ export function mountViewer(el, L, caps, { font }) {
     reset();
   }, { passive: false });
   const clampZoom = (z) => Math.min(2.4, Math.max(0.75, z));
-  const clampPitch = (p) => Math.min(lineup ? 26 : 25, Math.max(lineup ? -6 : -25, p));
+  const clampPitch = (p) => Math.min(lineup ? 26 : inspect ? 18 : 25, Math.max(lineup ? -6 : inspect ? -18 : -25, p));
+  const clampYaw = (y) => (inspect ? Math.min(40, Math.max(-40, y)) : y);
 
   // Lineup: the lens nearest the pointer across, within its own width.
   const pv = new T.Vector3();
@@ -304,7 +326,7 @@ export function mountViewer(el, L, caps, { font }) {
     if (!dragging) {
       // Inertia, then a slow sway while nobody touches it, fading out
       // after half a minute so the page goes still.
-      v.yaw += v.vy * dt * 60; v.pitch = clampPitch(v.pitch + v.vp * dt * 60);
+      v.yaw = clampYaw(v.yaw + v.vy * dt * 60); v.pitch = clampPitch(v.pitch + v.vp * dt * 60);
       const f = Math.pow(0.9, dt * 60); v.vy *= f; v.vp *= f;
       if (Math.abs(v.vy) > 0.01 || Math.abs(v.vp) > 0.01) moving = true;
       if (resetTo) {
@@ -317,7 +339,7 @@ export function mountViewer(el, L, caps, { font }) {
     if (!lineup) {
       // A lens page: the lens turns slowly on its own, easing back in
       // after a drag; the hover tilt still applies.
-      if (!dragging && !front) { v.spin += dt * 9 * smooth(0.5, 2.5, idle); moving = true; }
+      if (!dragging && !front && !inspect) { v.spin += dt * 9 * smooth(0.5, 2.5, idle); moving = true; }
       const k = 1 - Math.pow(0.85, dt * 60); v.hx += (v.hxTo - v.hx) * k;
     } else {
       const sway = (1 - smooth(22, 30, idle)) * smooth(2, 4, idle);
@@ -376,6 +398,8 @@ export function mountViewer(el, L, caps, { font }) {
   };
   // The lens's measured bounding sphere (lens space), for checks.
   el.__lensSphere = () => items.map((it) => ({ m: it.m, c: [it.c.x, it.c.y, it.c.z], r: it.r }));
+  // The page moves the camera along the inspect poses.
+  if (inspect) el.__inspect = (q) => { if (q !== iq) { iq = q; dirty = true; wake(); } };
   // The page sets the lens's state (the iris, on the aperture beat).
   el.__lensSet = (o) => {
     const it = items[0];
@@ -402,7 +426,7 @@ export function mountViewer(el, L, caps, { font }) {
   function destroy(why) {
     if (!alive) return;
     alive = false;
-    delete el.__lensSet; delete el.__lensBox;
+    delete el.__lensSet; delete el.__lensBox; delete el.__inspect;
     if (why) tell(false, why);
     cancelAnimationFrame(raf);
     ro.disconnect(); io.disconnect();

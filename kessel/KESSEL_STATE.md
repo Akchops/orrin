@@ -17,10 +17,10 @@ Last passing commit before it: 91945ca (preview version 28).
 | 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | done |
 | 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | done (Company in Part 7, Contact layout in Part 8) |
 | 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | done |
-| 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | in progress |
+| 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | done (Part 9's close-up half included) |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
 | 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
-| 9 | Home tab in the nav; automatic close-ups on every lens page | next |
+| 9 | Home tab in the nav; automatic close-ups on every lens page | close-ups done in Part 6; Home tab next |
 
 ### Part log
 
@@ -129,6 +129,33 @@ Last passing commit before it: 91945ca (preview version 28).
   the screen; drag both ways, buttons from sealed, reduced and no-JS
   checked at 1440x900. Evidence: kessel/screenshots/finale/. Audit 64 of
   64; smoke passed.
+- 6 done, built to Part 9's spec (one build for both): "Inspect the lens"
+  replaces the Craft close-up mosaic and the lens pages' detail tiles. A
+  beat with six stops (the whole lens, 01 Glass, 02 Iris, 03 Scale, 04
+  Mount, 05 Signed), driven by scroll: live, the lens viewer's new inspect
+  mode glides the camera between the poses (src/app/inspect.js: angle,
+  look-at point, distance fitted to the stage by both axes, the lens's own
+  iris and focus), dwelling at each; the stage is one fixed box. Beside it,
+  never over it: a map of the lens from above (to its own length) with the
+  five details numbered and the camera moving round it with its view, the
+  caption (height reserved), and the list. Then "Your turn": the list and
+  the map's numbers jump to a detail and the live lens can be dragged to
+  look round it. Each lens page shows its own lens, colour and scale;
+  Craft shows Parvati. 2D and stills tiers: the same views as stills,
+  cross-fading. Reduced motion: the whole lens and a tappable list. No JS:
+  the whole lens and five captioned stills. The images were fixed at the
+  source: the old close-ups had the iris closed to a pinhole (the white dot)
+  or opening one blade at a time (the notched blob through the glass and
+  the blue shape in the mount view), with the light behind on (glare);
+  the new stills and the live views stop the iris down evenly with no light
+  behind, and the faulty stills are gone (the Lenses compare strip and
+  Contact use the new ones). Tested: 2D tier at 2576x1105, 1920x1080,
+  1440x900, 1280x720, 1024x768, 768x1024 and 390x844 on two lens pages and
+  Craft (pinned, six stops read back, nothing under the badge or past the
+  screen); software WebGL at 1440x900 (live badge, the camera moved at
+  every stop, the whole lens inside its stage); no-JS and reduced motion
+  at 1440x900 and 390x844; WebGL also at 390x844. Evidence: kessel/screenshots/inspect/. Audit 64
+  of 64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

@@ -4,6 +4,7 @@
 import { site, esc, lensRoute, img, contactLines, proposalTag, footer, route, specTable, viewerTools } from '../parts.js';
 import { fovHTML } from '../fov-svg.js';
 import { focusBeat, apertureBeat } from '../lab-svg.js';
+import { inspectHTML } from '../inspect-html.js';
 import { LENSES } from '../../app/fov.js';
 import { lenses } from '../../content/lenses.js';
 
@@ -21,16 +22,6 @@ export function lensHTML(l, i) {
   const id = lensRoute(l);
   const prev = lenses[(i + lenses.length - 1) % lenses.length], next = lenses[(i + 1) % lenses.length];
   const shot = SHOT[l.slug] || `lens-${i + 1}`;
-
-  const tile = (kind, still, key, label) => `
-    <figure class="lens__tile lens__tile--${kind}">
-      <div class="lens__crop" data-crop="close-up">${img(still)}</div>
-      <figcaption class="lens__cap">
-        <span class="lens__cap-k">${esc(key)}</span>
-        <span class="lens__cap-v">${figure(spec(l, key))}</span>
-        <span class="lens__cap-d">${esc(label)}</span>
-      </figcaption>
-    </figure>`;
 
   const readout = (key, cls = '') => `
         <div class="lens__read${cls}"><dt>${esc(key)}</dt><dd>${figure(spec(l, key))}</dd></div>`;
@@ -88,15 +79,10 @@ export function lensHTML(l, i) {
     </div>
   </section>
 
-  <section class="lens__detail" aria-labelledby="${id}-detail">
-    <h2 class="sr-only" id="${id}-detail">${esc(l.name)} up close</h2>
-    ${tile('glass', `d-glass-${i + 1}`, 'Front diameter', 'Front label and coated glass')}
-    ${tile('scale', `d-scale-${i + 1}`, 'Close focus', 'Its own distance scale')}
-    ${tile('mount', 'd-mount', 'Mount', 'Stainless mount, rear element')}
-  </section>
+  ${inspectHTML({ id: `${id}-insp`, k: i, lens: l, no: '04' })}
 
   <section class="lens__specs" aria-labelledby="${id}-specs">
-    <h2 class="lens__specs-h" id="${id}-specs"><span class="lab__no">04</span> <span>Specifications</span> <span class="tag tag--sample">Sample figures</span> ${proposalTag}</h2>
+    <h2 class="lens__specs-h" id="${id}-specs"><span class="lab__no">05</span> <span>Specifications</span> <span class="tag tag--sample">Sample figures</span> ${proposalTag}</h2>
     <dl class="lens__key">${readout('Focal length', ' lens__read--main')}${readout('Maximum aperture')}${readout('Weight')}
     </dl>
     <div class="lens__table">${specTable(l, `${l.name}: sample specifications`)}</div>

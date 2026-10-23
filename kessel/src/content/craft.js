@@ -1,6 +1,6 @@
 // Craft: the five stages of building a lens, told by one drawing that
-// builds up stage by stage (kessel/src/app/craft-lens.js), then the
-// close-up stills rendered from the lens scene. The copy describes the
+// builds up stage by stage (kessel/src/app/craft-lens.js); the lens up
+// close follows (kessel/src/content/inspect.js). The copy describes the
 // stages in general terms; it makes no claims about suppliers, tolerances,
 // equipment or people, and it is labelled as sample content.
 export const craft = {
@@ -45,16 +45,6 @@ export const craft = {
       key: 'signing', no: '05', name: 'Signing', more: '',
       text: 'When the lens has passed its tests, the optician who built it signs the rear barrel under the lamp. The signature stays on the lens.',
     },
-  ],
-  // The close-ups: one still per stage, with a short label.
-  closeTitle: 'What each stage leaves on the lens',
-  closeEyebrow: 'Up close',
-  close: [
-    { image: 'd-glass', no: '01', name: 'Glass', label: 'The coated front element' },
-    { image: 'iris34', no: '02', name: 'Iris', label: 'Eleven blades, half closed' },
-    { image: 'd-scale', no: '03', name: 'Scale', label: 'Metres in white, feet in amber' },
-    { image: 'd-mount', no: '04', name: 'Mount', label: 'Stainless mount, rear element' },
-    { image: 'd-sign', no: '05', name: 'Signed', label: "Under the maker's mark" },
   ],
   next: [
     { route: 'lenses', label: 'Next', text: 'See the three', last: 'lenses' },

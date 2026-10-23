@@ -16,7 +16,7 @@ export const contact = {
   // The coated front element fills the first frame; the signed rear barrel,
   // engraved with the studio's city, sits beside the city and the phone;
   // the engraved distance scale stands beside what helps us answer.
-  image: 'd-glass',
-  studioImage: 'd-sign',
-  helpImage: 'd-scale',
+  image: 'i-2-glass',
+  studioImage: 'i-2-sign',
+  helpImage: 'i-2-scale',
 };

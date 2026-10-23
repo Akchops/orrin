@@ -9,17 +9,16 @@ import { resolve } from 'node:path';
 const all = ['hero', 'aperture', 'through', 'exit', 'focus', 'model-1', 'model-2', 'model-3', 'signed',
   'model-1-lg', 'model-2-lg', 'model-3-lg', 'beauty', 'exploded', 'iris34',
   'hero-lens', 'lens-1', 'lens-2', 'lens-3', 'lineup-1', 'lineup-2', 'lineup-3',
-  'd-iris', 'd-glass', 'd-knurl', 'd-scale', 'd-sign', 'd-mount', 'exploded-wide',
-  'd-glass-1', 'd-glass-2', 'd-glass-3', 'd-scale-1', 'd-scale-2', 'd-scale-3'];
+  'd-knurl', 'exploded-wide',
+  ...[1, 2, 3].flatMap((k) => ['glass', 'iris', 'scale', 'mount', 'sign'].map((d) => `i-${k}-${d}`))];
 // [render width, render height, saved width, saved height]; default 900 square.
 const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600], 'model-3': [900, 900, 600, 600],
   'model-1-lg': [1000, 1000], 'model-2-lg': [1000, 1000], 'model-3-lg': [1000, 1000], beauty: [1600, 1000], exploded: [1400, 875],
   'hero-lens': [1800, 1800], 'lens-1': [1800, 1350], 'lens-2': [1800, 1350], 'lens-3': [1800, 1350],
   'lineup-1': [1800, 760], 'lineup-2': [1800, 760], 'lineup-3': [1800, 760],
-  'd-iris': [1600, 1600], 'd-glass': [1600, 1600], 'd-knurl': [2000, 1000], 'd-scale': [1600, 1000], 'd-sign': [1600, 1000],
-  'd-mount': [1400, 1400], 'exploded-wide': [2400, 1100],
-  'd-glass-1': [1600, 1600], 'd-glass-2': [1600, 1600], 'd-glass-3': [1600, 1600],
-  'd-scale-1': [1600, 1000], 'd-scale-2': [1600, 1000], 'd-scale-3': [1600, 1000],
+  'd-knurl': [2000, 1000], 'exploded-wide': [2400, 1100],
+  // Inspect the lens: one 4:3 frame for every detail, as the stage.
+  ...Object.fromEntries([1, 2, 3].flatMap((k) => ['glass', 'iris', 'scale', 'mount', 'sign'].map((d) => [`i-${k}-${d}`, [1200, 900]]))),
   'hero-wide': [1600, 1000], 'hero-tall': [900, 1600], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
 // Every still keeps its transparent background, so it sits on the page's
 // charcoal gradient like the live canvas does (the film's frames used to be

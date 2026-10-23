@@ -56,7 +56,7 @@ const routeCss = `html[data-route] .route{display:none}html[data-route="home"] #
 const b64 = (p) => readFileSync(p).toString('base64');
 const font = (f) => `data:font/woff2;base64,${b64(join(repo, 'node_modules/@fontsource-variable', f))}`;
 // Styles: the shared base, the film, then one file per page.
-const STYLES = ['base', 'film', 'teardown', 'td-ui', 'home', 'lenses', 'lens', 'craft', 'company', 'contact', 'fov', 'viewer', 'lab'];
+const STYLES = ['base', 'film', 'teardown', 'td-ui', 'home', 'lenses', 'lens', 'craft', 'company', 'contact', 'fov', 'viewer', 'inspect', 'lab'];
 let css = STYLES.map((n) => readFileSync(join(k, `src/styles/${n}.css`), 'utf8')).join('\n')
   .replaceAll('%%FONT:saira%%', font('saira/files/saira-latin-wdth-normal.woff2'))
   .replaceAll('%%FONT:serif%%', font('source-serif-4/files/source-serif-4-latin-wght-normal.woff2'))

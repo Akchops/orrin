@@ -6,6 +6,7 @@ import { buildStory, createState } from './story.js';
 import { TEAR_ANCHORS } from './teardown.js';
 
 import { MODEL_SPHERE, sphereFrame } from './fit.js';
+import { inspectPoses } from './inspect.js';
 
 const POSES = {
   hero: { s: 0 },
@@ -39,25 +40,20 @@ const POSES = {
     // (fit.js MODEL_SPHERE) whole by both axes, aimed at its centre.
     const sph = MODEL_SPHERE[k - 1];
     const P = { frame: sphereFrame(sph.r), tx: sph.c[0], ty: sph.c[1], tz: sph.c[2] };
-    const fr = [1.2, 1, 0.86][k - 1], lz = [0.72, 1, 1.45][k - 1];
     return Object.assign(o, {
       [`lens-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 38, el: 11, frame: P.frame, tx: P.tx, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
       [`lineup-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 90, el: 0, frame: 76, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
-      // Each lens's own front label and distance scale, for its page.
-      [`d-glass-${k}`]: { s: 0, model: k - 1, ownScale: true, az: 4, el: 6, frame: 43 * fr, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },
-      [`d-scale-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 86, el: 2, frame: 21, tx: 38 * fr, ty: 0, tz: -27 * lz, focus: 1, light: 0, sx: 0, sy: 0 },
+      // Inspect the lens (src/app/inspect.js): its five details, as the
+      // live viewer glides to them. The iris stopped down evenly and no
+      // light behind the lens, so no pinhole dot, no glare, and no ragged
+      // half-open shape through the glass or the rear element.
+      ...Object.fromEntries(inspectPoses(k - 1).slice(1).map((p) => [`i-${k}-${p.key}`, {
+        s: 16.5, model: k - 1, ownScale: true, irisEven: true, light: 0, az: p.az, el: p.el, frame: p.frame,
+        tx: p.t[0], ty: p.t[1], tz: p.t[2], iris: p.iris, focus: p.focus, sx: 0, sy: 0,
+      }])),
     });
   }, {}),
-  // The iris as the film catches it, blades opening one at a time with
-  // light behind them, framed inside the front ring.
-  'd-iris': { s: 1.9, az: 0, el: 0, frame: 25, tx: 0, ty: 0, tz: -30, sx: 0, sy: 0 },
-  // The coated front element as the film opens: near the axis, so the
-  // violet and green coatings and the pinhole of light read.
-  'd-glass': { s: 0, az: 6, el: 5, frame: 29, tx: 0, ty: 0, tz: -6, iris: 0.06, sx: 0, sy: 0 },
   'd-knurl': { s: 16.5, az: 90, el: 5, frame: 15, tx: 40, ty: 0, tz: -24, focus: 0.5, light: 0, sx: 0, sy: 0 },
-  'd-scale': { s: 16.5, az: 86, el: 2, frame: 21, tx: 38, ty: 0, tz: -19, focus: 1, light: 0, sx: 0, sy: 0 },
-  'd-sign': { s: 16.5, model: 1, az: 90, el: 2, frame: 15, tx: 39, ty: 0, tz: -68, light: 0, sx: 0, sy: 0 },
-  'd-mount': { s: 16.5, az: 162, el: 14, frame: 40, tx: 0, ty: 0, tz: -86, light: 0, sx: 0, sy: 0 },
   // One-page site: the hero (the film's first frame) and the teardown.
   'hero-wide': { s: 0 },
   'hero-tall': { s: 0, layout: 'narrow' },

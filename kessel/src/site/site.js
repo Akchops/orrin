@@ -8,6 +8,7 @@
 // the same routes.
 import { startFov } from './fov-live.js';
 import { startLab } from './lab.js';
+import { startInspect } from './inspect-live.js';
 import './craft.js';
 import './company.js';
 
@@ -188,6 +189,7 @@ addEventListener('resize', past, { passive: true });
 // See the difference: every field-of-view viewer becomes a live switcher.
 try { startFov(); } catch { /* the static figure stays */ }
 try { startLab(); } catch (e) { console.error(e); /* the first frames stay */ }
+try { startInspect(); } catch (e) { console.error(e); /* the five stills stay */ }
 
 window.__kesselSite = { anchor: () => anchorEl, get route() { return current; } };
 go(location.hash, { initial: true });

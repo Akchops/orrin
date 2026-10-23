@@ -10,14 +10,14 @@
 .js .beat--open:not(.beat--flow) > .beat__pin { top: 0; }
 /* The pins built for beats fill the screen and centre what they hold;
    pieces made before (Craft, Company) keep their own layout. */
-.js .beat:not(.beat--flow) > :is(.lab__pin, .cmp__pin, .ct-pick__pin) {
+.js .beat:not(.beat--flow) > :is(.lab__pin, .cmp__pin, .ct-pick__pin, .insp__pin) {
   min-height: calc(var(--vh) - var(--head) - var(--safe-t));
   display: grid; align-content: center;
   padding-block: clamp(0.75rem, 2.4vh, 1.75rem);
   /* Clear of the tier badge and the "tried" pill at the screen's foot. */
   padding-bottom: max(clamp(0.75rem, 2.4vh, 1.75rem), calc(3.5rem + env(safe-area-inset-bottom, 0px)));
 }
-:is(.beat--flow, html:not(.js) .beat) > :is(.lab__pin, .cmp__pin, .ct-pick__pin) { padding-block: clamp(2.5rem, 6vw, 5rem); }
+:is(.beat--flow, html:not(.js) .beat) > :is(.lab__pin, .cmp__pin, .ct-pick__pin, .insp__pin) { padding-block: clamp(2.5rem, 6vw, 5rem); }
 @media (prefers-reduced-motion: reduce) {
   .js .beat { height: auto !important; }
   .js .beat > .beat__pin { position: relative !important; min-height: 0 !important; }

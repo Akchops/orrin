@@ -80,7 +80,7 @@ export function lensesHTML() {
   ${compareStrip(lenses)}
 
   <section class="lx-compare" aria-labelledby="lenses-compare-title">
-    <div class="lx-compare__scale">${img('d-scale')}</div>
+    <div class="lx-compare__scale">${img('i-2-scale')}</div>
     <div class="lx-compare__inner wrap">
       <div class="lx-compare__head">
         <p class="eyebrow">Sample specifications</p>

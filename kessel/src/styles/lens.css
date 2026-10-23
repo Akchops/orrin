@@ -12,7 +12,7 @@
 .route--lens > .foot { margin-top: 0; }
 
 /* Full bleed: out of the body padding, then back in for text. */
-.route--lens .lens__hero, .route--lens .lens__detail, .route--lens .lens__specs, .route--lens .lens__pager {
+.route--lens .lens__hero, .route--lens .lens__specs, .route--lens .lens__pager {
   position: relative; isolation: isolate; container-type: inline-size;
   margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1);
 }
@@ -98,51 +98,6 @@
 .route--lens .enquire__body .clist > div:last-child { border-bottom: 0; }
 @media (min-width: 560px) { .route--lens .enquire__body .clist > div { grid-template-columns: 4.6rem minmax(0, 1fr); } }
 .route--lens .enquire__body .copy { min-height: 44px; }
-
-/* ---------------------------------------------------- detail mosaic */
-.route--lens .lens__detail {
-  display: grid; margin-top: clamp(1rem, 6vw, 5rem);
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  grid-template-rows: 104cqi 72cqi;
-  -webkit-mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
-  mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
-}
-.route--lens .lens__tile { position: relative; margin: 0; overflow: hidden; min-height: 0; }
-.route--lens .lens__tile--glass { grid-column: 1 / -1; }
-.route--lens .lens__crop { position: absolute; inset: 0; }
-.route--lens .lens__crop img {
-  width: 100%; height: 100%; max-width: none; object-fit: cover;
-  object-position: var(--lz-op, 50% 50%); transform-origin: var(--lz-to, 50% 50%);
-  transform: scale(var(--lz-z, 1.1)); transition: transform 0.9s var(--lz-ease), filter 0.6s ease;
-}
-.route--lens .lens__tile--glass { --lz-op: 50% 42%; --lz-to: 50% 40%; --lz-z: 1.08; }
-.route--lens .lens__tile--scale { --lz-op: 66% 50%; --lz-to: 64% 52%; --lz-z: 1.35; }
-.route--lens .lens__tile--mount { --lz-op: 45% 42%; --lz-to: 45% 50%; --lz-z: 1.9; }
-.route--lens .lens__tile::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to top, rgba(21, 23, 28, 0.72), rgba(21, 23, 28, 0) 55%);
-}
-.route--lens .lens__tile--scale::after { background: linear-gradient(to top, rgba(21, 23, 28, 0.9), rgba(21, 23, 28, 0.35) 45%, rgba(21, 23, 28, 0) 70%); }
-@media (hover: hover) {
-  .route--lens .lens__tile:hover img { transform: scale(calc(var(--lz-z, 1.1) * 1.07)); filter: brightness(1.12); }
-}
-
-.route--lens .lens__cap {
-  position: absolute; z-index: 1; left: var(--lz-pl); right: 1rem; bottom: 12%;
-  display: grid; gap: 0.35rem; padding: 0; border: 0; color: var(--engrave);
-  font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-stretch: 100%;
-}
-.route--lens .lens__tile--scale .lens__cap, .route--lens .lens__tile--mount .lens__cap { left: 1rem; }
-.route--lens .lens__tile--scale .lens__cap { bottom: 1.2rem; }
-.route--lens .lens__tile--mount .lens__cap { bottom: 16%; left: auto; right: var(--lz-pr); justify-items: end; text-align: right; }
-.route--lens .lens__cap-k { color: var(--band); }
-.route--lens .lens__cap-v {
-  font-weight: 200; font-stretch: 125%; letter-spacing: 0; text-transform: none; line-height: 0.9;
-  font-size: clamp(2.2rem, 17cqi, 8.5rem);
-}
-.route--lens .lens__tile--scale .lens__cap-v, .route--lens .lens__tile--mount .lens__cap-v { font-size: clamp(1.9rem, 9cqi, 5.5rem); }
-.route--lens .lens__cap-d { color: var(--dim); font-family: var(--body); font-style: italic; text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
-.route--lens .lens__unit { font-size: 0.3em; font-weight: 300; font-stretch: 110%; letter-spacing: 0.08em; margin-left: 0.3em; color: var(--dim); }
 
 /* ---------------------------------------------------- specifications */
 .route--lens .lens__specs {
