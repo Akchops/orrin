@@ -21,7 +21,7 @@ export const media = {
   'lens-1': { w: 1800, h: 1350, alt: 'Shaniwar, the wide lens, at three-quarters: short and stubby, a big curved front glass under a small petal hood, a blue ring, engraved SHANIWAR 24 mm.' },
   'lens-2': { w: 1800, h: 1350, alt: 'Parvati, the standard lens, at three-quarters: a medium barrel with a clean front and no hood, an amber ring, engraved PARVATI 50 mm round the front.' },
   'lens-3': { w: 1800, h: 1350, alt: 'Sinhagad, the long lens, at three-quarters: the longest, a narrow barrel with a long hood and a tripod collar, a green ring, engraved SINHAGAD 100 mm.' },
-  lineup: { w: 1800, h: 1138, alt: 'The three lenses standing side by side on their mounts at one scale: the short, wide Shaniwar with its petal hood, the plain Parvati, and the long Sinhagad with its hood and tripod collar, with blue, amber and green rings.' },
+  lineup: { w: 1800, h: 1061, alt: 'The three lenses standing side by side on their mounts at one scale: the short, wide Shaniwar with its petal hood, the plain Parvati, and the long Sinhagad with its hood and tripod collar, with blue, amber and green rings.' },
   'd-iris': { w: 1600, h: 1600, alt: 'The iris blades close up, overlapping into an eleven-sided opening with light behind it.' },
   'd-glass': { w: 1600, h: 1600, alt: 'The coated front element close up, its reflections tinted violet and green.' },
   'd-knurl': { w: 2000, h: 1000, alt: 'The knurled grip of the focus ring in close up.' },

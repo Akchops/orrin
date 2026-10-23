@@ -94,6 +94,16 @@ html.live:not([data-route="home"]) .stage { display: none; }
 .live .film .workshop { min-height: calc(var(--vh) * 1.4); }
 .live .film .workshop .cap { position: sticky; top: 30vh; width: min(30rem, 40vw); margin-left: auto; padding-block: 10vh 30vh; }
 .live .film .models { min-height: var(--vh); display: block; }
+/* The lens's stage in the three-lens chapter: its own box, between the
+   heading (bottom left) and the list (bottom right), at most 70% of the
+   screen tall; the film fits each shape inside it by width and height. */
+.film .models__stage { display: none; }
+.live .film .models__stage {
+  display: block; position: absolute; pointer-events: none; visibility: hidden;
+  top: calc(var(--safe-t) + var(--head) + 1.5rem); bottom: 1.5rem; max-height: calc(var(--vh) * 0.7); margin-block: auto;
+  left: calc(min(27rem, 36vw) + 2rem); right: calc(min(22rem, 30vw) + 2rem);
+}
+.live .film .models__head, .live .film .model-list { opacity: var(--mo, 1); }
 .live .film .model-list { position: absolute; right: 0; bottom: 4.8rem; width: min(22rem, 30vw); gap: 0; grid-template-columns: minmax(0, 1fr); }
 .live .film .model { border-top: 1px solid var(--line); padding-block: 0.8rem; opacity: 0.35; transition: opacity 0.35s ease; }
 .live .film .model.is-on, .live .film .model:focus-within { opacity: 1; }
@@ -173,6 +183,8 @@ html.live:not([data-route="home"]) .stage { display: none; }
   /* The section head stays a small label at the top left, under the badge
      line and clear of it; the lens sits between it and the caption. */
   .live .film .models__head { top: calc(var(--safe-t) + var(--head) + 0.5rem); bottom: auto; left: 0; right: 0; width: auto; gap: 0.25rem; justify-items: start; }
+  /* Phones: the stage runs between the small heading and the caption. */
+  .live .film .models__stage { top: calc(var(--safe-t) + var(--head) + 6rem); bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; }
   .live .film .models__head h2 { font-size: 1.5rem; font-weight: 300; }
   .live .film .models__note { font-size: 0.62rem; letter-spacing: 0.12em; line-height: 1.5; text-wrap: balance; }
   .live .film .model.is-on, .live .film .model:focus-within { opacity: 1; }

@@ -33,6 +33,8 @@ export function createState() {
     az: 0, el: 0, frame: 46, tx: 0, ty: 0, tz: -10, sx: 0, sy: 0, fov: 26,
     inside: 0, cz: 160, yaw: 0, roll: 0, rx: 0, ry: 0,
     iris: 0, spread: 0, focus: 0, model: 1, light: 1, sensor: 0, throat: 0, tear: 0, oroll: 0, tlight: 0, tspread: 1,
+    // How far the camera is fitted to the chapter's stage box (fit.js).
+    fit: 0,
     // Set by live.js, not by the timeline: the part to emphasise and how
     // much the others dim; the picked part and how far the others drift
     // back from it; the depth of field in a close-up and its depth range.
@@ -98,6 +100,10 @@ export function buildStory(gsap, S, layout) {
   // Lenses: pull back to three-quarters; the model channel morphs length,
   // front size and colour band between the three proposals.
   to(11.2, 11.8, { az: 52, el: 14, frame: v(78, 92), tx: 0, ty: 0, tz: -50, sx: v(-0.14, 0), sy: v(0, 0.14), focus: 0.35 }, 'power1.inOut');
+  // Each shape fits whole in the chapter's stage box, clear of its heading
+  // and list, by both width and height (live.js reads the box).
+  to(11.3, 11.8, { fit: 1 }, 'power1.inOut');
+  to(14.3, 14.5, { fit: 0 }, 'power1.inOut');
   to(11.8, 12.2, { model: 0 }, 'power1.inOut');
   to(12.6, 13.1, { model: 1 }, 'power1.inOut');
   to(13.4, 13.9, { model: 2 }, 'power1.inOut');

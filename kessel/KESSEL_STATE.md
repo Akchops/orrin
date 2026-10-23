@@ -13,8 +13,8 @@ Last passing commit before it: 91945ca (preview version 28).
 | Part | What | State |
 |---|---|---|
 | 1 | Distance scale numerals: gutters, nothing clipped, collision rule, 2x texture, one closest-focus value in film and teardown | done |
-| 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | in progress |
-| 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | next |
+| 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | done |
+| 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | in progress |
 | 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | next |
 | 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | next |
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | next |
@@ -41,6 +41,24 @@ Last passing commit before it: 91945ca (preview version 28).
   build and fails it if a numeral touches a tick, leaves its band or
   crowds its neighbour. Evidence: kessel/screenshots/scale/. Audit 64 of
   64; smoke passed.
+- 2 done: each lens's measured bounding sphere (fit.js MODEL_SPHERE: the
+  centre of its visible box and its farthest vertex) is fitted by both
+  axes: distance = r x margin / sin(atan(min(tan(v/2), tan(v/2) x
+  aspect))), margin 1.06. The film's three-lens chapter (the 2576x1105
+  Sinhagad crop) now fits the lens to its own stage box, .models__stage,
+  between the heading and the list (no taller than 70% of the screen),
+  blended in and out over the timeline (S.fit), and the heading and list
+  fade before the stage leaves, so the lens never meets the text. The
+  lineup still was recomposed with each lens at 20 / 50 / 80% and room
+  above and below, and the live lineup is solved by both axes from the
+  same shares; single-lens viewers centre the visible box and fit its
+  sphere, so the lens stays whole at any turn. Canvas size from
+  ResizeObserver at device pixel ratio (unchanged). Tested in software
+  WebGL (no real GPU): Lenses page and Sinhagad page at 2576x1105,
+  2560x1440, 3440x1440, 1920x1080, 1728x1117, 1440x900, 1280x720, 768x1024
+  and 390x844, lens inside its canvas and clear of all text at every size;
+  the film chapter at the same 9 sizes in 2D and 3 in WebGL, no crop or
+  overlap. Evidence: kessel/screenshots/fit/. Audit 64 of 64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

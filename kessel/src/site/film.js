@@ -100,6 +100,9 @@ export function filmHTML() {
   </section>${stages}
 
   <section class="models" id="models" aria-labelledby="models-title">
+    <!-- The lens's own box in this chapter: the film fits each shape inside
+         it, clear of the heading and the list (src/app/fit.js). -->
+    <div class="models__stage" aria-hidden="true"></div>
     <header class="models__head">
       <p class="cap__num">${esc(M.num)}</p>
       <h2 id="models-title">${esc(M.title)}</h2>

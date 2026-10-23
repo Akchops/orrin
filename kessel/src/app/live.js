@@ -6,6 +6,7 @@ import { buildStory, createState, STORY_END, FILM_END, TEAR_CAPTIONS } from './s
 import { distanceLabel, FILM_SCALE } from './textures.js';
 import { RAIL, TEAR_CLOSE, partCentre } from './teardown.js';
 import { createWatchdog } from './watchdog.js';
+import { fitToBox } from './fit.js';
 
 const NARROW = '(max-width: 799px), (orientation: portrait) and (max-width: 1100px)';
 
@@ -221,6 +222,8 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
 
   // ------------------------------------------------------------ the loop
   let sCur = 0, last = performance.now(), lastSig = '', resized = 0;
+  let fitBase = null, lastMo = '';
+  const modelsSec = document.getElementById('models'), modelsStage = modelsSec && modelsSec.querySelector('.models__stage');
   const t0 = performance.now();
   const qa = !!caps.qa;
   // Test hooks: ?watchdog keeps the watchdog on with forced software GL,
@@ -238,6 +241,7 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     // scroll camera back first (keys no tween covers here would otherwise
     // keep the close-up after the part is closed).
     if (camDirty) { Object.assign(S, camBase); camDirty = false; }
+    if (fitBase) { Object.assign(S, fitBase); fitBase = null; }
     const tSec = (now - t0) / 1000;
     const target = storyAt(window.scrollY);
     sCur += (target - sCur) * (1 - Math.exp(-dt / 0.09));
@@ -246,6 +250,17 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     if (td.sel && !td.leaving && !td.backPending && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
     orbitStep(dt);
     teardownState(tSec);
+    // The three-lens chapter: the lens fitted to its stage box (fit.js),
+    // for this frame only, so the timeline's own camera comes back after.
+    if (S.fit > 0.001 && modelsStage) {
+      fitBase = { frame: S.frame, sx: S.sx, sy: S.sy, tx: S.tx, ty: S.ty, tz: S.tz };
+      fitToBox(S, modelsStage.getBoundingClientRect(), innerWidth, innerHeight, S.fit);
+    }
+    // Its heading and list leave before the camera moves in on the barrel.
+    if (modelsSec) {
+      const mo = Math.max(0, Math.min(1, (14.3 - sCur) / 0.1)).toFixed(3);
+      if (mo !== lastMo) { lastMo = mo; modelsSec.style.setProperty('--mo', mo); }
+    }
 
     const k = 1 - Math.exp(-dt / 0.14);
     pointer.x += (pointer.tx - pointer.x) * k;

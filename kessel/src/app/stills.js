@@ -5,6 +5,8 @@ import { mountWebGL } from './stage3d.js';
 import { buildStory, createState } from './story.js';
 import { TEAR_ANCHORS } from './teardown.js';
 
+import { MODEL_SPHERE, sphereFrame } from './fit.js';
+
 const POSES = {
   hero: { s: 0 },
   aperture: { s: 2.95 },
@@ -33,10 +35,13 @@ const POSES = {
   // closes. The lineup profiles share one frame, so lineup.py stands them
   // side by side at one scale.
   ...[1, 2, 3].reduce((o, k) => {
-    const P = [{ frame: 66, ty: 0, tz: -26 }, { frame: 54, ty: 0, tz: -50 }, { frame: 80, ty: -9.5, tz: -52 }][k - 1];
+    // Framed as the live viewer frames it: the lens's bounding sphere
+    // (fit.js MODEL_SPHERE) whole by both axes, aimed at its centre.
+    const sph = MODEL_SPHERE[k - 1];
+    const P = { frame: sphereFrame(sph.r), tx: sph.c[0], ty: sph.c[1], tz: sph.c[2] };
     const fr = [1.2, 1, 0.86][k - 1], lz = [0.72, 1, 1.45][k - 1];
     return Object.assign(o, {
-      [`lens-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 38, el: 11, frame: P.frame, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
+      [`lens-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 38, el: 11, frame: P.frame, tx: P.tx, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
       [`lineup-${k}`]: { s: 16.5, model: k - 1, ownScale: true, az: 90, el: 0, frame: 76, tx: 0, ty: P.ty, tz: P.tz, iris: 0.4, irisEven: true, light: 0, focus: 0.3, sx: 0, sy: 0 },
       // Each lens's own front label and distance scale, for its page.
       [`d-glass-${k}`]: { s: 0, model: k - 1, ownScale: true, az: 4, el: 6, frame: 43 * fr, tx: 0, ty: 0, tz: -4, iris: 0.06, sx: 0, sy: 0 },

@@ -14,17 +14,15 @@ import { buildEnvironment } from './env.js';
 import { buildLens } from './lens.js';
 import { scaleTexture, frontRingTexture, rearBarrelTexture } from './textures.js';
 import { createState } from './story.js';
+import { sphereDistance, visibleBox, farthest } from './fit.js';
 
 const DEG = Math.PI / 180;
-// The stills' poses (src/app/stills.js lens-1..3): camera angles, the
-// half-height in mm that fills the frame, and the point it aims at (the
-// middle of each lens with its hood and collar). Each frame holds its lens
-// whole at every angle of the slow turn.
-const POSE = [
-  { az: 38, el: 11, frame: 66, ty: 0, tz: -26 },
-  { az: 38, el: 11, frame: 54, ty: 0, tz: -50 },
-  { az: 38, el: 11, frame: 80, ty: -9.5, tz: -52 },
-];
+// A lens page's camera angles (as the stills, src/app/stills.js lens-1..3).
+// The lens turns about the centre of its own visible box and the camera
+// stands where its bounding sphere fits the canvas by width and height
+// (src/app/fit.js), so it is whole at every angle of the slow turn and on
+// any screen.
+const POSE = [0, 1, 2].map(() => ({ az: 38, el: 11 }));
 // data-pose="front": the lens face on, for the aperture beat on its page
 // (src/site/lab.js closes its iris through el.__lensSet). Framed to take in
 // the hood.
@@ -35,9 +33,11 @@ const FRONT = [
 ];
 // Lens length in mm, mount to front (lens.js LEN_K of 99 mm).
 const LEN = [71.3, 99, 143.6];
-// The lineup: where each lens stands across the still, as a share of its
-// width (the label columns on #lenses follow the same three places).
-const LINEUP_X = [0.1791, 0.5242, 0.8734];
+// The lineup: where each lens's axis stands across the still, as a share of
+// its width (kessel/scripts/lineup.py composes the still the same way and
+// the label columns on #lenses follow the same three places), and the room
+// under the mounts and over the tallest hood, as shares of its height.
+const LINEUP_X = [0.2, 0.5, 0.8], LINE_BASE = 0.054, LINE_TOP = 0.036;
 const SLUG = ['shaniwar', 'parvati', 'sinhagad'];
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -93,17 +93,27 @@ export function mountViewer(el, L, caps, { font }) {
     lens.lightDisc.visible = false; lens.glow.visible = false;
     const pivot = new T.Group();
     pivot.add(lens.root);
+    const it = { m, i, lens, pivot, S, lift: 0, liftTo: 0, c: new T.Vector3(), r: 1, hw: 1, top: 1 };
     if (lineup) {
-      // Stood on its mount, front up, its engraving toward the camera.
+      // Stood on its mount, front up, its engraving toward the camera; its
+      // half-width and height measured for the lineup's frame.
       lens.root.rotation.x = -Math.PI / 2;
       lens.root.position.y = LEN[m];
-    } else {
+      const b = visibleBox(T, pivot);
+      it.hw = Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z); it.top = b.max.y;
+    } else if (front) {
       const p = POSES[m];
       pivot.position.set(0, p.ty, p.tz);
       lens.root.position.set(0, -p.ty, -p.tz);
+    } else {
+      // Turning about its own centre, fitted by its bounding sphere.
+      visibleBox(T, lens.root).getCenter(it.c);
+      it.r = farthest(T, lens.root, it.c);
+      pivot.position.copy(it.c);
+      lens.root.position.copy(it.c).negate();
     }
     scene.add(pivot);
-    return { m, i, lens, pivot, S, lift: 0, liftTo: 0 };
+    return it;
   });
 
   const camera = new T.PerspectiveCamera(26, 1, 1, 6000);
@@ -123,22 +133,34 @@ export function mountViewer(el, L, caps, { font }) {
     camera.aspect = W / H;
     camera.updateProjectionMatrix();
     if (lineup) {
-      // One frame, one scale for all three, set by the tallest (Sinhagad
-      // with its hood), with a margin; the mounts stand on one line.
-      frame = 106;
+      // One frame, one scale for all three, solved by both axes: tall
+      // enough for the tallest (Sinhagad with its hood) above the common
+      // base line, wide enough for each lens at its place across the
+      // still; a margin, and a little more for perspective.
+      const a = camera.aspect, m = 0.03;
+      let f = 0;
+      for (const it of items) {
+        f = Math.max(f, it.top / (2 * (1 - LINE_BASE - LINE_TOP)));
+        f = Math.max(f, it.hw / (a * Math.max(0.05, 1 - m - 2 * Math.abs(LINEUP_X[it.i] - 0.5))));
+      }
+      frame = f * 1.03;
       const halfW = frame * camera.aspect;
-      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame + 7, 0));
-    } else frame = pose.frame;
+      items.forEach((it) => it.pivot.position.set((LINEUP_X[it.i] - 0.5) * 2 * halfW, -frame * (1 - 2 * LINE_BASE), 0));
+    } else if (front) frame = pose.frame;
     dirty = true;
   }
 
   const target = new T.Vector3(), right = new T.Vector3(), qa = new T.Quaternion(), qb = new T.Quaternion(), Y = new T.Vector3(0, 1, 0);
   function place() {
     const az = (lineup ? 0 : pose.az) * DEG, el0 = (lineup ? 7 : pose.el) * DEG;
-    const fit = Math.min(Math.tan(13 * DEG), Math.tan(13 * DEG) * camera.aspect);
-    const dist = (frame / v.zoom) / fit;
+    const t13 = Math.tan(13 * DEG), fit = Math.min(t13, t13 * camera.aspect);
+    let dist;
+    if (lineup) dist = (frame / v.zoom) / t13;                 // frame: half-height
+    else if (front) dist = (frame / v.zoom) / fit;
+    else dist = sphereDistance(items[0].r, t13, t13 * camera.aspect, 1.06) / v.zoom;
     if (lineup) target.set(0, 0, 0);
-    else target.set(0, pose.ty, pose.tz);
+    else if (front) target.set(0, pose.ty, pose.tz);
+    else target.copy(items[0].c);
     const elv = el0 + (lineup ? (v.pitch + v.hy) * DEG : 0);
     camera.position.set(
       target.x + dist * Math.sin(az) * Math.cos(elv),
@@ -149,7 +171,7 @@ export function mountViewer(el, L, caps, { font }) {
       // Each lens turns on its own axis, which stands upright.
       for (const it of items) {
         it.lens.lens.rotation.z = -Math.PI / 2 + (v.yaw + v.hx) * DEG;
-        it.pivot.position.y = -frame + 7 + it.lift;
+        it.pivot.position.y = -frame * (1 - 2 * LINE_BASE) + it.lift;
       }
     } else {
       // The lens turns under the lights (not the camera round it): yaw
@@ -331,6 +353,29 @@ export function mountViewer(el, L, caps, { font }) {
 
   el.appendChild(canvas);
   layout();
+  // Where the lens is on the page: its visible vertices projected through
+  // the camera, in page pixels (for the layout checks).
+  const pv3 = new T.Vector3();
+  el.__lensBox = () => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    const cr = canvas.getBoundingClientRect();
+    camera.updateMatrixWorld();
+    for (const it of items) {
+      it.pivot.updateWorldMatrix(true, true);
+      it.pivot.traverseVisible((o) => {
+        if (!o.isMesh || !o.geometry || !o.geometry.attributes.position) return;
+        const a = o.geometry.attributes.position;
+        for (let i = 0; i < a.count; i += 2) {
+          pv3.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).project(camera);
+          const x = cr.left + (pv3.x * 0.5 + 0.5) * cr.width, y = cr.top + (0.5 - pv3.y * 0.5) * cr.height;
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
+      });
+    }
+    return { x0, y0, x1, y1, canvas: { x0: cr.left, y0: cr.top, x1: cr.right, y1: cr.bottom } };
+  };
+  // The lens's measured bounding sphere (lens space), for checks.
+  el.__lensSphere = () => items.map((it) => ({ m: it.m, c: [it.c.x, it.c.y, it.c.z], r: it.r }));
   // The page sets the lens's state (the iris, on the aperture beat).
   el.__lensSet = (o) => {
     const it = items[0];
@@ -357,7 +402,7 @@ export function mountViewer(el, L, caps, { font }) {
   function destroy(why) {
     if (!alive) return;
     alive = false;
-    delete el.__lensSet;
+    delete el.__lensSet; delete el.__lensBox;
     if (why) tell(false, why);
     cancelAnimationFrame(raf);
     ro.disconnect(); io.disconnect();
