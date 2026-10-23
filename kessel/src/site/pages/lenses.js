@@ -59,7 +59,7 @@ export function lensesHTML() {
       </div>
     </div>
     <div class="lx-hero__stage">
-      <div class="lx-hero__fig" id="lenses-viewer" data-viewer="lineup">${img('lineup', { lazy: false })}</div>
+      <div class="lx-hero__fig lstage" id="lenses-viewer" data-viewer="lineup" data-lstage>${img('lineup', { lazy: false })}</div>
       <ol class="lx-hero__labels">
     ${lenses.map(heroLabel).join('\n    ')}
       </ol>

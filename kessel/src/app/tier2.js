@@ -792,12 +792,13 @@ export function mount2D(container, { font }) {
       // sliding with the pointer.
       const hx = 0.4 + px * 0.3, hy = 0.44 - py * 0.3;
       g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 0.075);
-      g.addColorStop(0, cssa(1, 1, 1, 0.95 * k)); g.addColorStop(0.18, cssa(1, 0.99, 0.97, 0.52 * k));
-      g.addColorStop(0.5, cssa(1, 0.98, 0.95, 0.1 * k)); g.addColorStop(1, cssa(1, 1, 1, 0));
+      // Soft, not a solid white dot: no hard core, a gentle falloff.
+      g.addColorStop(0, cssa(1, 1, 1, 0.5 * k)); g.addColorStop(0.25, cssa(1, 0.99, 0.97, 0.26 * k));
+      g.addColorStop(0.6, cssa(1, 0.98, 0.95, 0.06 * k)); g.addColorStop(1, cssa(1, 1, 1, 0));
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, 0.075, 0, TAU); ctx.fill();
       const gx = hx + 0.12, gy = hy - 0.1;
       g = ctx.createRadialGradient(gx, gy, 0, gx, gy, 0.035);
-      g.addColorStop(0, cssa(1, 1, 1, 0.7 * k)); g.addColorStop(0.3, cssa(1, 1, 1, 0.25 * k)); g.addColorStop(1, cssa(1, 1, 1, 0));
+      g.addColorStop(0, cssa(1, 1, 1, 0.32 * k)); g.addColorStop(0.35, cssa(1, 1, 1, 0.12 * k)); g.addColorStop(1, cssa(1, 1, 1, 0));
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, 0.035, 0, TAU); ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
       resetM();
@@ -866,13 +867,6 @@ export function mount2D(container, { font }) {
       const a = it.a, rad = it.r;
       const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
       g.addColorStop(0, `rgba(255,244,228,${a})`); g.addColorStop(0.35, `rgba(255,236,214,${a * 0.45})`); g.addColorStop(1, 'rgba(255,236,214,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
-    }
-    if (it.s > 0.01) {
-      // The pinhole: a point of light while the iris is all but closed.
-      const rad = it.k, a = it.s;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
-      g.addColorStop(0, `rgba(255,250,240,${a})`); g.addColorStop(0.25, `rgba(255,244,228,${a * 0.7})`); g.addColorStop(1, 'rgba(255,236,214,0)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
@@ -1005,7 +999,7 @@ export function mount2D(container, { font }) {
         const tc = norm(sub(cam.pos, lw));
         const onAxis = Math.min(1, Math.max(0, (tc[2] - 0.9985) / 0.001));
         const before = Math.min(1, Math.max(0, (cam.pos[2] - xf([0, 0, izz])[2]) / 12));
-        const a = S.light * onAxis * before;
+        const a = S.light * onAxis * before * smooth(0.03, 0.2, S.iris);
         if (a > 0.002) { const it = take(LIGHT, 1e9, ''); it.gx0 = lc[0]; it.gy0 = lc[1]; it.r = 80 * lc[3]; it.a = a; it.bh = maskZ !== null ? 1 : 0; }
       }
     }
@@ -1034,18 +1028,16 @@ export function mount2D(container, { font }) {
     });
     emitIris(S, off(2) + bladePd, bladePart, bladeE, ks, 'blades');
 
-    // Bloom at the aperture when looking into the front, and the pinhole's
-    // point of light while the iris is closed.
+    // Bloom at the aperture when looking into the front, once the iris
+    // opens (as the WebGL tier: no point of light while it is closed).
     const iw = xf([0, 0, izz]), ic = proj(iw);
     if (ic) {
       const fcg = Math.max(0, dot(norm(sub(cam.pos, iw)), [0, 0, 1])), f3 = Math.pow(fcg, 3);
-      const open = 0.015 + 0.985 * S.iris * S.iris, far = Math.min(1, Math.max(0, (ic[2] - 20) / 120));
-      const a = Math.min(0.6, open * 0.7) * f3 * S.light * far;
-      const pin = (1 - smooth(0.05, 0.35, S.iris)) * f3 * S.light * far * (1 - S.inside);
-      if (a > 0.01 || pin > 0.01) {
+      const open = S.iris * S.iris, far = Math.min(1, Math.max(0, (ic[2] - 20) / 120));
+      const a = Math.min(0.6, open * 0.7) * f3 * S.light * far * smooth(0.03, 0.2, S.iris);
+      if (a > 0.01) {
         const it = take(BLOOM, -1e9, '');
         it.gx0 = ic[0]; it.gy0 = ic[1]; it.r = (40 + open * 70) * ic[3] * 0.6; it.a = a;
-        it.s = pin; it.k = Math.max(3, 2.2 * ic[3]);
       }
     }
 

@@ -14,18 +14,21 @@
 .insp__no { font-family: var(--display); color: var(--band); font-variant-numeric: tabular-nums; }
 .insp__name { font-family: var(--display); }
 
-/* The stage: the same box at every stop. */
-.insp__stage { position: relative; width: var(--insp-sw); aspect-ratio: 4 / 3; justify-self: center; overflow: hidden; border-radius: 4px; background: radial-gradient(70% 70% at 50% 45%, color-mix(in srgb, var(--band) 9%, transparent), transparent 72%); }
+/* The stage: the same box at every stop (the shared lens stage, .lstage).
+   The five close-up stills lie over it with JavaScript and stand in a row
+   under it without. */
+.insp__frame { position: relative; width: var(--insp-sw); justify-self: center; min-width: 0; }
+.insp__stage { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 4px; background: radial-gradient(70% 70% at 50% 45%, color-mix(in srgb, var(--band) 9%, transparent), transparent 72%); }
 .insp__whole { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .insp__stage .viewer__gl { position: absolute; z-index: 2; touch-action: pan-y; cursor: grab; }
 .insp__shots { list-style: none; margin: 0; padding: 0; }
-.js .insp__shots { position: absolute; inset: 0; }
+.js .insp__shots { position: absolute; inset: 0; overflow: hidden; border-radius: 4px; pointer-events: none; }
 .js .insp__shot { position: absolute; inset: 0; opacity: 0; }
 .js .insp__shot figure { margin: 0; position: absolute; inset: 0; }
 .js .insp__shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .js .insp__shot-cap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* Live: the 3D lens is the stage; the stills step aside. */
-.insp__stage.is-live .insp__shots, .insp__stage.is-live .insp__whole { visibility: hidden; }
+.insp__stage.is-live + .insp__shots, .insp__stage.is-live .insp__whole { visibility: hidden; }
 .insp__corners {
   position: absolute; inset: 0.6rem; z-index: 3; pointer-events: none; --k: 1.1rem;
   background:
@@ -79,7 +82,7 @@
   .insp__head .eyebrow { grid-column: 1; grid-row: 1; }
   .insp__head h2 { grid-column: 1; grid-row: 2; font-size: clamp(1.6rem, 0.8rem + 1.5vw, 2.6rem); }
   .insp__lead { grid-column: 2; grid-row: 1 / 3; font-size: clamp(0.92rem, 0.86rem + 0.15vw, 1.02rem); max-width: none; }
-  .insp__stage { grid-area: stage; width: 100%; }
+  .insp__frame { grid-area: stage; width: 100%; }
   .insp__side { grid-area: side; }
   .insp__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .insp__btn { padding: 0.35rem 0.5rem; gap: 0.35rem; font-size: 0.66rem; }
@@ -99,12 +102,12 @@
   .insp__ctl .ctl__how { font-size: 0.85rem; }
 }
 
-/* Without JavaScript: the five stills in a row (two on phones), each with
-   its number, name and line; the stage keeps the whole lens. */
+/* Without JavaScript: the stage keeps the whole lens, in the same box;
+   the five stills stand in a row under it (two on phones), each with its
+   number, name and line. */
 html:not(.js) .insp__side { display: none; }
-html:not(.js) .insp__stage { overflow: visible; aspect-ratio: auto; width: 100%; background: none; }
-html:not(.js) .insp__whole { position: relative; display: block; width: var(--insp-sw); height: auto; margin-inline: auto; aspect-ratio: 4 / 3; }
-html:not(.js) .insp__corners { display: none; }
+html:not(.js) .insp__frame { width: 100%; }
+html:not(.js) .insp__stage { width: var(--insp-sw); margin-inline: auto; }
 html:not(.js) .insp__shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
 @media (min-width: 900px) { html:not(.js) .insp__shots { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 html:not(.js) .insp__shot figure { margin: 0; display: grid; gap: 0.4rem; }

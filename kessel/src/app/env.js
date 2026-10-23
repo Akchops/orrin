@@ -32,7 +32,7 @@ export function buildEnvironment(T, renderer, size = 256) {
   strip(1.4, 24, [2.4, 2.7, 3.2], [-17, 0, 6]);     // cooler, dimmer, left
   strip(24, 1.6, [6, 5.6, 5.2], [0, 15, -6]);       // horizontal top rim
   strip(18, 7, [3.6, 3.3, 3.0], [-4, 16, 10]);      // overhead key
-  strip(1.2, 1.2, [50, 48, 46], [8, 11, 14]);       // pinpoint for glints
+  strip(1.8, 1.8, [15, 14.4, 13.8], [8, 11, 14]);   // pinpoint for glints (soft on glass)
 
   // Feathered fills: (1 - d^2)^3 falloff so mirror-like surfaces show a
   // soft glow with no visible edge (known-traps #2).

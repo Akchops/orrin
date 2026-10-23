@@ -19,7 +19,7 @@ Last passing commit before it: 91945ca (preview version 28).
 | 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | done |
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | done (Part 9's close-up half included) |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | done |
-| 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
+| 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | done |
 | 9 | Home tab in the nav; automatic close-ups on every lens page | close-ups done in Part 6; Home tab next |
 
 ### Part log
@@ -177,6 +177,88 @@ Last passing commit before it: 91945ca (preview version 28).
   the screen; notes clear of other markers at all seven; "Run it again"
   and hand ticking at 1440x900 and 390x844. Evidence:
   kessel/screenshots/company/. Audit 64 of 64; smoke passed.
+- 8 done: one shared lens stage (`.lstage` with `data-lstage`, in
+  base.css). The Home hero, the Lenses lineup, each lens page, Inspect (lens
+  pages and Craft) and Contact show the lens in a box of its own, never
+  taller than 70% of the screen and apart from any text. The lens is fitted
+  inside it by both axes: live, from its bounding sphere (fit.js, with
+  ResizeObserver and the pixel ratio); as a still, by object-fit: contain.
+  Per-page framing removed:
+  - The hero's per-breakpoint framing is gone (the hero-wide and hero-tall
+    stills and their offsets). The film's first frame now fits the lens to
+    the hero's stage box (live.js), and one square still (hero-stage,
+    centred) stands in for no-JS, reduced motion and the stills tier.
+  - The lens-page stage was taller than 70% at 2576x1105; it is now capped.
+
+  Contact rebuilt as one pinned beat. The lens is whole in its stage: the
+  three together until one is picked, then that lens. The heading, "Which
+  lens is it about?", the chips and the email card sit beside it (below it
+  on phones). Removed: the full-bleed glass with the email over it, and the
+  two other background-image frames. The phone number and "What helps us
+  answer" follow on the plain page. The tried pill is hidden on any page
+  with one control.
+
+  Inspect: the five close-ups moved out of the stage box. With JS they lie
+  over it; without JS they stand in a row under it, so the stage keeps the
+  same 4:3 box.
+
+  The white dot and the glare, fixed at the source:
+  1. The white disc was the inner glass elements' stacked reflections, seen
+     face on through the open iris. They are now drawn at 45%: opacity
+     scales the additive layer. envMapIntensity had no effect, because
+     with scene.environment three.js uses the scene's intensity for every
+     material.
+  2. The glare at the top right was the key light, a directional light,
+     landing as a blown-out spot on the near-mirror glass. The glass now
+     takes 6% of the lights' direct reflection, via a shader patch that is
+     also carried into the emphasis copies, and keeps the studio's soft
+     strips at roughness 0.07. The studio's pinpoint is softer (15 instead
+     of 50, and larger). The rim lights are unchanged.
+  3. The film's light behind the lens shows only once the iris opens, so a
+     closed iris shows no point of light.
+  4. On the 2D tier, the highlight no longer has a hard core.
+
+  Stills re-rendered with the new glass: hero-stage, lens-1..3,
+  lineup-1..3 (lineup recomposed), the 15 close-ups, model-1..3, the film
+  frames and the teardown.
+
+  Guard: scripts/verify-stage.mjs runs in every build, and the page is
+  written only if it passes. It covers Home, Lenses, the three lens pages,
+  Craft and Contact (80 stages in the 2D tier) at 2576x1105, 1920x1080,
+  1728x1117, 1440x900, 1280x720, 1024x768, 768x1024 and 390x844. It
+  checks three things:
+  - the lens's box on screen lies inside its stage;
+  - the stage is no taller than 70% of the screen;
+  - no visible text touches the lens. Every text node's line boxes count,
+    including the badge and the tried pill.
+
+  The lens's box comes from a still's opaque pixels mapped through
+  object-fit, from the 2D film's canvas, or from a live viewer's or the
+  live film's own projection of the model. It found two real faults, both
+  fixed: the lens-page stage above, and the Lenses title's type box
+  running into the lineup.
+
+  Also run by hand: no-JS, reduced motion, the stills tier (?static) and
+  software WebGL (?gl=force).
+
+  Beats: Contact pins at all eight sizes, including 390x844 (before, 974 px
+  for 776). On short wide screens it comes down a size.
+
+  Tested:
+  - Build guard: 80 of 80 stages pass in the 2D tier. The same 80 pass with
+    no JS, with reduced motion and in the stills tier.
+  - Software WebGL (?gl=force), every stage at 2576x1105, 1440x900,
+    1024x768 and 390x844: the live film hero and the live viewers each
+    measure their own lens inside the stage. Run one browser at a time;
+    four software renderers at once starve the CPU.
+  - Beat regression at the eight sizes: Craft, the three lens-page labs,
+    the Lenses street viewer and compare strip, and Contact all pin and
+    stop.
+  - Audit 64 of 64; smoke passed (scroll moves the film and the teardown
+    answers a click under software WebGL).
+
+  Evidence: kessel/screenshots/stage/ (Contact, hero 2D and live, no-JS,
+  close-ups before and after).
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

@@ -82,11 +82,11 @@ export function filmHTML() {
       </li>`).join('');
   return `<div class="film" id="film">
   <section class="hero" id="home-hero" aria-labelledby="home-title">
-    <figure class="hero__still">
-      <picture>
-        <source media="(max-width: 799px), (orientation: portrait) and (max-width: 1100px)" srcset="%%STILL:hero-tall%%" width="${media['hero-tall'].w}" height="${media['hero-tall'].h}">
-        <img src="%%STILL:hero-wide%%" width="${media['hero-wide'].w}" height="${media['hero-wide'].h}" alt="${esc(h.alt)}">
-      </picture>
+    <!-- The lens's own box (the shared lens stage): live, the film fits the
+         lens's bounding sphere inside it (src/app/fit.js); otherwise the
+         still of the same frame fills it. Nothing else sits on it. -->
+    <figure class="hero__stage lstage" data-lstage>
+      <img src="%%STILL:hero-stage%%" width="${media['hero-stage'].w}" height="${media['hero-stage'].h}" alt="${esc(h.alt)}">
     </figure>
     <div class="hero__copy">
       <p class="hero__brand">${esc(h.brand)}</p>

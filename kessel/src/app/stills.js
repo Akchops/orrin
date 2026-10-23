@@ -55,8 +55,9 @@ const POSES = {
   }, {}),
   'd-knurl': { s: 16.5, az: 90, el: 5, frame: 15, tx: 40, ty: 0, tz: -24, focus: 0.5, light: 0, sx: 0, sy: 0 },
   // One-page site: the hero (the film's first frame) and the teardown.
-  'hero-wide': { s: 0 },
-  'hero-tall': { s: 0, layout: 'narrow' },
+  // The hero's box (no JS, reduced motion, the stills tier): the lens as
+  // the film's first frame fits it, whole by its bounding sphere.
+  'hero-stage': { s: 0, model: 1, az: 20, el: 8, frame: sphereFrame(MODEL_SPHERE[1].r), tx: MODEL_SPHERE[1].c[0], ty: MODEL_SPHERE[1].c[1], tz: MODEL_SPHERE[1].c[2], sx: 0, sy: 0, iris: 0, light: 0 },
   // The stills have no rail or caption panel to make room for: centred.
   'td-apart': { s: 21.1, sx: 0, sy: 0.02 },
   'td-apart-tall': { s: 21.1, layout: 'narrow', sy: -0.04, frame: 126 },

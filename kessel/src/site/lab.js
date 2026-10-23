@@ -173,8 +173,8 @@ function compareBeat(el) {
 // ------------------------------------------------ Contact: which lens?
 function contactPick(el) {
   const chips = [...el.querySelectorAll('.chip')];
-  const fig = el.querySelector('.ct-pick__mail'), subj = el.querySelector('.ct-pick__subj');
-  const body = el.querySelector('.ct-pick__body'), go = el.querySelector('.ct-pick__go');
+  const stage = el.querySelector('.ct-pick__stage'), card = el.querySelector('.ct-pick__mail');
+  const subj = el.querySelector('.ct-pick__subj'), go = el.querySelector('.ct-pick__go');
   const to = (go.getAttribute('href') || '').replace(/^mailto:/, '').split('?')[0];
   let cur = -1;
   function choose(i) {
@@ -183,10 +183,13 @@ function contactPick(el) {
     const c = chips[i], name = c.dataset.lens;
     chips.forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
     const s = name ? `Enquiry: ${name} (${c.dataset.mm})` : 'Enquiry from the Kessel site';
-    const b = name ? `Hello, I would like to know more about ${name}, the ${c.dataset.role} lens.` : 'Hello, I would like to know more about your lenses.';
-    put(subj, s); put(body, b);
+    const b = name ? `Hello, I would like to know more about ${name}, the ${c.dataset.role} lens.` : go.dataset.body;
+    put(subj, s);
     go.href = `mailto:${to}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;
-    if (name) { fig.dataset.lens = name; fig.dataset.band = c.dataset.band; } else { delete fig.dataset.lens; delete fig.dataset.band; }
+    // The stage shows the lens picked, whole; the three together otherwise.
+    for (const x of [stage, card]) {
+      if (name) { x.dataset.lens = name; x.dataset.band = c.dataset.band; } else { delete x.dataset.lens; delete x.dataset.band; }
+    }
   }
   chips.forEach((c, i) => c.addEventListener('click', () => { beat.mine(); choose(i); }));
   // Scroll: a stop at each of the three lenses; reduced motion waits on

@@ -6,7 +6,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-const all = ['hero', 'aperture', 'through', 'exit', 'focus', 'model-1', 'model-2', 'model-3', 'signed',
+const all = ['hero', 'hero-stage', 'aperture', 'through', 'exit', 'focus', 'model-1', 'model-2', 'model-3', 'signed',
   'model-1-lg', 'model-2-lg', 'model-3-lg', 'beauty', 'exploded', 'iris34',
   'hero-lens', 'lens-1', 'lens-2', 'lens-3', 'lineup-1', 'lineup-2', 'lineup-3',
   'd-knurl', 'exploded-wide',
@@ -19,7 +19,7 @@ const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600],
   'd-knurl': [2000, 1000], 'exploded-wide': [2400, 1100],
   // Inspect the lens: one 4:3 frame for every detail, as the stage.
   ...Object.fromEntries([1, 2, 3].flatMap((k) => ['glass', 'iris', 'scale', 'mount', 'sign'].map((d) => [`i-${k}-${d}`, [1200, 900]]))),
-  'hero-wide': [1600, 1000], 'hero-tall': [900, 1600], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
+  'hero-stage': [1200, 1200], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
 // Every still keeps its transparent background, so it sits on the page's
 // charcoal gradient like the live canvas does (the film's frames used to be
 // flattened onto black, which showed as dark boxes on the lighter page).
@@ -40,7 +40,10 @@ for (const n of names) {
   const png = `kessel/stills/${n}.png`;
   writeFileSync(png, Buffer.from((await page.evaluate(() => window.__still)).split(',')[1], 'base64'));
   const mode = 'RGBA';
-  execFileSync('python3', ['-c', `from PIL import Image; import os; im=Image.open('${png}').convert('${mode}').resize((${ow},${oh}), Image.LANCZOS); im.save('${png.replace('.png', '.webp')}', 'WEBP', quality=84, method=6); os.remove('${png}')`]);
+  // The hero's still is laid in a square stage: its lens, centred by its
+  // opaque pixels (the sphere's centre is not the silhouette's at that angle).
+  const centre = n === 'hero-stage' ? `b=im.getchannel('A').getbbox(); c=im.crop(b); im=Image.new('RGBA', im.size, (0,0,0,0)); im.paste(c, ((im.width-c.width)//2, (im.height-c.height)//2)); ` : '';
+  execFileSync('python3', ['-c', `from PIL import Image; import os; im=Image.open('${png}').convert('${mode}').resize((${ow},${oh}), Image.LANCZOS); ${centre}im.save('${png.replace('.png', '.webp')}', 'WEBP', quality=84, method=6); os.remove('${png}')`]);
   console.log('still', n);
 }
 await browser.close();

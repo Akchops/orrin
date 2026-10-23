@@ -73,7 +73,7 @@
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "bar bar" "foot stage";
     min-height: var(--vh); align-content: start;
   }
-  .route--lens .lens__shot { width: min(100%, calc((var(--vh) - var(--head) - 7rem) * 4 / 3)); }
+  .route--lens .lens__shot { width: min(100%, calc((var(--vh) - var(--head) - 7rem) * 4 / 3), calc(var(--vh) * 0.7 * 4 / 3)); }
   .route--lens .lens__bar { flex-direction: row; justify-content: space-between; align-items: center; gap: 2rem; }
 }
 

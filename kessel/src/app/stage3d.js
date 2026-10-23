@@ -297,6 +297,27 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     else renderer.compile(scene, camera);
   }
 
+  // Where the lens is on the page: its visible vertices projected through
+  // the camera, in page pixels (for the layout checks, as the viewers do).
+  const pv = new T.Vector3();
+  function lensBox() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    const cr = canvas.getBoundingClientRect();
+    camera.updateMatrixWorld();
+    lens.root.updateWorldMatrix(true, true);
+    lens.root.traverseVisible((o) => {
+      if (!o.isMesh || !o.geometry || !o.geometry.attributes.position) return;
+      const m = o.material;
+      if (m && m.transparent && m.opacity < 0.01) return;
+      const a = o.geometry.attributes.position;
+      for (let i = 0; i < a.count; i += 2) {
+        pv.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).project(camera);
+        const x = cr.left + (pv.x * 0.5 + 0.5) * cr.width, y = cr.top + (0.5 - pv.y * 0.5) * cr.height;
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+    });
+    return { x0, y0, x1, y1 };
+  }
   function destroy() {
     if (dof.rt) { dof.rt.dispose(); dof.rt.depthTexture.dispose(); }
     dofMat.dispose(); dofQuad.geometry.dispose();
@@ -304,5 +325,5 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
 
-  return { canvas, kind: '3d', render, resize, project, pick, stepDown, quality: quality_, getDPR: () => dpr, warm, destroy };
+  return { canvas, kind: '3d', render, resize, project, lensBox, pick, stepDown, quality: quality_, getDPR: () => dpr, warm, destroy };
 }

@@ -21,7 +21,7 @@ export const media = {
   'lens-1': { w: 1800, h: 1350, alt: 'Shaniwar, the wide lens, at three-quarters: short and stubby, a big curved front glass under a small petal hood, a blue ring, engraved SHANIWAR 24 mm.' },
   'lens-2': { w: 1800, h: 1350, alt: 'Parvati, the standard lens, at three-quarters: a medium barrel with a clean front and no hood, an amber ring, engraved PARVATI 50 mm round the front.' },
   'lens-3': { w: 1800, h: 1350, alt: 'Sinhagad, the long lens, at three-quarters: the longest, a narrow barrel with a long hood and a tripod collar, a green ring, engraved SINHAGAD 100 mm.' },
-  lineup: { w: 1800, h: 1061, alt: 'The three lenses standing side by side on their mounts at one scale: the short, wide Shaniwar with its petal hood, the plain Parvati, and the long Sinhagad with its hood and tripod collar, with blue, amber and green rings.' },
+  lineup: { w: 1800, h: 1059, alt: 'The three lenses standing side by side on their mounts at one scale: the short, wide Shaniwar with its petal hood, the plain Parvati, and the long Sinhagad with its hood and tripod collar, with blue, amber and green rings.' },
   'd-knurl': { w: 2000, h: 1000, alt: 'The knurled grip of the focus ring in close up.' },
   // Inspect the lens (src/app/inspect.js): each lens's five details, one 4:3 frame each.
   'i-1-glass': { w: 1200, h: 900, alt: "Shaniwar's coated front element and front label." },
@@ -41,8 +41,8 @@ export const media = {
   'i-3-sign': { w: 1200, h: 900, alt: "The optician's signature under the maker's mark on Sinhagad's rear barrel." },
   'exploded-wide': { w: 2400, h: 1100, alt: 'The lens taken apart along its axis: front ring, focus section, iris, rear section and mount spaced out in a line, each with its glass.' },
   // One-page hero and teardown stills (stills mode: reduced motion, no JS).
-  'hero-wide': { w: 1600, h: 1000, alt: 'A Kessel lens seen straight on and close, cropped by the frame, the iris closed to a pinhole of light.' },
-  'hero-tall': { w: 900, h: 1600, alt: 'A Kessel lens seen straight on and close, cropped by the frame, the iris closed to a pinhole of light.' },
+  // The home page's first frame: the whole lens in its own box (live, the film draws it there).
+  'hero-stage': { w: 1200, h: 1200, alt: 'A Kessel lens, whole, turned a little towards the light: the black anodised barrel, the knurled focus ring, the amber colour ring and the coated front element.' },
   'td-apart': { w: 1600, h: 1000, alt: 'The lens taken apart: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount, each on its own.' },
   'td-apart-tall': { w: 900, h: 1600, alt: 'The lens taken apart down the frame: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount.' },
 };

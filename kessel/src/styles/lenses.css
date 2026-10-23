@@ -25,6 +25,9 @@
 #lenses .lx-hero__title {
   font-size: clamp(4.4rem, 0.4rem + 17vw, 14rem); font-weight: 200; font-stretch: 125%;
   line-height: 0.84; letter-spacing: -0.01em; max-width: none; text-wrap: nowrap;
+  /* The type's own box runs past its tight lines: room for it, so the
+     lineup below never meets it. */
+  margin-bottom: 0.2em;
 }
 #lenses .lx-hero__title span { display: block; }
 #lenses .lx-hero__aside { display: grid; gap: 0.9rem; align-content: start; }
@@ -35,8 +38,8 @@
 #lenses .lx-hero__stage { position: relative; z-index: 1; margin-top: clamp(0.75rem, 2vw, 2rem); padding-inline: calc(var(--gutter-l) + var(--lx-pad)) calc(var(--gutter-r) + var(--lx-pad)); }
 #lenses .lx-hero__fig img { width: 100%; max-width: none; margin: 0; }
 /* At one scale the long lens stands tallest: the lineup is never more than
-   70% of the screen tall (the still is 1800 x 1061). */
-#lenses .lx-hero__fig, #lenses .lx-hero__labels { max-width: calc(var(--vh) * 0.7 * 1800 / 1061); margin-inline: auto; }
+   70% of the screen tall (the still is 1800 x 1059). */
+#lenses .lx-hero__fig, #lenses .lx-hero__labels { max-width: calc(var(--vh) * 0.7 * 1800 / 1059); margin-inline: auto; }
 #lenses .lx-hero__labels {
   list-style: none; margin: 0 auto; padding: 0; display: grid; align-items: start;
   /* Columns centred on the three lenses' axes in the still, at 20%, 50% and

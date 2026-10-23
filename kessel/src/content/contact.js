@@ -13,10 +13,12 @@ export const contact = {
     'The camera and mount you use.',
     'When you would need the lens.',
   ],
-  // The coated front element fills the first frame; the signed rear barrel,
-  // engraved with the studio's city, sits beside the city and the phone;
-  // the engraved distance scale stands beside what helps us answer.
-  image: 'i-2-glass',
-  studioImage: 'i-2-sign',
-  helpImage: 'i-2-scale',
+  // Which lens is it about? Picking one starts the email.
+  pickTitle: 'Which lens is it about?',
+  pickHow: 'Tap a lens and the email starts itself, with the lens in the subject.',
+  notSure: 'Not sure yet',
+  // The lens stage beside the picker: the three lenses together until one
+  // is picked, then that lens, whole (the same stills as the lens pages).
+  allImage: 'lineup',
+  allAlt: 'The three Kessel lenses side by side: Shaniwar, Parvati and Sinhagad.',
 };

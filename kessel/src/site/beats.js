@@ -242,7 +242,8 @@ function paintTried() {
     pill.setAttribute('aria-live', 'polite');
     document.body.appendChild(pill);
   }
-  if (!keys.length) { pill.hidden = true; return; }
+  // A count of one says nothing: pages with a single control show no pill.
+  if (keys.length <= 1) { pill.hidden = true; return; }
   const n = keys.filter((k) => done[r] && done[r].has(k)).length;
   pill.hidden = false;
   pill.innerHTML = `<span class="tried__dots" aria-hidden="true">${keys.map((k) => `<i${done[r] && done[r].has(k) ? ' class="on"' : ''}></i>`).join('')}</span><span class="tried__t"><b>${n}</b><span class="tried__long"> of ${keys.length} tried</span><span class="tried__short">/${keys.length} tried</span></span>`;

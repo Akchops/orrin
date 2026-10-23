@@ -120,13 +120,30 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
   // front element (the surfaces you look at) carries the thin-film
   // iridescence; inner elements get a cheaper tinted specular in the same
   // family of colours, and only their front surface is drawn.
-  const coatMat = (film, tint, thinFilm) => keep(LQ
-    ? new T.MeshStandardMaterial({ color: 0x000000, metalness: 0, roughness: 0.05, envMapIntensity: 1.6, transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide })
+  // Highlights: a directional light is a point at infinity, so on glass this
+  // smooth it lands as a blown-out white spot. The glass takes only a little
+  // of the lights' direct reflection and keeps the studio's soft strips (the
+  // environment), with a roughness that softens its pinpoint too.
+  // The inner elements are drawn at a fraction of their light (opacity
+  // scales an additive layer): seen face on through the open iris, their
+  // stacked reflections otherwise add up to a solid white disc in the middle
+  // of the glass. (envMapIntensity would not do it: with scene.environment
+  // three.js uses the scene's intensity for every material.)
+  // (userData.softDirect survives the emphasis copies, which set their own
+  // shader hook below and apply this too.)
+  const softDirect = (m) => {
+    m.userData.softDirect = true;
+    m.onBeforeCompile = (sh) => { sh.fragmentShader = softDirectGLSL(sh.fragmentShader); };
+    m.customProgramCacheKey = () => 'kessel-glass';
+    return m;
+  };
+  const coatMat = (film, tint, thinFilm) => keep(softDirect(LQ
+    ? new T.MeshStandardMaterial({ color: 0x000000, metalness: 0, roughness: 0.08, envMapIntensity: 1.6, transparent: true, opacity: thinFilm ? 1 : 0.45, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide })
     : new T.MeshPhysicalMaterial({
-      color: 0x000000, metalness: 0, roughness: 0.035, ior: 1.62, specularIntensity: 1,
-      envMapIntensity: 1.25, transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide,
+      color: 0x000000, metalness: 0, roughness: 0.07, ior: 1.62, specularIntensity: 1,
+      envMapIntensity: 1.25, transparent: true, opacity: thinFilm ? 1 : 0.45, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide,
       ...(thinFilm ? { iridescence: 1, iridescenceIOR: 1.38, iridescenceThicknessRange: film } : { specularColor: new T.Color(tint) }),
-    }));
+    })));
   const bodyMat = keep(new T.MeshBasicMaterial({ color: 0x0a0d12, transparent: true, opacity: 0.07, depthWrite: false, side: T.DoubleSide }));
 
   // --------------------------------------------------------------- groups
@@ -489,15 +506,17 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
   const EMPH = [], pickables = [], swapFront = [frontMat], swapScale = [scaleMat];
   const emphShader = (m, e) => {
     const std = !!m.isMeshStandardMaterial;
+    const soft = !!m.userData.softDirect;
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uDim = e.dim;
       sh.uniforms.uGlow = e.glow;
+      if (soft) sh.fragmentShader = softDirectGLSL(sh.fragmentShader);
       sh.fragmentShader = 'uniform float uDim;\nuniform float uGlow;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
         'outgoingLight *= uDim;\n' +
         (std ? 'outgoingLight += uGlow * pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 2.5) * vec3(0.41, 0.33, 1.0);\n' : '') +
         '#include <opaque_fragment>');
     };
-    m.customProgramCacheKey = () => 'emph';
+    m.customProgramCacheKey = () => (soft ? 'emph-glass' : 'emph');
   };
   for (const [pid, list] of Object.entries(parts)) {
     const rid = railId(pid), copies = new Map();
@@ -659,12 +678,13 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
     apRing.rotation.z = -S.iris * 0.9;
 
     // Light through the aperture: proportional to the open area, roughly the
-    // square of the iris progress, plus a floor for the pinhole.
-    const open = 0.015 + 0.985 * S.iris * S.iris;
-    glowMat.opacity = Math.min(0.6, open * 0.7) * S.light;
+    // square of the iris progress. None while the iris is all but closed, so
+    // the closed iris shows no point of light and no glare round it.
+    const open = S.iris * S.iris, leak = smooth(0.03, 0.2, S.iris);
+    glowMat.opacity = Math.min(0.6, open * 0.7) * S.light * leak;
     const gs = 40 + open * 70;
     glow.scale.set(gs, gs, 1);
-    lightMat.opacity = S.light;
+    lightMat.opacity = S.light * leak;
 
     // Teardown: every part on its own path (teardown.js). With a part
     // picked (S.pick, S.pe) the others also drift back from it a little.
@@ -830,6 +850,11 @@ function turningTexture(T) {
   t.repeat.set(1, 18);
   t.colorSpace = T.NoColorSpace;
   return t;
+}
+
+// The glass's share of the lights' direct reflection (see coatMat).
+function softDirectGLSL(fs) {
+  return fs.replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n\treflectedLight.directSpecular *= 0.06;');
 }
 
 // Radial falloff for the bloom sprite: (1 - d^2)^3 plus a faint wide tail.

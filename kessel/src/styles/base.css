@@ -240,6 +240,17 @@ html:not(.js) main:not(:has(.route:not(#home):target, .route:not(#home) :target)
 .frame img { width: 100%; }
 .frame figcaption { padding: 0.6rem 0.8rem; border-top: 1px solid var(--line); color: var(--dim); }
 
+/* One lens stage, wherever the lens is shown (the Home hero, the Lenses
+   lineup, each lens page, Inspect on the lens pages and Craft, Contact): a
+   box of its own, never more than 70% of the screen tall, apart from any
+   text. The lens is fitted inside it by both axes, with a margin: live, from
+   its bounding sphere (src/app/fit.js, re-measured on resize and at the
+   screen's pixel ratio); as a still, by object-fit: contain. Nothing is laid
+   over it. kessel/scripts/verify-stage.mjs fails the build if a lens leaves
+   its stage or touches text, at eight screen sizes. */
+.lstage { position: relative; margin: 0; min-width: 0; max-height: 70vh; max-height: 70svh; }
+.lstage > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
 /* Buttons and links that act like them: 44 px tall, clear hover and focus. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 48px; padding: 0 1.4rem;

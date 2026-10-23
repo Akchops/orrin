@@ -43,7 +43,7 @@ export function lensHTML(l, i) {
     <!-- The whole lens, turning slowly, with its name and line beside it
          (under it on phones); never cropped, never under the type. -->
     <div class="lens__stage">
-      <div class="lens__shot" id="${id}-viewer" data-viewer="${i}">${img(shot, { lazy: false })}</div>
+      <div class="lens__shot lstage" id="${id}-viewer" data-viewer="${i}" data-lstage>${img(shot, { lazy: false })}</div>
     </div>
     <div class="lens__foot">
       <h1 class="lens__name" id="${id}-title" tabindex="-1">${esc(l.name)}</h1>

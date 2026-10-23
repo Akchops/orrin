@@ -1,6 +1,6 @@
 // Builds kessel/index.html: one self-contained file. Libraries, app code,
 // fonts and still frames are all inlined; the page makes no requests.
-//   node kessel/scripts/build.mjs
+//   node kessel/scripts/build.mjs [--out=path]
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -87,6 +87,18 @@ const out = outArg ? outArg.slice(6) : join(k, 'index.html');
 // The engraved scale's rules: fail the build if a numeral would touch a
 // tick, leave its band or crowd its neighbour (scripts/verify-scale.mjs).
 await import(pathToFileURL(join(k, 'scripts/verify-scale.mjs')).href + '?t=' + Date.now());
+// The lens stage: on every page with a lens, at eight screen sizes, the
+// lens inside its stage and clear of text (scripts/verify-stage.mjs). The
+// page is checked as a draft and written only if it passes.
+const draft = join(k, '.build/guard.html');
+writeFileSync(draft, html);
+const { verifyStage } = await import(pathToFileURL(join(k, 'scripts/verify-stage.mjs')).href);
+const guard = await verifyStage(draft);
+if (guard.errors.length) {
+  console.error(`lens stage check FAILED (${guard.errors.length} of ${guard.checked} stages):\n  ` + guard.errors.join('\n  '));
+  process.exit(1);
+}
+console.log(`lens stage check: ${guard.checked} stages at 8 sizes, every lens inside its stage and clear of text`);
 writeFileSync(out, html);
 const kb = (n) => (n / 1024).toFixed(0) + ' kB';
 if (missing.size) console.log('stills not rendered yet (grey frames):', [...missing].join(', '));

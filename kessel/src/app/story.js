@@ -45,15 +45,19 @@ export function createState() {
 export function buildStory(gsap, S, layout) {
   const N = layout === 'narrow';
   const v = (w, n) => (N ? n : w);
-  // The first frame is the hero: the lens large and cropped by the edges,
-  // the iris closed to a pinhole, pushed right (wide) or up (phones) so the
+  // The first frame is the hero: the whole lens in its own box beside the
+  // headline (fit 1: live.js fits its bounding sphere to .hero__stage),
+  // turned a little to show its barrel, the iris closed. As the hero
+  // scrolls away it turns face on and the camera moves in on the front,
+  // pushed right (wide) or up (phones) so the
   // headline never covers the bright centre.
-  Object.assign(S, createState(), { frame: v(35, 34), sx: v(0.22, 0), sy: v(0, 0.14), tspread: v(1, 0.8) });
+  Object.assign(S, createState(), { frame: v(35, 34), sx: v(0.22, 0), sy: v(0, 0.14), tspread: v(1, 0.8), fit: 1, az: 20, el: 8 });
   const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
   const to = (a, b, vals, ease = 'power1.inOut') => tl.to(S, { ...vals, duration: b - a, ease }, a);
 
   // Hero: a slow push toward the pinhole.
   to(0, 1, { frame: v(36, 37.5) }, 'sine.inOut');
+  to(0, 0.9, { fit: 0, az: 0, el: 0 }, 'power1.inOut');
   // Aperture: the iris channel is linear; each blade applies its own
   // smoothstep with a staggered start, so they open one at a time.
   to(1.05, 2.85, { iris: 1 }, 'none');

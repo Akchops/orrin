@@ -31,11 +31,13 @@ export function inspectHTML({ id, k, lens, no = '' }) {
       <h2 id="${id}-t">${esc(C.title)}</h2>
       <p class="insp__lead">${esc(C.lead)} <span class="note">${esc(C.sample)}</span></p>
     </header>
-    <div class="insp__stage" id="${id}-stage" data-viewer="${k}" data-pose="inspect">
-      ${img(`lens-${k + 1}`, { cls: 'insp__whole', alt: `${lens.name}, the whole lens.` })}
+    <div class="insp__frame">
+      <div class="insp__stage lstage" id="${id}-stage" data-viewer="${k}" data-pose="inspect" data-lstage>
+        ${img(`lens-${k + 1}`, { cls: 'insp__whole', alt: `${lens.name}, the whole lens.` })}
+        <span class="insp__corners" aria-hidden="true"></span>
+      </div>
       <ol class="insp__shots" aria-label="Five details">${shots}
       </ol>
-      <span class="insp__corners" aria-hidden="true"></span>
     </div>
     <div class="insp__side">
       <figure class="insp__map" aria-hidden="true">

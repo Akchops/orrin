@@ -224,6 +224,10 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
   let sCur = 0, last = performance.now(), lastSig = '', resized = 0;
   let fitBase = null, lastMo = '';
   const modelsSec = document.getElementById('models'), modelsStage = modelsSec && modelsSec.querySelector('.models__stage');
+  const heroStage = document.querySelector('#home-hero .hero__stage');
+  // The layout check (scripts/verify-stage.mjs) asks the live film where
+  // the hero's lens is; the 2D film is measured from its canvas instead.
+  if (heroStage) heroStage.__lensBox = () => (view && view.lensBox ? view.lensBox() : null);
   const t0 = performance.now();
   const qa = !!caps.qa;
   // Test hooks: ?watchdog keeps the watchdog on with forced software GL,
@@ -250,11 +254,13 @@ export async function bootLive(L, { caps, font, report, mount3D, mount2D }) {
     if (td.sel && !td.leaving && !td.backPending && (Math.abs(window.scrollY - td.y0) > 60 || !isApart())) deselect();
     orbitStep(dt);
     teardownState(tSec);
-    // The three-lens chapter: the lens fitted to its stage box (fit.js),
-    // for this frame only, so the timeline's own camera comes back after.
-    if (S.fit > 0.001 && modelsStage) {
+    // The hero and the three-lens chapter: the lens fitted to its stage
+    // box (fit.js), for this frame only, so the timeline's own camera comes
+    // back after. The hero's box scrolls away with it.
+    const box = sCur < 3 ? heroStage : modelsStage;
+    if (S.fit > 0.001 && box) {
       fitBase = { frame: S.frame, sx: S.sx, sy: S.sy, tx: S.tx, ty: S.ty, tz: S.tz };
-      fitToBox(S, modelsStage.getBoundingClientRect(), innerWidth, innerHeight, S.fit);
+      fitToBox(S, box.getBoundingClientRect(), innerWidth, innerHeight, S.fit);
     }
     // Its heading and list leave before the camera moves in on the barrel.
     if (modelsSec) {
