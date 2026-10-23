@@ -14,8 +14,8 @@ Last passing commit before it: 91945ca (preview version 28).
 |---|---|---|
 | 1 | Distance scale numerals: gutters, nothing clipped, collision rule, 2x texture, one closest-focus value in film and teardown | done |
 | 2 | Fit every lens by both axes (bounding sphere, width and height, ResizeObserver, DPR); stage separate from text | done |
-| 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | in progress |
-| 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | next |
+| 3 | Lenses page street viewer: fit one screen, pin, dwell on 24 / 50 / 100 | done |
+| 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | in progress |
 | 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | next |
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | next |
 | 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
@@ -59,6 +59,29 @@ Last passing commit before it: 91945ca (preview version 28).
   and 390x844, lens inside its canvas and clear of all text at every size;
   the film chapter at the same 9 sizes in 2D and 3 in WebGL, no crop or
   overlap. Evidence: kessel/screenshots/fit/. Audit 64 of 64; smoke passed.
+- 3 done: the street viewer fits one screen at every size: heading and
+  intro in one row; the frame no taller than 55% of the screen with the
+  dial under it; beside it the lens cards, what the lens sees, the cue
+  and a "Show the whole street" toggle holding the overview and the
+  sample note ("Lens · sample figures, full frame" stays visible); on
+  phones the cards sit in a row under the dial. Pinned pins keep clear of
+  the tier badge and the tried pill. It pins as a beat for about two
+  screens with three dwell stops (Shaniwar 24 mm, Parvati 50 mm, Sinhagad
+  100 mm: card, angle and crop follow, gliding between) and reverses on
+  the way back; "Your turn" with the 4 s nudge at the last stop. beats.js:
+  stops with rests and glides, settle on the nearest stop in the direction
+  of travel, ease in when stopping just short, a flick over the whole beat
+  lands on its start (once, one retry if cut short); a pin that grows (the
+  toggle opened) is laid out again in place and drops into the flow; the
+  cue leaves only when the press ends, so the first tap is never lost.
+  Lens pages use the same viewer with a fourth stop home to their own lens.
+  Reduced motion: 50 mm with the cue, nothing pinned. No JS: three
+  captioned stills, the whole street in the toggle. Tested (2D tier) at
+  2576x1105, 1920x1080, 1728x1117, 1440x900, 1280x720, 1024x768, 768x1024
+  and 390x844: pinned, every stop read back, nothing under the badge or
+  past the screen; snapping, flick, toggle, reduced motion and no-JS
+  checked at 1440x900 and 390x844. Evidence: kessel/screenshots/street/.
+  Audit 64 of 64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

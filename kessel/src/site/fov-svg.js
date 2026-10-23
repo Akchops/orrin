@@ -61,7 +61,10 @@ export function cropSVG(pre, lens, cls = 'fov__crop') {
   return `<svg class="${cls}" viewBox="${box(FRAMES[lens])}" data-lens="${lens}" aria-hidden="true" focusable="false">${ORDER.map(use).join('')}</svg>`;
 }
 
-export function fovSVG(pre, title) {
+// The street's layers and every gradient and filter, once, in a hidden
+// block: the overview, the screen, the crops and the lens pages' beats all
+// draw from it by reference, so the overview can sit in a closed toggle.
+export function fovDefs(pre) {
   const L = scene(), glows = new Set();
   const body = ORDER.map((k) => `<g id="${pre}-${k}">${layer(L[k], pre, glows)}</g>`).join('');
   const stop = (o, k, a) => `<stop offset="${o}" style="stop-color:${v(k)}"${alpha(a, 'stop-opacity')}/>`;
@@ -70,11 +73,18 @@ export function fovSVG(pre, title) {
   const blur = Object.entries(BLUR).flatMap(([k, list]) => list.map((sd, i) => (sd ? `<filter id="${pre}-b${k}${i}"><feGaussianBlur stdDeviation="${sd}"/></filter>` : '')));
   // The live view's own blurs, set as the lens changes (fov-live.js).
   const live = Object.keys(BLUR).map((k) => `<filter id="${pre}-l${k}" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="0"/></filter>`);
-  const rects = LENSES.map((l) => `<rect class="fov__r" data-lens="${l.id}" x="${r1(FRAMES[l.id].x)}" y="${r1(FRAMES[l.id].y)}" width="${r1(FRAMES[l.id].w)}" height="${r1(FRAMES[l.id].h)}" vector-effect="non-scaling-stroke"/>`).join('');
-  return `<svg class="fov__svg" viewBox="0 0 ${WORLD.w} ${WORLD.h}" role="img" aria-labelledby="${pre}-svgt" focusable="false"><title id="${pre}-svgt">${esc(title)}</title><defs>${lin.join('')}${rad.join('')}${blur.join('')}${live.join('')}</defs>${body}<path class="fov__veil" d=""/><g class="fov__rects">${rects}</g></svg>`;
+  return `<svg class="fov__defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>${lin.join('')}${rad.join('')}${blur.join('')}${live.join('')}${body}</defs></svg>`;
 }
 
-export function fovHTML({ id = 'fov', lens = 'shaniwar', head = true } = {}) {
+export function fovSVG(pre, title) {
+  const rects = LENSES.map((l) => `<rect class="fov__r" data-lens="${l.id}" x="${r1(FRAMES[l.id].x)}" y="${r1(FRAMES[l.id].y)}" width="${r1(FRAMES[l.id].w)}" height="${r1(FRAMES[l.id].h)}" vector-effect="non-scaling-stroke"/>`).join('');
+  const uses = ORDER.map((k) => `<use href="#${pre}-${k}"/>`).join('');
+  return `<svg class="fov__svg" viewBox="0 0 ${WORLD.w} ${WORLD.h}" role="img" aria-labelledby="${pre}-svgt" focusable="false"><title id="${pre}-svgt">${esc(title)}</title>${uses}<path class="fov__veil" d=""/><g class="fov__rects">${rects}</g></svg>`;
+}
+
+// cue: the beat's "Try it" line, set in the side column under what the
+// lens sees.
+export function fovHTML({ id = 'fov', lens = 'shaniwar', head = true, cue = '' } = {}) {
   const first = lensById(lens);
   const [w, s, t] = LENSES;
   const title = `A street at dusk: a fort on a hill, a row of shops, a parked scooter, two street lamps and one person standing in the road. Three frames are drawn on it: ${w.name}'s wide frame around the whole street, ${s.name}'s standard frame around the person and the shops behind, and ${t.name}'s long frame tight around the person.`;
@@ -85,10 +95,11 @@ export function fovHTML({ id = 'fov', lens = 'shaniwar', head = true } = {}) {
           <span class="fov__txt"><span class="fov__role">${esc(l.role)}</span> <span class="fov__name">${esc(l.name)}</span> <span class="fov__nums"><span class="fov__mm">${l.mm}<small> mm</small></span> <span class="fov__deg">${l.deg}&deg;</span></span> <span class="fov__sees">${esc(l.sees)}</span></span>
         </li>`).join('');
   return `<section class="fov" id="${id}" data-fov="${first.id}" data-lens="${first.id}" ${head ? `aria-labelledby="${id}-title"` : 'aria-label="See the difference"'}>
+  ${fovDefs(id)}
   ${head ? `<div class="fov__head">
     <p class="eyebrow">See the difference</p>
     <h2 id="${id}-title">One street, three lenses</h2>
-    <p class="fov__lead">Stand in one spot and change only the lens. The wide takes in the whole street, the standard crops in, and the long crops tight on the person while the shops behind go soft.</p>
+    <p class="fov__lead">Stand in one spot and change only the lens. The wide takes in the whole street, the standard crops in, the long crops tight on the person.</p>
   </div>` : ''}
   <div class="fov__body">
     <div class="fov__screen">
@@ -108,19 +119,23 @@ export function fovHTML({ id = 'fov', lens = 'shaniwar', head = true } = {}) {
       <input class="fov__mm-in" id="${id}-mm" type="range" min="0" max="1000" step="1" value="0">
       <div class="fov__ticks" aria-hidden="true">${LENSES.map((l) => `<span data-lens="${l.id}">${l.mm}</span>`).join('')}</div>
     </div>
-    <p class="fov__say"><span class="fov__say-name">${esc(first.name)}</span> <span class="fov__say-text">${esc(first.sees)}</span></p>
-    <p class="sr-only fov__live" aria-live="polite"></p>
     <div class="fov__side">
       <div class="fov__pick">
         <p class="fov__lt">Lens <span>&middot; sample figures, full frame</span></p>
         <ol class="fov__legend" aria-label="The three lenses">${items}
         </ol>
       </div>
-      <figure class="fov__map">
-        <div class="fov__plate">${fovSVG(id, title)}${tags}</div>
-        <figcaption class="fov__cap">The whole street from one spot, and the frame each lens takes from it.</figcaption>
-      </figure>
-      <p class="note fov__note">Sample content for this concept: the street is an illustration, and the focal lengths and angles of view are sample figures.</p>
+      <p class="fov__say"><span class="fov__say-name">${esc(first.name)}</span> <span class="fov__say-text">${esc(first.sees)}</span></p>
+      <p class="sr-only fov__live" aria-live="polite"></p>
+      ${cue}
+      <details class="fov__more">
+        <summary class="fov__more-s">Show the whole street</summary>
+        <figure class="fov__map">
+          <div class="fov__plate">${fovSVG(id, title)}${tags}</div>
+          <figcaption class="fov__cap">The whole street from one spot, and the frame each lens takes from it.</figcaption>
+        </figure>
+        <p class="note fov__note">Sample content for this concept: the street is an illustration, and the focal lengths and angles of view are sample figures.</p>
+      </details>
     </div>
   </div>
 </section>`;

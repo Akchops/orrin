@@ -121,20 +121,28 @@ function apertureBeat(el) {
 }
 
 // --------------------------------------------------- see the difference
+// Three stops: Shaniwar at 24 mm, Parvati at 50, Sinhagad at 100, the card,
+// the angle and the crop following the scroll and gliding between them; on
+// a lens page a fourth brings it home to that lens. With reduced motion it
+// waits at 50 mm.
 function seesBeat(el) {
   const fov = el.querySelector('.fov');
   if (!fov) return;
   const own = Math.max(0, LENSES.findIndex((l) => l.id === fov.dataset.fov));
+  const seq = [0, 1, 2];
+  if (el.closest('.route--lens') && own !== 2) seq.push(own);
   let beat = null;
   const ready = () => {
     if (!fov.__fov) return requestAnimationFrame(ready);
-    const L0 = Math.log(LENSES[0].mm), L1 = Math.log(LENSES[2].mm), Lo = Math.log(LENSES[own].mm);
-    const norm = (l) => (l - L0) / (L1 - L0);
-    // Scroll: through all three focal lengths, then home to this lens.
-    const path = (t) => (t < 0.55 ? norm(L0) + (1 - norm(L0)) * Math.min(1, t / 0.5) : 1 + (norm(Lo) - 1) * Math.min(1, (t - 0.55) / 0.35));
-    beat = addBeat(el, { drive: (t, still) => fov.__fov.scrub(still ? norm(Lo) : path(t)), mid: 0.5 });
-    fov.addEventListener('pointerdown', (e) => { if (e.target.closest('button, input, .fov__r')) beat.mine(); });
-    fov.addEventListener('keydown', (e) => { if (e.target.closest('button, input')) beat.mine(); });
+    const L0 = Math.log(LENSES[0].mm), L1 = Math.log(LENSES[2].mm);
+    const norm = (i) => (Math.log(LENSES[i].mm) - L0) / (L1 - L0);
+    const at = (t) => {
+      const x = Math.min(1, Math.max(0, t)) * (seq.length - 1), i = Math.min(seq.length - 2, Math.floor(x));
+      return norm(seq[i]) + (norm(seq[i + 1]) - norm(seq[i])) * (x - i);
+    };
+    beat = addBeat(el, { drive: (t, still) => fov.__fov.scrub(still ? norm(1) : at(t)), stops: seq.length, hold: 0.68 * seq.length, mid: 0.5 });
+    fov.addEventListener('pointerdown', (e) => { if (e.target.closest('button, input, .fov__r, summary')) beat.mine(); });
+    fov.addEventListener('keydown', (e) => { if (e.target.closest('button, input, summary')) beat.mine(); });
   };
   ready();
 }

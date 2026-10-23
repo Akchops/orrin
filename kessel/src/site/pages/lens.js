@@ -82,10 +82,9 @@ export function lensHTML(l, i) {
         <h2 class="lab__h" id="${id}-sees-t">${LENSES[i].deg}&deg; of the street</h2>
         <p class="lab__lead">${esc(l.use)}</p>
       </header>
-      <div class="lab__ctl ctl ctl--bare">
+      ${fovHTML({ id: `${id}-fov`, lens: l.slug, head: false, cue: `<div class="lab__ctl ctl ctl--bare">
         <p class="ctl__say"><span class="ctl__cue">Try it</span> <span class="ctl__how">Tap another lens, or drag the focal length.</span></p>
-      </div>
-      ${fovHTML({ id: `${id}-fov`, lens: l.slug, head: false })}
+      </div>` })}
     </div>
   </section>
 

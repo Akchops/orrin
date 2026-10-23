@@ -69,10 +69,9 @@ export function lensesHTML() {
 
   <section class="beat lab lab--sees lx-fov" id="lenses-sees" data-beat="sees" aria-label="See the difference">
     <div class="beat__pin lab__pin wrap">
-      ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar' })}
-      <div class="lab__ctl ctl ctl--bare">
+      ${fovHTML({ id: 'lenses-fov', lens: 'shaniwar', cue: `<div class="lab__ctl ctl ctl--bare">
         <p class="ctl__say"><span class="ctl__cue">Try it</span> <span class="ctl__how">Tap a lens, or drag the focal length.</span></p>
-      </div>
+      </div>` })}
     </div>
   </section>
 
