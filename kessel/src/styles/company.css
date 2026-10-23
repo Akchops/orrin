@@ -582,3 +582,82 @@ html:not(.js) #company .tl__index { display: none; }
 @media (prefers-reduced-motion: reduce) {
   #company *, #company *::before, #company *::after { transition-duration: 0.01ms !important; transition-delay: 0s !important; animation: none !important; }
 }
+
+/* ============================================================ AS BEATS
+   With JavaScript each piece pins and stops at every state (src/site/
+   company.js): the bench at each of its four notes, the timeline at each
+   of its five years, the checks at each of the six. Each fits one screen. */
+/* The bench: a note beside its marker never covers another one (the script
+   picks the side); on phones it docks under the drawing, the drawing a
+   little shorter and the lead making room while a note is open. */
+.js #company .bn__note[data-side="left"]::after { left: auto; right: -7px; top: var(--ay, 50%); margin: -6px 0 0; border-left: 0; border-bottom: 0; }
+.js #company .bn__note[data-side="right"]::after { left: -7px; top: var(--ay, 50%); margin: -6px 0 0; border-right: 0; border-top: 0; }
+@media (max-width: 699px) {
+  .js #company .bn { grid-template-areas: "stage" "notes" "copy"; }
+  .js #company .bn__stage { aspect-ratio: 16 / 10; }
+  .js #company .beat:not(.beat--flow) > .bn { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+  .js #company .bn__notes { position: relative; grid-area: notes; inset: auto; padding: 0.7rem var(--co-pad-r) 0 var(--co-pad-l); pointer-events: auto; }
+  .js #company .bn__note { position: relative; left: auto; top: auto; width: auto; padding: 0.8rem 3rem 0.85rem 0.9rem; box-shadow: none; }
+  .js #company .bn__note::after { display: none; }
+  .js #company .bn__note .bn__note-p { font-size: 0.92rem; line-height: 1.5; }
+  .js #company .bn:has(.bn__note.is-open) .bn__lead { display: none; }
+  .js #company .bn__copy { padding-top: 0.9rem; gap: 0.6rem; }
+  .js #company .bn h1 { font-size: clamp(2.1rem, 1rem + 6vw, 3.2rem); }
+}
+
+/* The timeline: the heading and its notes in one row, the scale and the
+   entry right under it, the whole centred in the screen. */
+@media (min-width: 900px) {
+  .js #company .ck .co-head,
+  .js #company .tl .co-head { grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); grid-template-areas: "kick note" "h2 note"; column-gap: 2rem; row-gap: 0.4rem; align-items: end; justify-items: stretch; }
+  .js #company :is(.tl, .ck) .co-kicker { grid-area: kick; }
+  .js #company :is(.tl, .ck) .co-head h2 { grid-area: h2; }
+  .js #company :is(.tl, .ck) .co-head > :not(.co-kicker, h2) { grid-column: 2; }
+  .js #company :is(.tl, .ck) .co-head .co-sample { justify-self: start; }
+}
+.js #company .tl__body { margin-top: clamp(1.2rem, 3vh, 2.4rem); }
+.js #company .co-beat:not(.beat--flow) > .tl { min-height: calc(var(--vh) - var(--head) - var(--safe-t)); display: grid; align-content: center; padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+
+/* The checks: compact tiles (number, name, tick), the line of the check
+   just ticked in one caption under them, the drawing no taller than the
+   screen leaves room for. */
+.js #company .ck-tile__line { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.js #company .ck-tile label { grid-template-areas: "no name tick"; padding: 0.6rem 0.75rem; }
+.js #company .ck__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+.js #company .ck-tile__name { font-size: 0.98rem; }
+#company .ck__say { display: none; }
+.js #company .ck__say { display: block; margin: 0; color: var(--dim); font-size: 0.98rem; line-height: 1.5; max-width: 52ch; }
+.js #company .ck__say-no { font-family: var(--display); color: var(--amber); }
+.js #company .ck__say-name { font-family: var(--display); color: var(--engrave); margin-right: 0.4rem; }
+.js #company .ck__panel { margin-top: clamp(1rem, 2.4vh, 2rem); gap: 1.2rem clamp(1.5rem, 3vw, 3rem); }
+.js #company .ck__side { gap: 0.8rem; }
+.js #company .ck__svg { width: auto; max-width: 100%; max-height: min(24rem, calc(var(--vh) - 27rem)); }
+.js #company .ck__panel { padding: clamp(0.9rem, 2.2vh, 1.8rem) clamp(1rem, 2.5vw, 2.2rem); }
+.js #company .co-beat:not(.beat--flow) > .ck { padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 899px) {
+  .js #company .ck__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .js #company .ck__svg { max-height: calc(var(--vh) * 0.15); }
+  .js #company .ck__state, .js #company .ck__gauge { display: none; }
+  .js #company .ck__panel { padding: 0.8rem; gap: 0.7rem; }
+  .js #company .ck__top { gap: 0.5rem 1rem; }
+  .js #company .ck__help { font-size: 0.86rem; }
+  .js #company .ck__help-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .js #company .ck-tile label { padding: 0.45rem 0.6rem; }
+  .js #company .ck__count { min-height: 2.9em; }
+  .js #company .ck__run { min-width: 0; min-height: 44px; padding-inline: 0.7rem; }
+  .js #company .ck__top { flex-wrap: nowrap; gap: 0.5rem; }
+  .js #company .ck__help { min-width: 0; }
+  .js #company .ck__say { font-size: 0.88rem; line-height: 1.45; }
+  .js #company .ck .co-head { gap: 0.5rem; }
+}
+/* From 900px with JS, the copy sits on the drawing's wall (as from
+   1100px without), so the bench holds in one screen. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .js #company .bn__copy { grid-area: stage; align-self: start; pointer-events: none; padding-top: clamp(1.4rem, 4vh, 3rem); padding-right: 0; }
+  .js #company .bn__copy > * { max-width: min(30rem, 42vw); }
+  .js #company .bn h1 { font-size: clamp(2.6rem, 0.6rem + 3.9vw, 4rem); text-shadow: 0 0 2rem color-mix(in srgb, var(--void) 70%, transparent); }
+  .js #company .bn__lead { max-width: 28ch; font-size: 1rem; text-shadow: 0 0 1.2rem var(--void); }
+  .js #company .bn__hint { text-shadow: 0 0 1rem var(--void); }
+}
+/* The bench's cue takes the place of its hint, so nothing grows. */
+.js #company .beat.is-turn:not(.is-mine) .bn__hint-js { display: none; }

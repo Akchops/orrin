@@ -148,12 +148,13 @@ function checks() {
     </figure>
     <div class="ck__side">
       <div class="ck__top">
-        <p class="ck__help"><span class="turn" aria-hidden="true">Your turn &middot; Try it</span>${esc(K.help)}</p>
+        <p class="ck__help"><span class="turn" aria-hidden="true">Your turn &middot; Try it</span><span class="ck__help-t">${esc(K.help)}</span></p>
         <button class="ck__run btn" type="button" data-run="${esc(K.run)}" data-busy="${esc(K.busy)}" data-again="${esc(K.again)}" hidden>${esc(K.run)}</button>
       </div>
       <ol class="ck__list" aria-labelledby="${K.id}-title">
       ${tiles}
       </ol>
+      <p class="ck__say" aria-hidden="true"><span class="ck__say-no"></span> <span class="ck__say-name"></span> <span class="ck__say-t"></span></p>
       <div class="ck__foot">
         <ol class="ck__gauge" aria-hidden="true">${gauge}</ol>
         <p class="ck__count" aria-live="polite"><span class="ck__n"></span> of ${K.list.length} checks passed</p>

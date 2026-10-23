@@ -18,7 +18,7 @@ Last passing commit before it: 91945ca (preview version 28).
 | 4 | Craft build-up pins and dwells on five stages; every multi-step beat fits, pins and dwells; "Your turn" contrast | done (Company in Part 7, Contact layout in Part 8) |
 | 5 | Craft finale: the lens seals and turns face-on, scrubbed both ways | done |
 | 6 | Inspect the lens: pinned close-up beat (built to Part 9's spec, which wins) | done (Part 9's close-up half included) |
-| 7 | Company: bench, timeline, checks each pin and stop at every milestone | next |
+| 7 | Company: bench, timeline, checks each pin and stop at every milestone | done |
 | 8 | One shared lens stage; Contact rebuilt; white dot and glare fixed at source; guard test in the build | next |
 | 9 | Home tab in the nav; automatic close-ups on every lens page | close-ups done in Part 6; Home tab next |
 
@@ -156,6 +156,27 @@ Last passing commit before it: 91945ca (preview version 28).
   every stop, the whole lens inside its stage); no-JS and reduced motion
   at 1440x900 and 390x844; WebGL also at 390x844. Evidence: kessel/screenshots/inspect/. Audit 64
   of 64; smoke passed.
+- 7 done: Company. Bench: four stops, one note each; the note goes where
+  it covers no other marker and none of the heading's copy (above, below,
+  left, right, shifted, or raised above all the markers, pointing down at
+  its own), checked at every stop at seven sizes; on phones it docks under
+  the drawing (the drawing 16:10, the lead making room, the slot the
+  height of the longest note). From 900px the heading sits on the
+  drawing's wall so the bench holds in one screen. Timeline: five stops at
+  2017, 2019, 2021, 2023 and 2025; the heading and its notes in one row and
+  the whole centred, so the gap under the heading is gone. Checks: six
+  stops, one tick each (the next tile filling on the way), all six and the
+  signature at the last, "Run it again" then reruns them, hand ticking
+  still works; compact tiles with the line of the check just ticked in one
+  caption under them, the drawing sized to the screen. Contrast and
+  snapping as in Part 4. Found and fixed on the way: the browser's scroll
+  anchoring could jump the page when a pinned beat was re-measured (it is
+  off now, and the beats keep their heights while measuring). Tested (2D
+  tier) every stop at 2576x1105, 1920x1080, 1440x900, 1280x720, 1024x768,
+  768x1024 and 390x844: pinned, read back, nothing under the badge or past
+  the screen; notes clear of other markers at all seven; "Run it again"
+  and hand ticking at 1440x900 and 390x844. Evidence:
+  kessel/screenshots/company/. Audit 64 of 64; smoke passed.
 ## Earlier follow-up "frame, three lenses, lens experiences, beats" (done)
 
 | Step | What | State |

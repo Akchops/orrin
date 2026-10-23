@@ -78,15 +78,16 @@ function layout() {
   for (const b of beats) {
     if (!b.pin || routeOf(b.el) !== route()) continue;
     b.open = b.el.classList.contains('beat--open');
+    // Measured as it would pin; its height stays meanwhile, so nothing
+    // above or below moves while the beats are measured.
     b.el.classList.remove('beat--flow');
-    b.el.style.height = '';
     // Growing a little into its own bottom padding (kept clear for the
     // tier badge) still pins; past that it plays in the flow.
     const pb = parseFloat(getComputedStyle(b.pin).paddingBottom) || 0;
     b.flow = reduce.matches || b.pin.offsetHeight > vh - topOf(b) + 2 + Math.max(0, Math.min(32, pb - 24));
     b.el.classList.toggle('beat--flow', b.flow);
     // The pin, then the scroll it holds for (its stops).
-    if (!b.flow) b.el.style.height = `${b.pin.offsetHeight + Math.round(vh * b.hold)}px`;
+    b.el.style.height = b.flow ? '' : `${b.pin.offsetHeight + Math.round(vh * b.hold)}px`;
     b.p = -1;
   }
   tick();

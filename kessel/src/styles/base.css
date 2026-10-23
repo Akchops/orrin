@@ -45,7 +45,9 @@
 @supports not (height: 100svh) { :root { --vh: 100vh; } }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { background: var(--void); overflow-x: clip; -webkit-text-size-adjust: 100%; }
+/* No scroll anchoring: the pinned beats set their own heights and keep
+   the screen where it is themselves (src/site/beats.js). */
+html { background: var(--void); overflow-x: clip; -webkit-text-size-adjust: 100%; overflow-anchor: none; }
 /* The page: a deep charcoal gradient, lit from above like a studio table.
    A fixed layer rather than background-attachment: fixed, which iOS
    ignores. */
