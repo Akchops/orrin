@@ -503,15 +503,25 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
   // (uDim), so it reaches every term: direct light, reflections, clear coat
   // and the thin film on the glass. The highlighted part also gets a soft
   // rim of the page's violet (uGlow), as on the 2D tier.
+  // In the teardown light no highlight may blow out to a white dot: the
+  // lights' direct reflection (and the clear coat's) is capped per pixel,
+  // shared by every copy (uSpecCap: no cap in the film, low in the
+  // teardown, where the key and the rims sit close to grazing angles on
+  // the polished edges).
   const EMPH = [], pickables = [], swapFront = [frontMat], swapScale = [scaleMat];
+  const specCap = { value: 100 };
   const emphShader = (m, e) => {
     const std = !!m.isMeshStandardMaterial;
     const soft = !!m.userData.softDirect;
     m.onBeforeCompile = (sh) => {
       sh.uniforms.uDim = e.dim;
       sh.uniforms.uGlow = e.glow;
+      sh.uniforms.uSpecCap = specCap;
       if (soft) sh.fragmentShader = softDirectGLSL(sh.fragmentShader);
-      sh.fragmentShader = 'uniform float uDim;\nuniform float uGlow;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
+      if (std) sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n' +
+        '\treflectedLight.directSpecular = min(reflectedLight.directSpecular, vec3(uSpecCap));\n' +
+        '#ifdef USE_CLEARCOAT\n\tclearcoatSpecularDirect = min(clearcoatSpecularDirect, vec3(uSpecCap));\n#endif');
+      sh.fragmentShader = 'uniform float uDim;\nuniform float uGlow;\nuniform float uSpecCap;\n' + sh.fragmentShader.replace('#include <opaque_fragment>',
         'outgoingLight *= uDim;\n' +
         (std ? 'outgoingLight += uGlow * pow(1.0 - clamp(abs(dot(normal, normalize(vViewPosition))), 0.0, 1.0), 2.5) * vec3(0.41, 0.33, 1.0);\n' : '') +
         '#include <opaque_fragment>');
@@ -744,26 +754,30 @@ export function buildLens(T, L, { quality = 'high', textures, font = '"Saira", "
     emphasis(S);
   }
 
-  // The part in S.hl keeps (a little more than) its full brightness; the
-  // others dim by S.dim. In the teardown light (S.tlight) the iris blades
-  // turn from dark to machined steel, so they read as metal on their own.
+  // The part in S.hl is the brightest thing in view (a little over its
+  // full brightness); the others dim by S.dim. In the teardown light
+  // (S.tlight) the iris blades turn from dark to machined steel, so they
+  // read as metal on their own.
   let emSig = '';
-  const BLADE_DARK = new T.Color(0x15161a), BLADE_STEEL = new T.Color(0x8d929c), bladeBase = new T.Color();
+  const BLADE_DARK = new T.Color(0x15161a), BLADE_STEEL = new T.Color(0xb3b8c1), bladeBase = new T.Color();
   function emphasis(S) {
     const hl = S.hl || '', dim = hl ? S.dim || 0 : 0, st = S.tlight || 0;
     const sig = hl + '|' + dim.toFixed(3) + '|' + st.toFixed(3);
     if (sig === emSig) return;
     emSig = sig;
+    specCap.value = 0.5 + 100 * Math.pow(1 - st, 4);
     bladeBase.lerpColors(BLADE_DARK, BLADE_STEEL, st);
     for (const e of EMPH) {
       // A steep curve for the others: the teardown key light is strong, so
       // a linear dim leaves them looking nearly as bright.
       const on = e.rid === hl;
-      e.dim.value = on ? 1 + 0.7 * dim : Math.pow(1 - dim, 1.6);
-      e.glow.value = on ? 0.3 * dim : 0;
+      // No coloured rim on it: the violet tinted the steel blades and the
+      // dark rings lavender. Brightness alone marks it.
+      e.dim.value = on ? 1 + 0.4 * dim : Math.pow(1 - dim, 1.6);
+      e.glow.value = 0;
       if (e.isBlade || e.isBand) e.m.color.copy(e.isBlade ? bladeBase : band.color);
       // Brushed steel: a broad sheen the key light can always catch.
-      if (e.isBlade) { e.m.metalness = 0.7 + 0.3 * st; e.m.roughness = 0.38 - 0.06 * st; }
+      if (e.isBlade) { e.m.metalness = 0.7 + 0.2 * st; e.m.roughness = 0.38 - 0.08 * st; }
     }
     for (const b of blades) b.geometry = st > 0.01 ? bladeBent : bladeFlat;
   }

@@ -45,4 +45,16 @@ export const media = {
   'hero-stage': { w: 1200, h: 1200, alt: 'A Kessel lens, whole, turned a little towards the light: the black anodised barrel, the knurled focus ring, the amber colour ring and the coated front element.' },
   'td-apart': { w: 1600, h: 1000, alt: 'The lens taken apart: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount, each on its own.' },
   'td-apart-tall': { w: 900, h: 1600, alt: 'The lens taken apart down the frame: front element, glass groups, iris blades fanned out, focus ring, distance scale, barrel, signature plate and mount.' },
+  // The teardown's close-ups, one per part, and the lens back together:
+  // the same views the live camera stops at (src/app/td-stops.js), square,
+  // so each fills the stage box the same way at any width.
+  'tdc-front-element': { w: 960, h: 960, alt: 'Close up of the front element on its own: the largest glass, its coating throwing back violet and green.' },
+  'tdc-glass-1': { w: 960, h: 960, alt: 'Close up of the coated glass groups, each small group of elements at its own distance from the next.' },
+  'tdc-blades': { w: 960, h: 960, alt: 'Close up of the iris blades fanned out from their ring: eleven thin blades of machined steel.' },
+  'tdc-focus-ring': { w: 960, h: 960, alt: 'Close up of the focus ring on its own: the knurled grip that turns the focus.' },
+  'tdc-scale': { w: 960, h: 960, alt: 'Close up of the distance scale ring: distances engraved in metres in white and feet in amber.' },
+  'tdc-barrel': { w: 960, h: 960, alt: 'Close up of the barrel on its own: the black anodised body that holds every part at its distance.' },
+  'tdc-mount': { w: 960, h: 960, alt: 'Close up of the stainless mount from the back of the lens, with its four lugs.' },
+  'tdc-signature': { w: 960, h: 960, alt: "Close up of the signature plate: the rear band with the maker's mark and the optician's signature." },
+  'tdc-whole': { w: 960, h: 960, alt: 'The lens back together, whole, at three-quarters in the teardown light.' },
 };

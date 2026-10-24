@@ -5,15 +5,26 @@
 export const teardown = {
   num: '08 · Teardown',
   title: 'The same lens, taken apart',
-  lead: 'Keep scrolling and it comes apart, part by part, then goes back together.',
-  // `leadShort` and each `short`: the one-line versions phones read in the
-  // live teardown (the full text stays for desktop and the stills).
-  leadShort: 'Keep scrolling: it comes apart, part by part.',
+  // The first stop: the whole line of parts.
+  apart: {
+    title: 'Taken apart',
+    body: 'Every part on one line, front to back. Keep scrolling: the view stops at each part in turn, then the lens goes back together.',
+    short: 'Every part on one line. Keep scrolling: the view stops at each in turn.',
+  },
+  // Without JavaScript the stills stand in a column: the line, then each
+  // part on its own.
+  stillLead: 'The lens taken apart, then each part on its own, numbered front to back, and the lens back together.',
+  // `short`: the one-line versions phones read (the full text stays for
+  // wider screens and the stills).
   outro: {
     title: 'Back together',
     body: 'Every part returns to its place, the way one optician assembles it on the bench.',
     short: "Every part returns to its place, as on the optician's bench.",
   },
+  cue: 'Your turn: tap a part on the map, or drag the lens to look around it.',
+  cueStill: 'Your turn: tap a part on the map to see it again.',
+  map: 'Where the camera is',
+  list: 'Parts of the lens',
   parts: [
     { id: 'front-element', label: 'Front element',
       short: 'The first and largest glass; its coating glows violet and green.',

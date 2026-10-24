@@ -4,7 +4,108 @@ Live preview (same link every step): https://claude.ai/artifact/Qw1M9HVgSkMimpHQ
 Branch: claude/focused-allen-cn8r5h. Build: `node kessel/scripts/build.mjs`.
 Checks: `kessel/scripts/audit.mjs` (overflow at seven widths and a framed
 pane), the smoke test in the session scratchpad (film, teardown, badge,
-reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
+reduced motion, no-JS). Last passing commit before this follow-up: efce538.
+
+## Follow-up "Home teardown: part-by-part close-ups by scroll" (done)
+
+The teardown after the film used to need a tap for each close-up. On a
+phone a tap stopped the page (the smooth scroller's stop and a full-screen
+orbit layer that blocked swipes), and any scroll closed the part again.
+Rebuilt as one stepped beat (src/site/td-steps.js, src/app/td-stops.js,
+src/app/live.js):
+
+- **Structure.** The section is 100svh x 10 tall, with a sticky stage
+  100svh tall and ten invisible anchors, each 100svh tall
+  (`scroll-snap-align: start; scroll-snap-stop: always`). The page uses
+  `scroll-snap-type: y proximity` on Home.
+- **Stop source.** The active stop comes from an IntersectionObserver on
+  the anchors (the anchor across the middle line), written to
+  `#teardown[data-stop]`: -1 above, 0 to 9, 10 below. A jump of several
+  anchors in one frame still makes each stop active in order.
+- **Nothing moves the page.** No `scrollTo`, no GSAP pin, no JS snap, no
+  touch-action or overscroll change. The smooth wheel is off on the
+  teardown (and a screen either side), so wheel scrolling there is native.
+- **Wheels and trackpads scroll freely** after their first wheel event
+  (`html.td-free`, snap off). In headless Chromium small wheel steps next
+  to an anchor were pulled back to it, so the page could not scroll on
+  past stop 0 with a wheel. Touch keeps the snap. The stops still step by
+  the observer, a screen each.
+- **Stops.**
+  - 0: the line taken apart. The film hands off into it as one camera
+    move: the camera eases into the stage box as the section scrolls in,
+    and the stage clip closes in from full screen to the box. Then the
+    parts leave (1.3 s).
+  - 1 to 8: front element, coated glass groups, iris blades, focus ring,
+    distance scale, barrel, mount, signature plate. The camera glides in
+    650 ms to each part, fitted to its projected outline in the stage
+    box. The other parts dim and draw back 22 mm, with depth of field.
+  - 9: back together, then the "Your turn" cue.
+- **Beside the stage, never on it** (under it on phones):
+  - the caption (it keeps the height of its longest stop);
+  - a whole-lens map with the camera and the active part;
+  - the parts list, where a tap jumps to a part without moving the page.
+  A tap on a part in the stage, or on its number in the overview, does
+  the same. The next stop scrolled to takes over again. A sideways drag
+  turns the camera round what is in view and settles back.
+- **Reduced motion.** It is still stepped by scroll: in the stills tier
+  each stop cross-fades its still (0.15 s). If the live lens is played
+  anyway, poses switch at once with a short fade.
+- **Look.**
+  - The teardown key and rim lights follow the camera: a soft key above
+    left, a gentle cool rim behind, a warm fill below.
+  - Direct highlights are capped per pixel in the teardown light. This
+    removed a warm dot on the glass groups' anodised cell, which was a
+    clear-coat glint from the fill light.
+  - No violet rim on the highlighted part (it tinted the blades and rings
+    lavender). The blades are lighter machined steel.
+  - The part being explained is lifted 1.4x; the others dim to about 13%.
+- **Stills.** Eleven re-rendered: td-apart and td-apart-tall, plus
+  tdc-<part> x 8 and tdc-whole, square. These are the same poses as the
+  live stops.
+- **No JS.** The exploded view with its numbers, then the eight parts as
+  captioned stills, then the lens back together. The badge keeps its
+  reason.
+- **Debug readout** with `?debug=1` or `#debug`: tier and reason, reduced
+  motion, scroll, teardown stop, 100svh and 100dvh in px. Five taps on the
+  badge also toggle it.
+
+Tested (Chromium, software WebGL; no real GPU, no real phone, no WebKit):
+- Flicks at 390x844 with touch emulation, 3000/4000/5000 px both ways
+  (scratchpad p17/flicks.mjs). In every case every stop became active in
+  order with none skipped, nothing moved by itself after settling, the
+  page never went back to the teardown's start, and no script moved the
+  page.
+  - `synthesizeScrollGesture` 8000 px/s, source "default": passes with
+    reduced motion off (2D and live 3D) and on (stills). One gesture moves
+    the page its full length, so it passes several stops in one go.
+  - Source "touch" does nothing in headless Chromium (the page never
+    moved).
+  - Raw touch flings at 8000 px/s: passes with reduced motion off (2D and
+    live 3D) and on. The hardest flings sometimes pass 2 or 3 anchors
+    before resting: proximity drops the snap stop when a fling aims far
+    past it.
+  - Raw touch flings at 4000 px/s: one stop per flick.
+- Every stop at 2576x1105, 1920x1080, 1440x900, 1280x720, 1024x768,
+  768x1024 and 390x844, live 3D and stills tier (p17/matrix.mjs).
+  - The part is inside the stage box at every stop.
+  - Nothing beside the stage overlaps it or the part.
+  - Everything fits on one screen, with no sideways scroll.
+  - The overview's numbers alternate above and below the line, so they
+    never collide (390 and 768 needed that).
+- Desktop wheel (2D): 140 notches walk stops 0 to 9 natively, with no
+  script scroll.
+- No JS at 1440 and 390: all eleven stills load with captions, the badge
+  gives its reason, the footer disclaimer is there.
+- Debug readout: on with `?debug=1` and `#debug`, off without.
+- Stage guard in the build; audit 64 of 64. Smoke passed: the teardown at
+  stop 3, a tap on the barrel with the page staying put, and the next stop
+  taking over, in 2D and live 3D.
+- Evidence in kessel/screenshots/teardown/: a contact sheet of the ten
+  stops per size and tier, the handoff frames, no JS, the debug readout,
+  and flicks-390x844.txt.
+- Known and kept: on phones the contact chapter's caption shade (film
+  styling) meets the page's own gradient at the teardown's top edge, a
+  faint step in shade.
 
 ## Follow-up "the close-up isn't working on my phone" (done)
 

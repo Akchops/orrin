@@ -30,12 +30,15 @@ Home is one continuous scroll. The hero is the film's first frame (the
 lens cropped by the screen edges, iris closed to a pinhole); the first
 scroll opens the iris and the film runs in full. When its Contact stage
 fills the screen, the same move carries straight on into the teardown:
-the lens comes apart under scroll and lands in one left-to-right line, in
-the order of a parts rail (vertical on desktop, a strip along the bottom on
-phones). The part being explained is lit and the others dim. Tapping a part,
-its label or its chip flies the camera to a close-up with its caption beside
-it; Back, Escape, a second tap or scrolling returns. Then it goes back
-together. The header jumps to Teardown, Company and Contact on this page;
+the lens comes apart into one line, then each screen of scroll stops the
+camera at the next part (front element, glass groups, iris blades, focus
+ring, distance scale, barrel, mount, signature plate), close, the others
+dimmed and drawn back, its name and caption beside the stage (below it on
+phones) with a small map of where the camera is. Then it goes back
+together, and the visitor can tap a part or drag the lens. The section is a
+screen per stop with a sticky stage and one snap anchor per stop
+(`src/site/td-steps.js` reads the active stop from the anchors; nothing
+moves the page). The header jumps to Teardown, Company and Contact on this page;
 the earlier pages (Lenses, Craft, Workshop and the lens details) are linked
 from the footer. They are plain HTML with stills: the lens code does not
 start until home is shown, and stops drawing while another page is up.
@@ -49,9 +52,12 @@ start until home is shown, and stops drawing while another page is up.
   template per page; `src/site/film.js` — the film's markup (do not
   restyle); `src/site/parts.js` — shared pieces (images, footer, tables).
   `src/site/site.js` — the router, menu, copy buttons, badge pill.
+  `src/site/td-steps.js` — steps the teardown by scroll in every tier;
+  `src/site/debug.js` — the readout shown with `?debug=1` or `#debug`.
 - `src/app/*` — the lens: scene, story timeline, live/2D tiers, tier badge.
   `src/app/teardown.js` — each part's path in the teardown, shared by both
-  tiers; its words are in `src/content/teardown.js`.
+  tiers; `src/app/td-stops.js` — the teardown's stops (poses, framing in
+  the stage box, the map); its words are in `src/content/teardown.js`.
 - `src/page.html` — the shell. `src/styles/*.css` — `base.css` (shared),
   `film.css` (the film, as it was), then one stylesheet per page.
 

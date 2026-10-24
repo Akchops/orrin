@@ -156,7 +156,7 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
   canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); lost = true; onContextLost && onContextLost(); });
 
   const orbitPos = new T.Vector3(), orbitTgt = new T.Vector3(), axisPos = new T.Vector3(), axisTgt = new T.Vector3();
-  const target = new T.Vector3(), tmp = new T.Vector3(), fwd = new T.Vector3();
+  const target = new T.Vector3(), tmp = new T.Vector3(), fwd = new T.Vector3(), tRight = new T.Vector3(), tUp = new T.Vector3();
 
   function render(S, tSec, pointer) {
     if (lost) return;
@@ -174,12 +174,14 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     key.position.set(40 + pointer.x * 90, 70 - pointer.y * 60, 120);
     const tl = S.tlight || 0;
     // A soft rim stays on through the film so the barrel's edges separate
-    // from the charcoal page; the teardown light strengthens all three.
-    key.intensity = 2.0 + 1.5 * tl;
-    rim.intensity = 0.9 + 2.6 * tl;
-    rim2.intensity = 0.35 + 1.2 * tl;
+    // from the charcoal page. The teardown light is a soft key and a gentle
+    // rim that follow the camera (placed below, once the camera is), so
+    // every part reads the same from whichever side it is seen.
+    key.intensity = 2.0 + 0.9 * tl;
+    rim.intensity = 0.9 + 1.5 * tl;
+    rim2.intensity = 0.35 + 0.6 * tl;
     // The studio reflections come up too, so no part sinks into the page.
-    scene.environmentIntensity = 1.3 + 0.4 * tl;
+    scene.environmentIntensity = 1.3 + 0.55 * tl;
 
     // Orbit camera: `frame` is the half-size in mm that must fit the smaller
     // viewport side, so phone and desktop show the same composition.
@@ -206,6 +208,27 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     camera.lookAt(target);
     camera.setViewOffset(W, H, -S.sx * W, S.sy * H, W, H);
     camera.updateProjectionMatrix();
+
+    // Teardown light, in the camera's frame: the key from above and to the
+    // left of the view, a little in front of the part; the cool rim from
+    // behind it and above; the warm fill from behind and below on the other
+    // side. Blended in with the teardown light, from the film's own places.
+    key.target.position.set(0, 0, 0); rim.target.position.set(0, 0, 0); rim2.target.position.set(0, 0, 0);
+    rim.position.set(-140, 120, -160); rim2.position.set(150, -90, -60);
+    if (tl > 0.001) {
+      fwd.subVectors(target, camera.position).normalize();
+      tRight.crossVectors(fwd, camera.up).normalize();
+      tUp.crossVectors(tRight, fwd);
+      const place = (light, f, r, u, d) => {
+        tmp.copy(fwd).multiplyScalar(f).addScaledVector(tRight, r).addScaledVector(tUp, u).normalize().multiplyScalar(d);
+        light.position.lerp(tmp.add(target), tl);
+        light.target.position.lerp(target, tl);
+      };
+      place(key, -1, -0.75, 0.9, 200);
+      place(rim, 1.1, 0.35, 0.95, 200);
+      place(rim2, 0.8, -0.7, -0.6, 200);
+    }
+    for (const l of [key, rim, rim2]) l.target.updateMatrixWorld();
 
     lamp.position.copy(camera.position);
     lamp.intensity = 7000 * inside;
@@ -318,6 +341,24 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     });
     return { x0, y0, x1, y1 };
   }
+  // Where one part is on the page (its meshes' vertices projected), for the
+  // teardown's layout checks: nothing over the part being explained.
+  function partBox(id) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    const cr = canvas.getBoundingClientRect();
+    camera.updateMatrixWorld();
+    lens.root.updateWorldMatrix(true, true);
+    for (const o of lens.pickables) {
+      if (o.userData.part !== id || !o.visible || !o.geometry.attributes.position) continue;
+      const a = o.geometry.attributes.position;
+      for (let i = 0; i < a.count; i += 2) {
+        pv.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld).project(camera);
+        const x = cr.left + (pv.x * 0.5 + 0.5) * cr.width, y = cr.top + (0.5 - pv.y * 0.5) * cr.height;
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+    }
+    return x0 < x1 ? { x0, y0, x1, y1 } : null;
+  }
   function destroy() {
     if (dof.rt) { dof.rt.dispose(); dof.rt.depthTexture.dispose(); }
     dofMat.dispose(); dofQuad.geometry.dispose();
@@ -325,5 +366,5 @@ export function mountWebGL(T, L, container, caps, { font, onContextLost }) {
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
 
-  return { canvas, kind: '3d', render, resize, project, lensBox, pick, stepDown, quality: quality_, getDPR: () => dpr, warm, destroy };
+  return { canvas, kind: '3d', render, resize, project, lensBox, partBox, pick, stepDown, quality: quality_, getDPR: () => dpr, warm, destroy };
 }

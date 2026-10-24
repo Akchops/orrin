@@ -1,105 +1,190 @@
 /* ================================================================ TEARDOWN
-   After the film the same lens comes apart. Live: a pinned stage, one
-   caption at a time low on the left (low on phones) and labels that follow
-   the parts. Stills (reduced motion, no JS): a labelled exploded view with
-   every caption under it. */
+   After the film the same lens comes apart and the view stops at each part
+   in turn (markup src/site/film.js, stepping src/site/td-steps.js, camera
+   src/app/live.js). With JavaScript, in every tier: one tall section, a
+   screen of scroll per stop, with a sticky stage one screen tall; each stop
+   is an invisible anchor a screen tall that the page snaps to, and never
+   holds the page there. The stage box (.td-view) is the same at every stop;
+   the caption, the map and the parts list sit beside it (under it on
+   phones), never on it. Without JavaScript: the exploded view, then the
+   eight parts as captioned stills. */
 
-/* ---------------------------------------------------------------- stills */
-.film .teardown { display: grid; gap: 2rem; }
-.film .td-tags { display: none; }
-.film .td-still { position: relative; }
-.film .td-still--tall { display: none; }
-.film .td-marks { position: absolute; inset: 0 0 auto; aspect-ratio: 1600 / 1000; list-style: none; margin: 0; padding: 0; pointer-events: none; }
-.film .td-still--tall .td-marks { aspect-ratio: 900 / 1600; }
-.film .td-marks li { position: absolute; transform: translate(-50%, -50%); }
-.film .td-marks li span:first-child {
+/* ---------------------------------------------------- stepped, with JS */
+/* The page snaps only near an anchor (proximity), so it scrolls freely
+   everywhere else, and each anchor is a stop a fling cannot pass through
+   when it ends near it (always). Nothing here blocks a vertical swipe.
+   After a wheel or trackpad (td-free, td-steps.js) the page scrolls
+   freely: small wheel steps near an anchor would be pulled back to it. */
+html.js[data-route="home"]:not(.td-free) { scroll-snap-type: y proximity; }
+.js .film .teardown { position: relative; display: block; height: calc(var(--vh) * var(--stops)); }
+.js .film .td-steps { position: absolute; inset: 0; pointer-events: none; }
+.js .film .td-step {
+  position: absolute; left: 0; width: 1px; top: calc(var(--vh) * var(--i)); height: var(--vh);
+  scroll-snap-align: start; scroll-snap-stop: always;
+}
+.js .film .td-pin {
+  /* Under the header, and on wide screens clear of the badge at the
+     bottom left. */
+  --td-top: calc(var(--safe-t) + var(--head) + clamp(0.75rem, 2.2vh, 1.4rem));
+  --td-bot: calc(3.6rem + env(safe-area-inset-bottom, 0px));
+  --td-h: calc(var(--vh) - var(--td-top) - var(--td-bot));
+  position: sticky; top: 0; height: var(--vh); box-sizing: border-box; padding: var(--td-top) 0 var(--td-bot);
+  container: tdp / size;
+}
+.js .film .td-frame { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr); }
+.js .film .td-lead { display: none; }
+
+/* The stage box: the live lens is drawn inside it (the stage is clipped
+   to it); in the stills tier each stop's still fades in over the last. */
+.js .film .td-view { position: relative; min-width: 0; min-height: 0; container: tdv / size; }
+.js .film .td-shots { position: absolute; inset: 0; list-style: none; margin: 0; padding: 0; }
+.js .film .td-shot { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.22s ease, visibility 0s linear 0.22s; }
+.js .film .td-shot.is-on { opacity: 1; visibility: visible; transition: opacity 0.22s ease, visibility 0s; }
+.js .film .td-shot figure { position: absolute; inset: 0; margin: 0; }
+.js .film .td-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; border: 0; background: none; }
+.js .film .td-shot__cap, .js .film .td-marks { display: none; }
+.js .film .td-img--tall { display: none; }
+@container tdv (orientation: portrait) {
+  .js .film .td-shot .td-img--wide { display: none; }
+  .js .film .td-shot .td-img--tall { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .film .td-shot, .js .film .td-shot.is-on { transition-duration: 0.15s, 0s; }
+}
+.live .film .td-shots { display: none; }
+.td-corners {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none; --k: 1.1rem; --c: rgba(171, 155, 255, 0.55);
+  background:
+    linear-gradient(var(--c), var(--c)) left top / var(--k) 1.5px, linear-gradient(var(--c), var(--c)) left top / 1.5px var(--k),
+    linear-gradient(var(--c), var(--c)) right top / var(--k) 1.5px, linear-gradient(var(--c), var(--c)) right top / 1.5px var(--k),
+    linear-gradient(var(--c), var(--c)) left bottom / var(--k) 1.5px, linear-gradient(var(--c), var(--c)) left bottom / 1.5px var(--k),
+    linear-gradient(var(--c), var(--c)) right bottom / var(--k) 1.5px, linear-gradient(var(--c), var(--c)) right bottom / 1.5px var(--k);
+  background-repeat: no-repeat;
+}
+
+/* Beside the stage: the heading, the caption of the stop, the map, the
+   parts list. */
+.js .film .td-side { display: grid; gap: clamp(0.7rem, 2vh, 1.2rem); align-content: center; min-width: 0; min-height: 0; }
+.td-head { display: grid; gap: 0.35rem; }
+.td-head .cap__num { margin: 0; }
+.js .film .td-head h2 { font-size: clamp(1.5rem, 0.9rem + 1.3vw, 2.4rem); line-height: 1.05; }
+.td-say { display: grid; gap: 0.45rem; align-content: start; }
+.td-k { margin: 0; display: flex; gap: 0.7rem; align-items: baseline; }
+.td-no { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.14em; color: var(--coat); font-variant-numeric: tabular-nums; }
+.td-no:empty { display: none; }
+.td-name { font-family: var(--display); font-weight: 300; font-stretch: 110%; font-size: clamp(1.45rem, 1rem + 1vw, 2.1rem); line-height: 1.1; color: var(--engrave); }
+.td-t { margin: 0; color: var(--dim); font-size: clamp(0.95rem, 0.9rem + 0.2vw, 1.06rem); line-height: 1.5; max-width: 38ch; }
+.td-t__short { display: none; }
+.td-cue { display: none; margin: 0.2rem 0 0; align-items: baseline; gap: 0.55rem; color: var(--engrave); font-size: 0.9rem; line-height: 1.45; }
+.td-cue::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--coat-2); transform: translateY(-1px); }
+.teardown.is-turn .td-cue { display: flex; }
+
+/* Wide screens: the stage on the left, at most a little wider than it is
+   tall, the side panel on the right; centred together. */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  .js .film .td-frame {
+    grid-template-columns: minmax(0, calc(var(--td-h) * 1.75)) minmax(15rem, 22rem);
+    justify-content: center; column-gap: clamp(1.5rem, 3vw, 3.5rem);
+  }
+}
+/* Short wide screens: the map steps aside. */
+@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
+  @container tdp (max-height: 560px) {
+    .td-frame .td-map { display: none; }
+  }
+}
+
+/* Phones, and tablets held upright: the heading, the stage under it, then
+   the caption, and the map beside the parts list at the bottom. The
+   badge's pill sits top right under the header: the heading leaves it
+   room. */
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  .js .film .td-pin {
+    --td-top: calc(var(--safe-t) + var(--head) + 0.6rem);
+    --td-bot: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+  .js .film .td-frame {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "head head" "view view" "say say" "map list";
+    gap: 0.55rem 0.9rem;
+  }
+  .js .film .td-side { display: contents; }
+  .js .film .td-head { grid-area: head; padding-right: 4.6rem; gap: 0.15rem; }
+  .js .film .td-head .cap__num { font-size: 0.66rem; line-height: 1.3; }
+  .js .film .td-head h2 { font-size: clamp(1.2rem, 0.9rem + 1.6vw, 1.7rem); }
+  .js .film .td-view { grid-area: view; }
+  .js .film .td-say { grid-area: say; gap: 0.25rem; }
+  .js .film .td-name { font-size: 1.3rem; }
+  .js .film .td-t__long { display: none; }
+  .js .film .td-t__short { display: inline; }
+  .js .film .td-t { font-size: 0.95rem; line-height: 1.4; max-width: none; }
+  .js .film .td-cue { font-size: 0.85rem; }
+  .js .film .td-map { grid-area: map; align-self: center; }
+  .js .film .td-list { grid-area: list; align-self: center; }
+}
+/* Tablets held upright: more room, the full text. */
+@media (orientation: portrait) and (min-width: 700px) and (max-width: 1100px) {
+  .js .film .td-t__long { display: inline; }
+  .js .film .td-t__short { display: none; }
+  .js .film .td-t { font-size: 1.02rem; max-width: 60ch; }
+}
+/* Short phones (a browser's bars down): the map steps aside and the list
+   runs the full width in one row. */
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  @container tdp (max-height: 640px) {
+    .td-frame .td-map { display: none; }
+    .td-frame { grid-template-areas: "head head" "view view" "say say" "list list"; }
+  }
+}
+
+/* The numbers on the parts while the whole line is in view (live), each
+   just above its part; tapping one shows it. */
+.td-tags { display: none; }
+.live .film .td-tags { display: block; position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+.td-tag {
+  position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 1.7rem; height: 1.7rem; margin: -2.2rem 0 0 -0.85rem;
+  transform: translate3d(var(--x, -999px), var(--y, -999px), 0); border-radius: 50%;
+  background: rgba(21, 23, 28, 0.82); border: 1px solid var(--coat); color: var(--engrave);
+  font-family: var(--display); font-size: 0.78rem; opacity: 0; transition: opacity 0.3s ease; cursor: pointer;
+}
+.td-tag.is-below { margin-top: 0.5rem; }
+.td-tag.is-shown { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .td-tag { transition: none; } }
+
+/* ------------------------------------------------- without JavaScript */
+/* The heading, the exploded view with its numbers, then each part on its
+   own with its number, name and line, and the lens back together. */
+html:not(.js) .film .td-frame { display: grid; gap: 1.6rem; }
+html:not(.js) .film .td-side { order: -1; display: grid; gap: 1rem; }
+html:not(.js) .film .td-lead { color: var(--dim); max-width: 52ch; margin: 0; }
+html:not(.js) .film .td-say, html:not(.js) .film .td-map, html:not(.js) .film .td-list,
+html:not(.js) .film .td-steps, html:not(.js) .film .td-corners { display: none; }
+html:not(.js) .film .td-shots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem 1.25rem; }
+@media (min-width: 900px) { html:not(.js) .film .td-shots { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+html:not(.js) .film .td-shot figure { margin: 0; display: grid; gap: 0.5rem; align-content: start; position: relative; }
+html:not(.js) .film .td-shot img { display: block; width: 100%; height: auto; border: 0; border-top: 2px solid var(--coat); background: none; }
+html:not(.js) .film .td-shot--apart, html:not(.js) .film .td-shot--whole { grid-column: 1 / -1; }
+html:not(.js) .film .td-shot--whole img { max-width: 34rem; justify-self: center; border-top: 0; }
+html:not(.js) .film .td-shot__cap { display: grid; gap: 0.2rem; font-family: var(--body); font-size: 0.92rem; line-height: 1.45; letter-spacing: normal; text-transform: none; color: var(--dim); }
+html:not(.js) .film .td-shot__no, html:not(.js) .film .td-shot__name { display: inline; font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; }
+html:not(.js) .film .td-shot__no { color: var(--coat); }
+html:not(.js) .film .td-shot__name { color: var(--engrave); }
+html:not(.js) .film .td-shot--apart .td-shot__cap, html:not(.js) .film .td-shot--apart .td-shot__name { color: var(--amber); }
+html:not(.js) .film .td-shot .td-img--tall, html:not(.js) .film .td-shot .td-marks--tall { display: none; }
+@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
+  html:not(.js) .film .td-shot .td-img--wide, html:not(.js) .film .td-shot .td-marks--wide { display: none; }
+  html:not(.js) .film .td-shot .td-img--tall, html:not(.js) .film .td-shot .td-marks--tall { display: block; }
+  html:not(.js) .film .td-shot--apart img { max-width: 26rem; justify-self: center; }
+}
+/* The exploded view's numbers, over the still. */
+html:not(.js) .film .td-shot--apart figure { justify-items: center; }
+html:not(.js) .film .td-shot--apart .td-shot__cap { justify-self: stretch; }
+html:not(.js) .film .td-marks { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); width: 100%; aspect-ratio: 1600 / 1000; list-style: none; margin: 0; padding: 0; pointer-events: none; }
+html:not(.js) .film .td-marks--tall { width: min(100%, 26rem); aspect-ratio: 900 / 1600; }
+html:not(.js) .film .td-marks li { position: absolute; transform: translate(-50%, -50%); }
+html:not(.js) .film .td-marks li span:first-child {
   display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%;
   background: rgba(21, 23, 28, 0.82); border: 1px solid var(--coat); color: var(--engrave);
   font-family: var(--display); font-size: 0.78rem;
 }
-.film .td-copy { display: grid; gap: 1.6rem; }
-.film .td-intro { display: grid; gap: 0.9rem; }
-.film .td-intro > p:not(.cap__num) { color: var(--dim); max-width: 46ch; }
-.film .td-caps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); counter-reset: none; }
-.film .td-cap { display: grid; grid-template-columns: 3rem minmax(0, 1fr); column-gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
-.film .td-cap__no { grid-row: span 2; font-family: var(--display); font-stretch: 125%; font-weight: 300; font-size: 1.5rem; color: var(--coat); line-height: 1.1; }
-.film .td-cap h3 { font-size: 1.35rem; font-weight: 400; }
-.film .td-cap p:not(.td-cap__no) { color: var(--dim); font-size: 1rem; max-width: 60ch; }
-.film .td-outro { display: grid; gap: 0.5rem; }
-.film .td-outro h3 { font-size: 1.35rem; font-weight: 400; }
-.film .td-outro p { color: var(--dim); font-size: 1rem; }
-/* Short and full caption text: phones in the live teardown read the short
-   line, desktop and the stills read the full text. */
-.film .td-cap__short { display: none; }
-@media (min-width: 800px) {
-  .film .teardown { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; gap: 2rem 3rem; }
-  .film .td-still--wide { grid-column: 1 / -1; }
-}
-@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
-  .film .td-still--wide { display: none; }
-  .film .td-still--tall { display: grid; }
-}
-
-/* ------------------------------------------------------------------ live */
-.live .film .teardown { display: block; min-height: var(--vh); }
-.live .film .td-still { display: none; }
-.live .film .td-copy { position: absolute; z-index: 2; left: 0; bottom: 4.8rem; width: min(27rem, 36vw); height: 0; display: block; }
-.live .film .td-intro, .live .film .td-cap, .live .film .td-outro {
-  position: absolute; left: 0; bottom: 0; width: 100%; display: grid; gap: 0.7rem;
-  opacity: 0; visibility: hidden; transition: opacity 0.35s ease, visibility 0.35s;
-  text-shadow: 0 1px 16px rgba(21, 23, 28, 0.9), 0 0 2px rgba(21, 23, 28, 0.7);
-}
-.live .film .td-intro.is-on, .live .film .td-cap.is-on, .live .film .td-outro.is-on { opacity: 1; visibility: visible; }
-.live .film .td-caps { border: 0; }
-.live .film .td-cap { grid-template-columns: minmax(0, 1fr); padding: 0; border: 0; }
-.live .film .td-cap__no { grid-row: auto; font-size: 0.78rem; font-family: var(--display); letter-spacing: 0.14em; color: var(--coat); }
-.live .film .td-cap h3, .live .film .td-outro h3 { font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3.2rem); font-weight: 300; }
-.live .film .td-intro h2 { font-size: clamp(2.1rem, 1.3rem + 3vw, 3.8rem); }
-.live .film .td-cap p:not(.td-cap__no), .live .film .td-outro p, .live .film .td-intro > p:not(.cap__num) { font-size: 1.05rem; color: var(--dim); }
-@media (min-width: 800px) and (orientation: landscape), (min-width: 1101px) {
-  .live .film .teardown::before {
-    content: ""; position: absolute; z-index: 1; pointer-events: none; left: calc(var(--gutter-l) * -1); bottom: 0; height: 60%;
-    width: calc(min(27rem, 36vw) + 16vw);
-    background: radial-gradient(120% 90% at 0% 100%, rgba(21, 23, 28, 0.9), rgba(21, 23, 28, 0.55) 55%, rgba(21, 23, 28, 0) 80%);
-  }
-}
-/* Phones: the same compact panel as the film's captions (a small number
-   line, a short title, the short line) over a soft shade that belongs to the
-   caption, so it fades in and out with it. 56 px under the text are kept
-   clear for the parts rail along the bottom. */
-@media (max-width: 799px), (orientation: portrait) and (max-width: 1100px) {
-  .live .film .td-copy { right: 0; width: auto; bottom: env(safe-area-inset-bottom, 0px); }
-  .live .film .td-intro, .live .film .td-cap, .live .film .td-outro { gap: 0.3rem; padding-bottom: 56px; z-index: 0; }
-  .live .film .td-intro::before, .live .film .td-cap::before, .live .film .td-outro::before {
-    content: ""; position: absolute; z-index: -1; pointer-events: none;
-    left: calc(var(--gutter-l) * -1); right: calc(var(--gutter-r) * -1); top: -1.5rem; bottom: calc(env(safe-area-inset-bottom, 0px) * -1);
-    background: linear-gradient(rgba(21, 23, 28, 0), rgba(21, 23, 28, 0.62) 38%, rgba(21, 23, 28, 0.85));
-  }
-  .live .film .td-cap__short { display: block; }
-  .live .film .td-cap__long { display: none; }
-  .live .film .td-cap__no, .live .film .td-intro .cap__num { font-size: 0.68rem; line-height: 1.3; }
-  /* The part number sits on the title's line, like an index. */
-  .live .film .td-cap { grid-template-columns: auto minmax(0, 1fr); column-gap: 0.6rem; align-items: baseline; }
-  .live .film .td-cap > .td-cap__short { grid-column: 1 / -1; }
-  .live .film .td-intro h2, .live .film .td-cap h3, .live .film .td-outro h3 { font-size: 1.5rem; font-weight: 300; }
-  .live .film .td-copy p.td-cap__short { font-size: 1rem; line-height: 1.4; color: var(--dim); }
-}
-
-/* Labels that follow the parts: a dot on the part, a leader line, the name.
-   The featured part's label is bright; the others recede. */
-.live .film .td-tags { display: block; position: fixed; inset: 0; z-index: 3; pointer-events: none; }
-.td-tag {
-  position: absolute; left: 0; top: 0; color: var(--engrave);
-  transform: translate3d(var(--x, -999px), var(--y, -999px), 0);
-  opacity: 0; transition: opacity 0.35s ease; white-space: nowrap;
-  font-family: var(--display); font-stretch: 100%; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
-}
-.td-tag.is-on { opacity: 0.55; }
-.td-tag.is-on.is-featured { opacity: 1; }
-.td-tag__dot { position: absolute; left: -3.5px; top: -3.5px; width: 7px; height: 7px; border-radius: 50%; background: var(--dim); box-shadow: 0 0 0 3px rgba(171, 155, 255, 0.12); }
-.td-tag.is-featured .td-tag__dot { background: var(--coat); box-shadow: 0 0 0 4px rgba(171, 155, 255, 0.25); }
-.td-tag__line { position: absolute; left: 0; top: 0; height: 1px; width: var(--len, 40px); background: linear-gradient(90deg, var(--dim), rgba(162, 168, 177, 0.3)); transform-origin: 0 0; transform: rotate(var(--ang, 0rad)); }
-.td-tag.is-featured .td-tag__line { background: linear-gradient(90deg, var(--coat), rgba(171, 155, 255, 0.35)); }
-.td-tag__text { position: absolute; left: var(--dx, 40px); top: var(--dy, -20px); transform: translate(var(--tx, 0), -50%); padding: 0.25rem 0.5rem; background: rgba(21, 23, 28, 0.7); border-radius: 2px; }
-.td-tag.is-featured .td-tag__text { color: var(--engrave); border: 1px solid rgba(171, 155, 255, 0.5); }
-@media (max-width: 799px) { .td-tag { font-size: 0.66rem; } }

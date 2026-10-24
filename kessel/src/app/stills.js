@@ -3,7 +3,8 @@
 // same scene, timeline and materials as the live lens.
 import { mountWebGL } from './stage3d.js';
 import { buildStory, createState } from './story.js';
-import { TEAR_ANCHORS } from './teardown.js';
+import { TEAR_ANCHORS, RAIL } from './teardown.js';
+import { stopState, fitStop } from './td-stops.js';
 
 import { MODEL_SPHERE, sphereFrame } from './fit.js';
 import { inspectPoses } from './inspect.js';
@@ -58,9 +59,14 @@ const POSES = {
   // The hero's box (no JS, reduced motion, the stills tier): the lens as
   // the film's first frame fits it, whole by its bounding sphere.
   'hero-stage': { s: 0, model: 1, az: 20, el: 8, frame: sphereFrame(MODEL_SPHERE[1].r), tx: MODEL_SPHERE[1].c[0], ty: MODEL_SPHERE[1].c[1], tz: MODEL_SPHERE[1].c[2], sx: 0, sy: 0, iris: 0, light: 0 },
-  // The stills have no rail or caption panel to make room for: centred.
-  'td-apart': { s: 21.1, sx: 0, sy: 0.02 },
-  'td-apart-tall': { s: 21.1, layout: 'narrow', sy: -0.04, frame: 126 },
+  // The teardown's stops (src/app/td-stops.js), framed as the live camera
+  // frames them in its stage box, here the whole picture: the line taken
+  // apart (wide, and rolled down a tall frame), each part close, and the
+  // lens back together.
+  'td-apart': { s: 16.5, td: 0 },
+  'td-apart-tall': { s: 16.5, td: 0, layout: 'narrow', ks: 0.8 },
+  ...Object.fromEntries(RAIL.map((id, i) => [`tdc-${id}`, { s: 16.5, td: i + 1 }])),
+  'tdc-whole': { s: 16.5, td: RAIL.length + 1 },
   'exploded-wide': { s: 16.5, irisEven: true, noLeaks: true, spread: 1, az: 66, el: 10, frame: 64, tx: 0, ty: 0, tz: -112, iris: 0.6, focus: 0.3, sx: 0, sy: 0 },
 };
 
@@ -87,7 +93,12 @@ export async function renderStill(name, font) {
   const tl = buildStory(L.gsap, S, pose.layout || 'wide');
   await view.warm(S);
   tl.time(pose.s);
-  for (const [k, v] of Object.entries(pose)) if (!['s', 'noLeaks', 'layout'].includes(k)) S[k] = v;
+  for (const [k, v] of Object.entries(pose)) if (!['s', 'noLeaks', 'layout', 'td', 'ks'].includes(k)) S[k] = v;
+  if (pose.td !== undefined) {
+    const W = stage.clientWidth, H = stage.clientHeight, m = Math.round(Math.min(W, H) * 0.03);
+    Object.assign(S, stopState(pose.td), { tspread: pose.ks || 1 });
+    fitStop(S, pose.td, { left: m, top: m, width: W - 2 * m, height: H - 2 * m }, W, H, S.tspread, S.model);
+  }
   const p = { x: 0, y: 0, spin: 0 };
   view.render(S, 0.4, p);
   view.render(S, 0.4, p);

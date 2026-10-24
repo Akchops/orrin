@@ -9,7 +9,8 @@ import { resolve } from 'node:path';
 const all = ['hero', 'hero-stage', 'aperture', 'through', 'exit', 'focus', 'model-1', 'model-2', 'model-3', 'signed',
   'model-1-lg', 'model-2-lg', 'model-3-lg', 'beauty', 'exploded', 'iris34',
   'hero-lens', 'lens-1', 'lens-2', 'lens-3', 'lineup-1', 'lineup-2', 'lineup-3',
-  'd-knurl', 'exploded-wide',
+  'd-knurl', 'exploded-wide', 'td-apart', 'td-apart-tall',
+  ...['front-element', 'glass-1', 'blades', 'focus-ring', 'scale', 'barrel', 'mount', 'signature', 'whole'].map((p) => `tdc-${p}`),
   ...[1, 2, 3].flatMap((k) => ['glass', 'iris', 'scale', 'mount', 'sign'].map((d) => `i-${k}-${d}`))];
 // [render width, render height, saved width, saved height]; default 900 square.
 const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600], 'model-3': [900, 900, 600, 600],
@@ -19,7 +20,9 @@ const SIZE = { 'model-1': [900, 900, 600, 600], 'model-2': [900, 900, 600, 600],
   'd-knurl': [2000, 1000], 'exploded-wide': [2400, 1100],
   // Inspect the lens: one 4:3 frame for every detail, as the stage.
   ...Object.fromEntries([1, 2, 3].flatMap((k) => ['glass', 'iris', 'scale', 'mount', 'sign'].map((d) => [`i-${k}-${d}`, [1200, 900]]))),
-  'hero-stage': [1200, 1200], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600] };
+  'hero-stage': [1200, 1200], 'td-apart': [1600, 1000], 'td-apart-tall': [900, 1600],
+  // The teardown's close-ups: square, so each fills the stage box alike.
+  ...Object.fromEntries(['front-element', 'glass-1', 'blades', 'focus-ring', 'scale', 'barrel', 'mount', 'signature', 'whole'].map((p) => [`tdc-${p}`, [1200, 1200, 960, 960]])) };
 // Every still keeps its transparent background, so it sits on the page's
 // charcoal gradient like the live canvas does (the film's frames used to be
 // flattened onto black, which showed as dark boxes on the lighter page).

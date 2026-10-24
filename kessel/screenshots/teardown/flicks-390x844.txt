@@ -1,0 +1,45 @@
+teardown | reduced motion off | gesture | tier 2d (the 2D version was requested (?tier=2)) | section 12340..19936 (10 screens)
+  down: flicks rest at 3@-376 7@+248 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 6@+238 2@-386 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+teardown | reduced motion off | touch 8000 px/s | tier 2d (the 2D version was requested (?tier=2)) | section 12340..19936 (10 screens)
+  down: flicks rest at 0 1 2 3 4 7 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 7 3 2 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+teardown | reduced motion ON | gesture | tier stills (reduced motion is on in your system settings.) | section 6997..14593 (10 screens)
+  down: flicks rest at 3@-376 7@+248 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 6@+302 2@-322 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+teardown | reduced motion ON | touch 8000 px/s | tier stills (reduced motion is on in your system settings.) | section 6997..14593 (10 screens)
+  down: flicks rest at 2@+356 6 9 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 9 8 7 6 2 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+teardown | reduced motion off | gesture | tier live (software WebGL, forced for testing (?gl=force)) | section 12340..19936 (10 screens)
+  down: flicks rest at 3@-376 7@+248 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 6@+238 2@-386 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+teardown | reduced motion off | touch 8000 px/s | tier live (software WebGL, forced for testing (?gl=force)) | section 12340..19936 (10 screens)
+  down: flicks rest at 0 4@-323 6 below:10
+        stops became active: [0,1,2,3,4,5,6,7,8,9,10] -> all, in order, none skipped
+  up:   flicks rest at 6 3@-419 2 above:-1
+        stops became active: [9,8,7,6,5,4,3,2,1,0,-1] -> all, in order, none skipped
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  PASS
+        stops became active: [] -> one at a time
+  moved by itself after settling: 0 | back to the start by itself: no | page scroll moved by script: 0 | errors 0
+  FAIL

@@ -18,6 +18,7 @@
     try { history.scrollRestoration = 'manual'; } catch (e) {}
     var h = location.hash.slice(1);
     try { h = decodeURIComponent(h); } catch (e) {}
+    h = h.replace(/(^|&)debug(=1)?$/, '');
     window.__kesselRoutes = m;
     d.setAttribute('data-route', m[h] || 'home');
   })();

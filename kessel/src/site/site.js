@@ -9,6 +9,8 @@
 import { startFov } from './fov-live.js';
 import { startLab } from './lab.js';
 import { startInspect } from './inspect-live.js';
+import { startTeardownSteps } from './td-steps.js';
+import { startDebug } from './debug.js';
 import './craft.js';
 import './company.js';
 
@@ -28,6 +30,8 @@ let anchorEl = null;
 function resolve(hash) {
   let id = (hash || '').replace(/^#/, '');
   try { id = decodeURIComponent(id); } catch { /* keep as is */ }
+  // The debug readout's flag rides along: #debug, #lens-parvati&debug.
+  id = id.replace(/(^|&)debug(=1)?$/, '');
   const routeId = map[id];
   return routeId ? { id, route: routeId } : { id: 'home', route: 'home' };
 }
@@ -190,6 +194,8 @@ addEventListener('resize', past, { passive: true });
 try { startFov(); } catch { /* the static figure stays */ }
 try { startLab(); } catch (e) { console.error(e); /* the first frames stay */ }
 try { startInspect(); } catch (e) { console.error(e); /* the five stills stay */ }
+try { startTeardownSteps(); } catch (e) { console.error(e); /* the stills stay in a column */ }
+try { startDebug(); } catch (e) { console.error(e); }
 
 window.__kesselSite = { anchor: () => anchorEl, get route() { return current; } };
 go(location.hash, { initial: true });
