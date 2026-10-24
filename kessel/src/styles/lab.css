@@ -301,3 +301,56 @@ html:not(.js) .tried { display: none; }
 #company .ck-tile label { background-image: linear-gradient(90deg, rgba(98, 220, 192, 0.14) calc(var(--fill, 0) * 100%), transparent 0); }
 @media (prefers-reduced-motion: reduce) { .bn__spot, .tl__index, .ck__run, .chip, .ckx__range::-webkit-slider-thumb { animation: none !important; } }
 
+
+/* ------------------------------------------- phones: every beat pins */
+/* Held upright, a pinned beat is exactly the screen under the header,
+   whatever the browser's bars leave. Its text and controls keep their size
+   and its picture (the street, the lens front, the three irises) takes the
+   rest, never more than its own shape needs, so it holds on any phone, not
+   only a tall one. On shorter screens the lead lines and the long hints
+   step aside (the cue stays); on the shortest the eyebrow goes too. The
+   "sample" captions stay, on one line. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .js .beat:not(.beat--flow) > :is(.lab__pin, .cmp__pin) {
+    height: calc(var(--vh) - var(--head) - var(--safe-t)); align-content: stretch; container: pin / size;
+  }
+  /* Focus pull: heading / street / ring. */
+  .js .lab--focus:not(.beat--flow) > .lab__pin { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .js .lab--focus:not(.beat--flow) .lab__stage { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+  .js .lab--focus:not(.beat--flow) .lab__street { height: 100%; width: auto; max-width: 100%; max-height: calc(100cqw * 2 / 3); justify-self: center; align-self: center; }
+  /* Aperture: heading / the lens front and the street / slider. */
+  .js .lab--ap:not(.beat--flow) > .lab__pin { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .js .lab--ap:not(.beat--flow) .lab__pair { min-height: 0; grid-template-rows: minmax(0, 1fr); max-height: calc(100cqw * 0.52); align-self: center; height: 100%; }
+  .js .lab--ap:not(.beat--flow) :is(.lab__lens, .lab__stage) { min-height: 0; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; align-content: center; }
+  .js .lab--ap:not(.beat--flow) .lab__front { height: 100%; width: auto; max-width: 100%; aspect-ratio: 1; justify-self: center; }
+  .js .lab--ap:not(.beat--flow) .lab__stage .lab__street { height: auto; max-height: 100%; width: 100%; align-self: center; }
+  /* What it sees: heading / the street viewer, its screen taking the rest. */
+  .js .lab--sees:not(.beat--flow) > .lab__pin { grid-template-rows: auto minmax(0, 1fr); }
+  .js .lx-fov:not(.beat--flow) > .lab__pin { grid-template-rows: minmax(0, 1fr); }
+  .js .lab--sees:not(.beat--flow) .fov { min-height: 0; display: flex; flex-direction: column; }
+  .js .lab--sees:not(.beat--flow) .fov__body { flex: 1 1 0; min-height: 0; grid-template-rows: minmax(0, 1fr) auto auto; }
+  .js .lab--sees:not(.beat--flow) .fov__screen { height: 100%; width: auto; max-width: 100%; max-height: calc(100cqw * 2 / 3); aspect-ratio: 3 / 2; justify-self: center; min-height: 0; }
+  .js .lab--sees:not(.beat--flow) .fov__dial { width: 100%; }
+  /* The whole street opened under it: back to its own height (the beat
+     then plays in the flow while it is open). */
+  .js .lab--sees:has(.fov__more[open]) > .lab__pin { height: auto; }
+  .js .lab--sees:has(.fov__more[open]) .fov__screen { height: auto; width: 100%; max-height: none; }
+  /* Compare: heading / the three irises / slider. */
+  .js .cmp:not(.beat--flow) > .cmp__pin { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .js .cmp:not(.beat--flow) .cmp__row { min-height: 0; max-height: calc(100cqw * 0.64); align-self: center; height: 100%; grid-template-rows: minmax(0, 1fr); }
+  .js .cmp:not(.beat--flow) .cmp__cell { min-height: 0; height: 100%; grid-template-rows: minmax(0, 1fr) auto auto; }
+  .js .cmp:not(.beat--flow) .cmp__iris { height: 100%; width: auto; max-width: 100%; justify-self: center; }
+}
+@container pin (max-height: 620px) {
+  .lab__lead, .cmp__lead, .fov__lead, .ctl__how, .fov__more { display: none; }
+  .cmp__disc { width: 40px; height: 40px; }
+  .cmp__ctl .ctl__read > span { font-size: 0.82rem; }
+  .lab__cap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fov__say { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .lab--focus .lab__targets { flex-wrap: nowrap; gap: 0.35rem; }
+  .lab--focus .lab__targets .chip { min-height: 40px; padding: 0 0.6rem; font-size: 0.74rem; white-space: nowrap; }
+}
+@container pin (max-height: 440px) {
+  .lab__eyebrow, .cmp__head .eyebrow, .fov__head .eyebrow { display: none; }
+  .lab__h, .cmp__head h2, .fov__head h2 { font-size: 1.35rem; }
+}

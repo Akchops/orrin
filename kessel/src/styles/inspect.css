@@ -116,3 +116,23 @@ html:not(.js) .insp__shot-cap { display: grid; gap: 0.2rem; font-size: 0.88rem; 
 html:not(.js) .insp__shot-cap .insp__no, html:not(.js) .insp__shot-cap .insp__name { display: inline; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; }
 html:not(.js) .insp__shot-cap .insp__name { color: var(--engrave); }
 html:not(.js) .insp__pin { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "stage"; }
+
+/* Phones held upright, pinned: the beat is exactly the screen under the
+   header, whatever the browser's bars leave. The heading, caption and list
+   keep their size and the stage takes the rest, so it pins on any phone,
+   not only a tall one. On shorter screens the map steps aside and the
+   caption runs the full width under the stage. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .js .insp:not(.beat--flow) > .insp__pin {
+    height: calc(var(--vh) - var(--head) - var(--safe-t)); grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch;
+    container: insp / size;
+  }
+  .js .insp:not(.beat--flow) .insp__frame { width: 100%; height: 100%; min-height: 0; }
+  .js .insp:not(.beat--flow) .insp__stage { height: 100%; aspect-ratio: auto; }
+}
+@container insp (max-height: 620px) {
+  .insp__side { grid-template-columns: minmax(0, 1fr); }
+  .insp__map { display: none; }
+  .insp__say, .insp__ctl { grid-column: 1; }
+  .insp__ctl .ctl__how { display: none; }
+}

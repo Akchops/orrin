@@ -661,3 +661,63 @@ html:not(.js) #company .tl__index { display: none; }
 }
 /* The bench's cue takes the place of its hint, so nothing grows. */
 .js #company .beat.is-turn:not(.is-mine) .bn__hint-js { display: none; }
+
+/* Phones held upright, pinned: each beat is exactly the screen (the bench
+   from the top, the timeline and the checks under the header), whatever the
+   browser's bars leave. Copy and controls keep their size and the drawing
+   takes the rest, never more than its own shape needs. On shorter screens
+   the notes and the long lines come down a size, the hints step aside (the
+   cue stays) and the timeline's note goes; on the shortest the kicker goes
+   too. The "sample" labels stay. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .js #company .beat:not(.beat--flow) > .bn {
+    height: var(--vh); grid-template-rows: minmax(0, 1fr) auto auto; align-content: stretch; container: bn / size;
+  }
+  .js #company .beat:not(.beat--flow) > .bn .bn__stage { height: 100%; width: auto; max-width: 100%; max-height: calc(100cqw * 10 / 16); aspect-ratio: 16 / 10; min-height: 0; justify-self: center; align-self: center; }
+  .js #company .co-beat:not(.beat--flow) > .tl { height: calc(var(--vh) - var(--head) - var(--safe-t)); min-height: 0; container: co / size; }
+  .js #company .co-beat:not(.beat--flow) > .ck {
+    height: calc(var(--vh) - var(--head) - var(--safe-t)); display: grid; grid-template-rows: auto minmax(0, 1fr); align-content: stretch; container: co / size;
+  }
+  .js #company .co-beat:not(.beat--flow) > .ck .ck__panel { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; align-content: stretch; }
+  .js #company .co-beat:not(.beat--flow) > .ck .ck__fig { min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  .js #company .co-beat:not(.beat--flow) > .ck .ck__svg { height: 100%; max-height: calc(100cqw * 0.42); width: auto; max-width: 100%; min-height: 0; }
+}
+@container bn (max-height: 760px) {
+  .js #company .bn h1 { font-size: 1.75rem; }
+  .js #company .bn__note .bn__note-p { font-size: 0.86rem; line-height: 1.45; }
+  .js #company .bn__note-t { font-size: 1.1rem; }
+  .js #company .bn__hint { display: none; }
+  .js #company .bn__copy { padding-top: 0.6rem; gap: 0.45rem; }
+}
+@container bn (max-height: 440px) {
+  .js #company .bn__meta .eyebrow { display: none; }
+  .js #company .bn h1 { font-size: 1.45rem; }
+}
+@container co (max-height: 640px) {
+  .js #company .co-note, .js #company .ck__help { display: none; }
+  .js #company .co-beat > .co-sec .co-head h2 { font-size: 1.8rem; }
+  .js #company .tl__body { margin-top: 0.7rem; gap: 0.8rem; }
+  .js #company .tl__year { font-size: 2.6rem; }
+  .js #company .tl__year::after { margin-top: 0.5rem; }
+  .js #company .tl__read { gap: 0.55rem; }
+  .js #company .tl__entry { gap: 0.35rem; }
+  .js #company .tl__entry.is-active { grid-template-columns: auto minmax(0, 1fr); column-gap: 1rem; align-items: start; }
+  .js #company .tl__entry p { font-size: 0.9rem; line-height: 1.45; }
+  .js #company .ck__say { font-size: 0.84rem; }
+  .js #company .ck__count { min-height: 0; }
+  .js #company .ck__panel { margin-top: 0.6rem; }
+  .js #company .ck__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
+  .js #company .ck-tile label { grid-template-areas: "no tick" "name name"; grid-template-columns: minmax(0, 1fr) auto; row-gap: 0.15rem; padding: 0.4rem 0.5rem; }
+  .js #company .ck-tile__name { font-size: 0.86rem; }
+  .js #company .ck-tile__tick { width: 1.2rem; height: 1.2rem; }
+}
+@container co (max-height: 520px) {
+  .js #company .ck__fig { display: none; }
+}
+@container co (max-height: 440px) {
+  .js #company .co-kicker { display: none; }
+  .js #company .co-beat > .co-sec .co-head h2 { font-size: 1.5rem; }
+  .js #company .tl__year { font-size: 2.4rem; }
+  .js #company .tl__entry p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .js #company .tl__help { display: none; }
+}

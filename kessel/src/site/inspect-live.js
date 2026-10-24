@@ -56,7 +56,20 @@ function enhance(root) {
   const go = (i) => { if (beat) beat.mine(); tween(i); };
   btns.forEach((b, i) => b.addEventListener('click', () => go(i)));
   spots.forEach((s, i) => s.addEventListener('click', () => go(i + 1)));
-  stage.addEventListener('pointerdown', (e) => { if (e.target.tagName === 'CANVAS' && beat) beat.mine(); });
+  // Dragging the live lens is the visitor's; a press alone is not. On a
+  // phone a swipe that starts on the lens scrolls the page (touch-action:
+  // pan-y) and must leave scroll in charge of the camera.
+  let press = null;
+  stage.addEventListener('pointerdown', (e) => { if (e.target.tagName === 'CANVAS') press = { id: e.pointerId, x: e.clientX, y: e.clientY }; });
+  stage.addEventListener('pointermove', (e) => {
+    if (!press || e.pointerId !== press.id) return;
+    const dx = e.clientX - press.x, dy = e.clientY - press.y;
+    const sideways = Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy);
+    if (sideways || (e.pointerType === 'mouse' && Math.hypot(dx, dy) > 6)) { press = null; if (beat) beat.mine(); }
+  });
+  const lift = (e) => { if (press && e.pointerId === press.id) press = null; };
+  stage.addEventListener('pointerup', lift);
+  stage.addEventListener('pointercancel', lift);
   // The live viewer comes up after the page: give it the camera's place.
   addEventListener('kessel:viewer', () => { if (stage.__inspect) stage.__inspect(q); });
 

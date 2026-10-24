@@ -233,9 +233,10 @@ function timeline() {
   const beatEl = tl.closest('.beat');
   if (beatEl) {
     const beat = addBeat(beatEl, { drive: (t, still, d) => (still ? snap(Math.floor(P.length / 2), false) : d && d.glide === undefined ? snap(d.stop, false) : scrub(P[0] + (P[P.length - 1] - P[0]) * t)), stops: P.length });
+    // A change is the visitor's; a press alone is not (on a phone a swipe
+    // that starts on the slider scrolls the page).
     const mine = () => beat.mine();
-    input.addEventListener('pointerdown', mine);
-    input.addEventListener('keydown', mine);
+    input.addEventListener('keydown', (e) => { if (e.key !== 'Tab') mine(); });
     input.addEventListener('input', (e) => { if (e.isTrusted) mine(); });
   }
 }

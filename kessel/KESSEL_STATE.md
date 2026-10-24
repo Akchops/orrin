@@ -6,6 +6,61 @@ Checks: `kessel/scripts/audit.mjs` (overflow at seven widths and a framed
 pane), the smoke test in the session scratchpad (film, teardown, badge,
 reduced motion, no-JS). Last passing commit before this follow-up: c40841b.
 
+## Follow-up "the close-up isn't working on my phone" (done)
+
+Reproduced at real phone browser sizes, with the browser's bars taking
+part of the screen (390x664 iPhone Safari, 375x548 iPhone SE, 360x640 and
+412x732 Android). Two causes:
+
+1. No beat pinned on a phone. Every beat had been tuned to 390x844, which
+   is taller than any phone browser leaves, so all 12 dropped into the
+   flow. The close-ups then went by in about one swipe without stopping.
+   Fix: on phones held upright, a pinned beat is exactly the screen under
+   the header (`--vh`, the small viewport). Its text and controls keep
+   their size and its picture takes the rest of the height, never more
+   than its own shape needs:
+   - the lens stage;
+   - the street;
+   - the lens front;
+   - the street viewer's screen;
+   - the three irises;
+   - the Craft drawing (kept at least 4:3 so its labels stay in frame);
+   - the bench;
+   - the checks drawing;
+   - the Contact lens.
+
+   It uses a flexible grid row plus a size container query on the pin. On
+   shorter screens (below about 620 px of content) the lead lines, the
+   long hints, the street-map toggle and the timeline note step aside;
+   the cue stays and some type comes down a size. On the shortest (iPhone
+   SE in Safari) the eyebrows go too and a few captions clamp. The
+   "sample" and "proposal" labels always stay. Opening "Show the whole
+   street" returns that beat to its own height. Tablets and desktop are
+   unchanged.
+2. A touch on the live lens froze the close-ups. Any press on the 3D
+   canvas counted as "you took it", so a swipe that started on the lens
+   stopped scroll driving the camera for good. The same press-to-take-over
+   pattern was on the street viewer's cards and slider and on the Company
+   timeline's slider. Now only a real sideways drag of the lens, a tap, or
+   a value change counts.
+
+Tested:
+- Fit check: every beat pins with nothing past its edge at 390x664,
+  375x548, 360x640, 412x732, 430x740, 390x844 and 768x1024.
+- Stop-by-stop (2D tier) for all 12 beats at 390x664, 360x640, 412x732 and
+  375x548: pinned, each stop read back, nothing under the badge or cut off.
+  Same at 768x1024, 390x844 and 1440x900.
+- Raw touch swipes down a lens page (2D tier) walk the close-ups through
+  all six stops; the published build swiped straight past them.
+- Software WebGL at 390x664: swipes that start on the lens walk all six
+  stops with the live camera and never take it over, and a sideways drag
+  does. The published build froze at the first stop.
+- Stage guard in the build; audit 64 of 64; smoke passed.
+
+Not tested on a real phone or a real GPU, and not in WebKit (only Chromium
+is installed here). Landscape phones are unchanged.
+
+
 ## Follow-up "nine parts" (done)
 
 Last passing commit before it: 91945ca (preview version 28).

@@ -153,3 +153,28 @@ html:not(.js) #contact :is(.ct-pick__chips, .ctl__say, .ct-pick__h, .ct-pick__su
   #contact .ct-more { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: clamp(2.5rem, 5vw, 4rem); }
   #contact .ct-help__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2rem; }
 }
+
+/* Phones held upright, pinned: the beat is exactly the screen under the
+   header; the copy keeps its size and the lens stage takes the rest, so it
+   holds on any phone. Shorter screens drop the lead and the cue line and
+   set the note on one line; the shortest also drop the eyebrow. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .js #contact .ct-pick:not(.beat--flow) > .ct-pick__pin {
+    height: calc(var(--vh) - var(--head) - var(--safe-t)); align-content: stretch; grid-template-rows: minmax(0, 1fr) auto;
+    container: pin / size;
+  }
+  .js #contact .ct-pick:not(.beat--flow) .ct-pick__stage { height: 100%; min-height: 0; max-height: calc(100cqw * 0.75); align-self: center; }
+}
+@container pin (max-height: 680px) {
+  #contact .ct-head__lead, #contact .ct-pick__ctl .ctl__say, #contact .ct-head .eyebrow { display: none; }
+  #contact .ct-head h1 { font-size: 1.7rem; }
+  #contact .ct-pick__note { letter-spacing: 0.06em; font-size: 0.62rem; }
+  #contact .ct-pick__h { font-size: 1rem; }
+  #contact .ct-pick__copy { gap: 0.5rem; }
+  #contact .ct-pick__mail { padding: 0.7rem 0.9rem; gap: 0.5rem; }
+}
+@container pin (max-height: 440px) {
+  #contact .ct-head h1 { font-size: 1.5rem; }
+  #contact .ct-pick__h { display: none; }
+  #contact .ct-pick__chips .chip { min-height: 38px; }
+}

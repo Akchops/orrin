@@ -139,8 +139,11 @@ function seesBeat(el) {
       return norm(seq[i]) + (norm(seq[i + 1]) - norm(seq[i])) * (x - i);
     };
     beat = addBeat(el, { drive: (t, still) => fov.__fov.scrub(still ? norm(1) : at(t)), stops: seq.length, hold: 0.68 * seq.length, mid: 0.5 });
-    fov.addEventListener('pointerdown', (e) => { if (e.target.closest('button, input, .fov__r, summary')) beat.mine(); });
-    fov.addEventListener('keydown', (e) => { if (e.target.closest('button, input, summary')) beat.mine(); });
+    // A tap or a change is the visitor's; a press alone is not (on a phone
+    // a swipe that starts on a card or the slider scrolls the page).
+    fov.addEventListener('click', (e) => { if (e.target.closest('button, .fov__r, summary')) beat.mine(); });
+    fov.addEventListener('input', (e) => { if (e.isTrusted && e.target.closest('input')) beat.mine(); });
+    fov.addEventListener('keydown', (e) => { if (e.key !== 'Tab' && e.target.closest('button, input, summary')) beat.mine(); });
   };
   ready();
 }

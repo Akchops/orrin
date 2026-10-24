@@ -416,3 +416,27 @@ html:not(.js) #craft .ckx { grid-template-areas: "fig" "cap" "head" "ctl" "say" 
 @media (min-width: 1024px) { html:not(.js) #craft .ckx { grid-template-areas: "fig fig" "cap cap" "ctl say" "list list" "still2 still2"; } }
 .js #craft :is(.ckx__cap, .ckx__still2) { display: none; }
 #craft .ckx__still2 .ckx__cap { grid-area: auto; font-family: inherit; text-transform: none; letter-spacing: normal; }
+
+/* Phones held upright, pinned: the beat is exactly the screen, whatever the
+   browser's bars leave. The heading, the stage controls and the caption keep
+   their size and the drawing takes the rest, never narrower than 4:3 (so the
+   frame still holds the whole lens and its labels). On shorter screens the
+   caption comes down a size; on the shortest it keeps three lines. */
+@media (max-width: 899px) and (orientation: portrait) {
+  .js #craft .beat:not(.beat--flow) > .ckx {
+    height: var(--vh); min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto auto; align-content: stretch;
+    container: ckx / size;
+  }
+  .js #craft .beat:not(.beat--flow) .ckx__fig {
+    height: 100%; width: auto; max-width: 100%; max-height: calc(100cqw * 3 / 4); min-height: 0;
+    aspect-ratio: 4 / 3; margin-inline: 0; justify-self: center; align-self: center;
+  }
+}
+@container ckx (max-height: 760px) {
+  .js #craft .ckx__say-t { font-size: 0.92rem; line-height: 1.45; }
+  .js #craft .ckx__head h1 { font-size: 1.45rem; }
+}
+@container ckx (max-height: 440px) {
+  .js #craft .ckx__say-t { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .js #craft .ckx__head .eyebrow { display: none; }
+}
